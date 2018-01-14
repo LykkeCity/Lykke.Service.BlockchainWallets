@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using Lykke.Common.Api.Contract.Responses;
 
@@ -26,7 +27,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         ///    Target blockchain integration id.
         /// </param>
         /// <param name="assetId">
-        ///    Target asset id.
+        ///    Target asset id (as it specified in the integration layer).
         /// </param>
         /// <param name="clientId">
         ///    Lykke client id.
@@ -43,7 +44,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         ///    Target blockchain integration id.
         /// </param>
         /// <param name="assetId">
-        ///    Target asset id.
+        ///    Target asset id (as it specified in the integration layer).
         /// </param>
         /// <param name="clientId">
         ///    Lykke client id.
@@ -60,7 +61,27 @@ namespace Lykke.Service.BlockchainWallets.Client
         ///    Target blockchain integration id.
         /// </param>
         /// <param name="assetId">
-        ///    Target asset id.
+        ///    Target asset id (as it specified in the integration layer).
+        /// </param>
+        /// <param name="address">
+        ///    Wallet public address.
+        /// </param>
+        /// <returns>
+        ///    Lykke client id
+        /// </returns>
+        /// <exception cref="ErrorResponseException">
+        ///    Status code: <see cref="HttpStatusCode.NoContent"/> - client is not found.
+        /// </exception>
+        Task<Guid> GetClientIdAsync(string integrationLayerId, string assetId, string address);
+
+        /// <summary>
+        ///    Returns Lykke client id by wallet address.
+        /// </summary>
+        /// <param name="integrationLayerId">
+        ///    Target blockchain integration id.
+        /// </param>
+        /// <param name="assetId">
+        ///    Target asset id (as it specified in the integration layer).
         /// </param>
         /// <param name="address">
         ///    Wallet public address.
@@ -68,6 +89,6 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <returns>
         ///    Lykke client id, if operation succeeded, null otherwise.
         /// </returns>
-        Task<Guid?> GetClientIdAsync(string integrationLayerId, string assetId, string address);
+        Task<Guid?> TryGetClientIdAsync(string integrationLayerId, string assetId, string address);
     }
 }

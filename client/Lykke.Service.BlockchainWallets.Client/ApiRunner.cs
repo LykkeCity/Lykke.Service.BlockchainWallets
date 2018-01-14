@@ -43,12 +43,9 @@ namespace Lykke.Service.BlockchainWallets.Client
         public Task RunWithRetriesAsync(Func<Task> method, int? retriesCount = null)
         {
             // TODO: Update retries telemetry
-
-            retriesCount = retriesCount ?? _defaultRetriesCount;
-
             return Policy
                 .Handle<Exception>(FilterRetryExceptions)
-                .WaitAndRetryAsync(retriesCount.Value, GetRetryDelay)
+                .WaitAndRetryAsync(retriesCount ?? _defaultRetriesCount, GetRetryDelay)
                 .ExecuteAsync(async () =>
                 {
                     try
@@ -66,11 +63,9 @@ namespace Lykke.Service.BlockchainWallets.Client
         {
             // TODO: Update retries telemetry
 
-            retriesCount = retriesCount ?? _defaultRetriesCount;
-
             return Policy
                 .Handle<Exception>(FilterRetryExceptions)
-                .WaitAndRetryAsync(retriesCount.Value, GetRetryDelay)
+                .WaitAndRetryAsync(retriesCount ?? _defaultRetriesCount, GetRetryDelay)
                 .ExecuteAsync(async () =>
                 {
                     try
@@ -105,9 +100,9 @@ namespace Lykke.Service.BlockchainWallets.Client
             if (ex.InnerException is ApiException innerApiException)
             {
                 return innerApiException.StatusCode == HttpStatusCode.InternalServerError ||
-                       innerApiException.StatusCode == HttpStatusCode.BadGateway          ||
-                       innerApiException.StatusCode == HttpStatusCode.ServiceUnavailable  ||
-                       innerApiException.StatusCode == HttpStatusCode.GatewayTimeout;
+                        innerApiException.StatusCode == HttpStatusCode.BadGateway         ||
+                        innerApiException.StatusCode == HttpStatusCode.ServiceUnavailable ||
+                        innerApiException.StatusCode == HttpStatusCode.GatewayTimeout;
             }
 
             if (ex is ApiException apiException)

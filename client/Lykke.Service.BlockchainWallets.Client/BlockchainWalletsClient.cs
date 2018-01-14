@@ -129,13 +129,8 @@ namespace Lykke.Service.BlockchainWallets.Client
             }
         }
 
-        public void Dispose()
-        {
-            _httpClient?.Dispose();
-        }
-
         /// <inheritdoc />
-        public async Task<Guid?> GetClientIdAsync(string integrationLayerId, string assetId, string address)
+        public async Task<Guid> GetClientIdAsync(string integrationLayerId, string assetId, string address)
         {
             if (string.IsNullOrEmpty(integrationLayerId))
             {
@@ -152,16 +147,22 @@ namespace Lykke.Service.BlockchainWallets.Client
                 throw new ArgumentException(nameof(address));
             }
 
+            var clientId = await _apiRunner.RunWithRetriesAsync(() => _api.GetClientId
+            (
+                integrationLayerId,
+                assetId,
+                address
+            ));
+
+            return clientId.ClientId;
+        }
+
+        /// <inheritdoc />
+        public async Task<Guid?> TryGetClientIdAsync(string integrationLayerId, string assetId, string address)
+        {
             try
             {
-                var clientId = await _apiRunner.RunWithRetriesAsync(() => _api.GetClientId
-                (
-                    integrationLayerId,
-                    assetId,
-                    address
-                ));
-
-                return clientId.ClientId;
+                return await GetClientIdAsync(integrationLayerId, assetId, address);
             }
             catch (ErrorResponseException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
@@ -174,6 +175,13 @@ namespace Lykke.Service.BlockchainWallets.Client
                 throw;
             }
         }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            _httpClient?.Dispose();
+        }
+        
 
         private async Task LogErrorAsync(Exception e, string process)
         {
