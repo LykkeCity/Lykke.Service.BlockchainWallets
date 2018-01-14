@@ -1,0 +1,69 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2020
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets", "src\Lykke.Service.BlockchainWallets\Lykke.Service.BlockchainWallets.csproj", "{E414FDB9-FEEA-4CD0-9BBA-D1541601DF29}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.Core", "src\Lykke.Service.BlockchainWallets.Core\Lykke.Service.BlockchainWallets.Core.csproj", "{F5B2F6B8-A8CC-4612-8F1D-C063EB8C8955}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.AzureRepositories", "src\Lykke.Service.BlockchainWallets.AzureRepositories\Lykke.Service.BlockchainWallets.AzureRepositories.csproj", "{4BE49E02-AAAD-460B-8D00-57F412A3D181}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.Services", "src\Lykke.Service.BlockchainWallets.Services\Lykke.Service.BlockchainWallets.Services.csproj", "{2D5F52EC-2A27-4045-81ED-72355E2A6325}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.Client", "client\Lykke.Service.BlockchainWallets.Client\Lykke.Service.BlockchainWallets.Client.csproj", "{3C300C31-97D3-41E8-A627-C53491BDA28B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{8F9036B1-5106-4C69-B2D2-B78EE52687A0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{209B4491-E6D2-4439-ACE5-C895A44E768A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client", "client", "{841F0F6F-78C7-43C8-8B81-C06448C16DA4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Service.BlockchainWallets.Tests", "tests\Lykke.Service.BlockchainWallets.Tests\Lykke.Service.BlockchainWallets.Tests.csproj", "{CE98079B-B211-48FB-A023-CC935C7A4DB6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E414FDB9-FEEA-4CD0-9BBA-D1541601DF29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E414FDB9-FEEA-4CD0-9BBA-D1541601DF29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E414FDB9-FEEA-4CD0-9BBA-D1541601DF29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E414FDB9-FEEA-4CD0-9BBA-D1541601DF29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5B2F6B8-A8CC-4612-8F1D-C063EB8C8955}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5B2F6B8-A8CC-4612-8F1D-C063EB8C8955}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5B2F6B8-A8CC-4612-8F1D-C063EB8C8955}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5B2F6B8-A8CC-4612-8F1D-C063EB8C8955}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BE49E02-AAAD-460B-8D00-57F412A3D181}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BE49E02-AAAD-460B-8D00-57F412A3D181}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BE49E02-AAAD-460B-8D00-57F412A3D181}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BE49E02-AAAD-460B-8D00-57F412A3D181}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D5F52EC-2A27-4045-81ED-72355E2A6325}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D5F52EC-2A27-4045-81ED-72355E2A6325}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D5F52EC-2A27-4045-81ED-72355E2A6325}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D5F52EC-2A27-4045-81ED-72355E2A6325}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C300C31-97D3-41E8-A627-C53491BDA28B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C300C31-97D3-41E8-A627-C53491BDA28B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C300C31-97D3-41E8-A627-C53491BDA28B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C300C31-97D3-41E8-A627-C53491BDA28B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE98079B-B211-48FB-A023-CC935C7A4DB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE98079B-B211-48FB-A023-CC935C7A4DB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE98079B-B211-48FB-A023-CC935C7A4DB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE98079B-B211-48FB-A023-CC935C7A4DB6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E414FDB9-FEEA-4CD0-9BBA-D1541601DF29} = {209B4491-E6D2-4439-ACE5-C895A44E768A}
+		{F5B2F6B8-A8CC-4612-8F1D-C063EB8C8955} = {209B4491-E6D2-4439-ACE5-C895A44E768A}
+		{4BE49E02-AAAD-460B-8D00-57F412A3D181} = {209B4491-E6D2-4439-ACE5-C895A44E768A}
+		{2D5F52EC-2A27-4045-81ED-72355E2A6325} = {209B4491-E6D2-4439-ACE5-C895A44E768A}
+		{3C300C31-97D3-41E8-A627-C53491BDA28B} = {841F0F6F-78C7-43C8-8B81-C06448C16DA4}
+		{CE98079B-B211-48FB-A023-CC935C7A4DB6} = {8F9036B1-5106-4C69-B2D2-B78EE52687A0}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C8DE961A-1EFD-437E-B6AC-65490D9ADBE4}
+	EndGlobalSection
+EndGlobal
