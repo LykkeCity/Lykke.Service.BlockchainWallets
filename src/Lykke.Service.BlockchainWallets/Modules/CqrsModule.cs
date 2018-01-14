@@ -95,15 +95,15 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .FailedCommandRetryDelay(defaultRetryDelay)
 
                 .ListeningCommands(typeof(BeginBalanceMonitoringCommand))
-                .On("begin-balance-monitoring-commands")
+                .On("begin-balance-monitoring")
                 .WithCommandsHandler<BeginBalanceMonitoringCommandHandler>()
 
                 .ListeningCommands(typeof(EndBalanceMonitoringCommand))
-                .On("end-balance-monitoring-commands")
+                .On("end-balance-monitoring")
                 .WithCommandsHandler<EndBalanceMonitoringCommandHandler>()
 
-                .ProcessingOptions("begin-balance-monitoring-commands").MultiThreaded(10).QueueCapacity(1024)
-                .ProcessingOptions("end-balance-monitoring-commands").MultiThreaded(10).QueueCapacity(1024);
+                .ProcessingOptions("begin-balance-monitoring").MultiThreaded(10).QueueCapacity(1024)
+                .ProcessingOptions("end-balance-monitoring").MultiThreaded(10).QueueCapacity(1024);
 
 
             return new CqrsEngine
