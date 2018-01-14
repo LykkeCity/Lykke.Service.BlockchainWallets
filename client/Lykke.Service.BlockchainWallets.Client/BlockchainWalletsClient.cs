@@ -69,10 +69,7 @@ namespace Lykke.Service.BlockchainWallets.Client
                 (
                     integrationLayerId,
                     assetId,
-                    new CreateWalletRequest
-                    {
-                        ClientId = clientId
-                    })
+                    clientId)
                 );
 
                 return newWallet.Address;

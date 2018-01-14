@@ -11,8 +11,8 @@ namespace Lykke.Service.BlockchainWallets.Client
         [Get("/api/isalive")]
         Task<IsAliveResponse> GetIsAliveAsync();
 
-        [Post("/api/wallets/{integrationLayerId}/{assetId}")]
-        Task<WalletResponse> CreateWallet(string integrationLayerId, string assetId, [Body] CreateWalletRequest body);
+        [Post("/api/wallets/{integrationLayerId}/{assetId}/by-client-ids/{clientId}")]
+        Task<WalletResponse> CreateWallet(string integrationLayerId, string assetId, Guid clientId);
 
         [Delete("/api/wallets/{integrationLayerId}/{assetId}/by-client-ids/{clientId}")]
         Task DeleteWallet(string integrationLayerId, string assetId, Guid clientId);

@@ -121,16 +121,6 @@
                Lykke client id.
             </summary>
         </member>
-        <member name="T:Lykke.Service.BlockchainWallets.Client.Models.CreateWalletRequest">
-            <summary>
-               Wallet creation request.
-            </summary>
-        </member>
-        <member name="P:Lykke.Service.BlockchainWallets.Client.Models.CreateWalletRequest.ClientId">
-            <summary>
-               Lykke client id.
-            </summary>
-        </member>
         <member name="T:Lykke.Service.BlockchainWallets.Client.Models.WalletResponse">
             <summary>
                Wallet

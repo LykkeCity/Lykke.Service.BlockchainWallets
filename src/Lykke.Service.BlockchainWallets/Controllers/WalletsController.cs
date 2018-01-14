@@ -24,20 +24,20 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         }
 
 
-        [HttpPost]
-        public async Task<IActionResult> CreateWallet([FromRoute] string integrationLayerId, [FromRoute] string assetId, [FromBody] CreateWalletRequest request)
+        [HttpPost("by-client-ids/{clientId}")]
+        public async Task<IActionResult> CreateWallet([FromRoute] string integrationLayerId, [FromRoute] string assetId, [FromRoute] Guid clientId)
         {
             if (!await _blockchainIntegrationService.AssetIsSupported(integrationLayerId, assetId))
             {
                 return NotFound();
             }
             
-            if (await _walletService.WalletExistsAsync(integrationLayerId, assetId, request.ClientId))
+            if (await _walletService.WalletExistsAsync(integrationLayerId, assetId, clientId))
             {
                 return StatusCode((int) HttpStatusCode.Conflict);
             }
 
-            var walletAddress = await _walletService.CreateWalletAsync(integrationLayerId, assetId, request.ClientId);
+            var walletAddress = await _walletService.CreateWalletAsync(integrationLayerId, assetId, clientId);
 
             return Ok(new WalletCreatedResponse
             {
