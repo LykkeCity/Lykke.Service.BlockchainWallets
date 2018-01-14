@@ -100,7 +100,7 @@ namespace Lykke.Service.BlockchainWallets.Modules
 
                 .ListeningCommands(typeof(EndBalanceMonitoringCommand))
                 .On("end-balance-monitoring-commands")
-                .WithCommandsHandler<EndBalanceMonitoringCommand>()
+                .WithCommandsHandler<EndBalanceMonitoringCommandHandler>()
 
                 .ProcessingOptions("begin-balance-monitoring-commands").MultiThreaded(10).QueueCapacity(1024)
                 .ProcessingOptions("end-balance-monitoring-commands").MultiThreaded(10).QueueCapacity(1024);
