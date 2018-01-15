@@ -76,6 +76,9 @@ namespace Lykke.Service.BlockchainWallets.Services
             );
         }
 
+        public async Task<string> GetAddressAsync(string integrationLayerId, string assetId, Guid clientId)
+            => (await _walletRepository.GetAsync(integrationLayerId, assetId, clientId))?.Address;
+
         public async Task<Guid?> GetClientIdAsync(string integrationLayerId, string assetId, string address)
             => (await _walletRepository.GetAsync(integrationLayerId, assetId, address))?.ClientId;
 

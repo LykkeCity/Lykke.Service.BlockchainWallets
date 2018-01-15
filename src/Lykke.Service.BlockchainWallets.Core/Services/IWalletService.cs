@@ -9,6 +9,8 @@ namespace Lykke.Service.BlockchainWallets.Core.Services
 
         Task DeleteWalletAsync(string integrationLayerId, string assetId, Guid clientId);
 
+        Task<string> GetAddressAsync(string integrationLayerId, string assetId, Guid clientId);
+
         Task<Guid?> GetClientIdAsync(string integrationLayerId, string assetId, string address);
 
         Task<bool> WalletExistsAsync(string integrationLayerId, string assetId, Guid clientId);

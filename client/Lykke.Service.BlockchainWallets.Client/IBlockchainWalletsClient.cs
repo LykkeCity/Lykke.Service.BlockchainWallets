@@ -55,6 +55,26 @@ namespace Lykke.Service.BlockchainWallets.Client
         Task<bool> DeleteWalletAsync(string integrationLayerId, string assetId, Guid clientId);
 
         /// <summary>
+        ///    Returns blockchain address by Lykke client id.
+        /// </summary>
+        /// <param name="integrationLayerId">
+        ///    Target blockchain integration id.
+        /// </param>
+        /// <param name="assetId">
+        ///    Target asset id (as it specified in the integration layer).
+        /// </param>
+        /// <param name="clientId">
+        ///    Lykke client id.
+        /// </param>
+        /// <returns>
+        ///    Blockchain address
+        /// </returns>
+        /// <exception cref="ErrorResponseException">
+        ///    Status code: <see cref="HttpStatusCode.NotFound"/> - address is not found.
+        /// </exception>
+        Task<string> GetAddressAsync(string integrationLayerId, string assetId, Guid clientId);
+
+        /// <summary>
         ///    Returns Lykke client id by wallet address.
         /// </summary>
         /// <param name="integrationLayerId">
@@ -70,9 +90,26 @@ namespace Lykke.Service.BlockchainWallets.Client
         ///    Lykke client id
         /// </returns>
         /// <exception cref="ErrorResponseException">
-        ///    Status code: <see cref="HttpStatusCode.NoContent"/> - client is not found.
+        ///    Status code: <see cref="HttpStatusCode.NotFound"/> - client is not found.
         /// </exception>
         Task<Guid> GetClientIdAsync(string integrationLayerId, string assetId, string address);
+
+        /// <summary>
+        ///    Returns blockchain address by Lykke client id.
+        /// </summary>
+        /// <param name="integrationLayerId">
+        ///    Target blockchain integration id.
+        /// </param>
+        /// <param name="assetId">
+        ///    Target asset id (as it specified in the integration layer).
+        /// </param>
+        /// <param name="clientId">
+        ///    Lykke client id.
+        /// </param>
+        /// <returns>
+        ///    Blockchain address, if operation succeeded, null otherwise.
+        /// </returns>
+        Task<string> TryGetAddressAsync(string integrationLayerId, string assetId, Guid clientId);
 
         /// <summary>
         ///    Returns Lykke client id by wallet address.

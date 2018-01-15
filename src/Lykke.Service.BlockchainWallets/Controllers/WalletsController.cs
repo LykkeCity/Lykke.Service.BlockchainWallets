@@ -11,8 +11,8 @@ namespace Lykke.Service.BlockchainWallets.Controllers
     [Route("api/wallets/{integrationLayerId}/{assetId}")]
     public class WalletsController : Controller
     {
-        private readonly IBlockchainIntegrationService  _blockchainIntegrationService;
-        private readonly IWalletService      _walletService;
+        private readonly IBlockchainIntegrationService _blockchainIntegrationService;
+        private readonly IWalletService                _walletService;
 
 
         public WalletsController(
@@ -61,6 +61,22 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             await _walletService.DeleteWalletAsync(integrationLayerId, assetId, clientId);
 
             return Accepted();
+        }
+
+        [HttpGet("by-client-ids/{clientId}/address")]
+        public async Task<IActionResult> GetAddress([FromRoute] string integrationLayerId, [FromRoute] string assetId, [FromRoute] Guid clientId)
+        {
+            var address = await _walletService.GetAddressAsync(integrationLayerId, assetId, clientId);
+
+            if (string.IsNullOrEmpty(address))
+            {
+                return NotFound();
+            }
+
+            return Ok(new AddressResponse
+            {
+                Address = address
+            });
         }
 
         [HttpGet("by-addresses/{address}/client-id")]

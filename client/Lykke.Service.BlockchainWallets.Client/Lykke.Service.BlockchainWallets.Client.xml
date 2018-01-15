@@ -16,7 +16,13 @@
         <member name="M:Lykke.Service.BlockchainWallets.Client.BlockchainWalletsClient.DeleteWalletAsync(System.String,System.String,System.Guid)">
             <inheritdoc />
         </member>
+        <member name="M:Lykke.Service.BlockchainWallets.Client.BlockchainWalletsClient.GetAddressAsync(System.String,System.String,System.Guid)">
+            <inheritdoc />
+        </member>
         <member name="M:Lykke.Service.BlockchainWallets.Client.BlockchainWalletsClient.GetClientIdAsync(System.String,System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Lykke.Service.BlockchainWallets.Client.BlockchainWalletsClient.TryGetAddressAsync(System.String,System.String,System.Guid)">
             <inheritdoc />
         </member>
         <member name="M:Lykke.Service.BlockchainWallets.Client.BlockchainWalletsClient.TryGetClientIdAsync(System.String,System.String,System.String)">
@@ -74,6 +80,26 @@
                True, if walle has been deleted, false otherwise.
             </returns>
         </member>
+        <member name="M:Lykke.Service.BlockchainWallets.Client.IBlockchainWalletsClient.GetAddressAsync(System.String,System.String,System.Guid)">
+            <summary>
+               Returns blockchain address by Lykke client id.
+            </summary>
+            <param name="integrationLayerId">
+               Target blockchain integration id.
+            </param>
+            <param name="assetId">
+               Target asset id (as it specified in the integration layer).
+            </param>
+            <param name="clientId">
+               Lykke client id.
+            </param>
+            <returns>
+               Blockchain address
+            </returns>
+            <exception cref="T:Lykke.Service.BlockchainWallets.Client.ErrorResponseException">
+               Status code: <see cref="F:System.Net.HttpStatusCode.NotFound"/> - address is not found.
+            </exception>
+        </member>
         <member name="M:Lykke.Service.BlockchainWallets.Client.IBlockchainWalletsClient.GetClientIdAsync(System.String,System.String,System.String)">
             <summary>
                Returns Lykke client id by wallet address.
@@ -91,8 +117,25 @@
                Lykke client id
             </returns>
             <exception cref="T:Lykke.Service.BlockchainWallets.Client.ErrorResponseException">
-               Status code: <see cref="F:System.Net.HttpStatusCode.NoContent"/> - client is not found.
+               Status code: <see cref="F:System.Net.HttpStatusCode.NotFound"/> - client is not found.
             </exception>
+        </member>
+        <member name="M:Lykke.Service.BlockchainWallets.Client.IBlockchainWalletsClient.TryGetAddressAsync(System.String,System.String,System.Guid)">
+            <summary>
+               Returns blockchain address by Lykke client id.
+            </summary>
+            <param name="integrationLayerId">
+               Target blockchain integration id.
+            </param>
+            <param name="assetId">
+               Target asset id (as it specified in the integration layer).
+            </param>
+            <param name="clientId">
+               Lykke client id.
+            </param>
+            <returns>
+               Blockchain address, if operation succeeded, null otherwise.
+            </returns>
         </member>
         <member name="M:Lykke.Service.BlockchainWallets.Client.IBlockchainWalletsClient.TryGetClientIdAsync(System.String,System.String,System.String)">
             <summary>
@@ -110,6 +153,16 @@
             <returns>
                Lykke client id, if operation succeeded, null otherwise.
             </returns>
+        </member>
+        <member name="T:Lykke.Service.BlockchainWallets.Client.Models.AddressResponse">
+            <summary>
+               Blockchain address.
+            </summary>
+        </member>
+        <member name="P:Lykke.Service.BlockchainWallets.Client.Models.AddressResponse.Address">
+            <summary>
+               Blockchain address.
+            </summary>
         </member>
         <member name="T:Lykke.Service.BlockchainWallets.Client.Models.ClientIdResponse">
             <summary>

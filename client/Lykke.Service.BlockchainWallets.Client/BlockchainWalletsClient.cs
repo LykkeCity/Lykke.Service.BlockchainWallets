@@ -4,9 +4,9 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Common.Api.Contract.Responses;
-using Lykke.Service.BlockchainWallets.Client.Models;
 using Microsoft.Extensions.PlatformAbstractions;
 using Refit;
+
 
 namespace Lykke.Service.BlockchainWallets.Client
 {
@@ -127,6 +127,29 @@ namespace Lykke.Service.BlockchainWallets.Client
         }
 
         /// <inheritdoc />
+        public async Task<string> GetAddressAsync(string integrationLayerId, string assetId, Guid clientId)
+        {
+            if (string.IsNullOrEmpty(integrationLayerId))
+            {
+                throw new ArgumentException(nameof(integrationLayerId));
+            }
+
+            if (string.IsNullOrEmpty(assetId))
+            {
+                throw new ArgumentException(nameof(assetId));
+            }
+
+            var address = await _apiRunner.RunWithRetriesAsync(() => _api.GetAddress
+            (
+                integrationLayerId,
+                assetId,
+                clientId
+            ));
+
+            return address.Address;
+        }
+
+        /// <inheritdoc />
         public async Task<Guid> GetClientIdAsync(string integrationLayerId, string assetId, string address)
         {
             if (string.IsNullOrEmpty(integrationLayerId))
@@ -155,6 +178,25 @@ namespace Lykke.Service.BlockchainWallets.Client
         }
 
         /// <inheritdoc />
+        public async Task<string> TryGetAddressAsync(string integrationLayerId, string assetId, Guid clientId)
+        {
+            try
+            {
+                return await GetAddressAsync(integrationLayerId, assetId, clientId);
+            }
+            catch (ErrorResponseException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+            catch (Exception e)
+            {
+                await LogErrorAsync(e, nameof(TryGetAddressAsync));
+
+                throw;
+            }
+        }
+
+        /// <inheritdoc />
         public async Task<Guid?> TryGetClientIdAsync(string integrationLayerId, string assetId, string address)
         {
             try
@@ -167,7 +209,7 @@ namespace Lykke.Service.BlockchainWallets.Client
             }
             catch (Exception e)
             {
-                await LogErrorAsync(e, nameof(GetClientIdAsync));
+                await LogErrorAsync(e, nameof(TryGetClientIdAsync));
 
                 throw;
             }
