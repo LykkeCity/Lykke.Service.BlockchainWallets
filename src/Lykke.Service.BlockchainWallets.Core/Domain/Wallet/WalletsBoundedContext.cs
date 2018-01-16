@@ -2,6 +2,6 @@
 {
     public static class WalletsBoundedContext
     {
-        public const string Name = "wallets";
+        public const string Name = "bcn-integration.wallets";
     }
 }

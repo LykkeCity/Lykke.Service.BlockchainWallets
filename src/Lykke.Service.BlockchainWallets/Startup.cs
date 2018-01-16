@@ -7,6 +7,7 @@ using Common.Log;
 using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.Logs;
+using Lykke.Logs.Slack;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Settings;
 using Lykke.Service.BlockchainWallets.Modules;
@@ -211,6 +212,10 @@ namespace Lykke.Service.BlockchainWallets
             azureStorageLogger.Start();
 
             aggregateLogger.AddLog(azureStorageLogger);
+
+            var personalSlackLogger = LykkeLogToSlack.Create(slackService, "BlockChainIntegration");
+
+            aggregateLogger.AddLog(personalSlackLogger);
 
             return aggregateLogger;
         }

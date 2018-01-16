@@ -17,13 +17,13 @@ namespace Lykke.Service.BlockchainWallets.Modules
 {
     public class CqrsModule : Module
     {
-        private readonly CqrsSettings  _settings;
-        private readonly ILog          _log;
+        private readonly CqrsSettings _settings;
+        private readonly ILog _log;
 
         public CqrsModule(CqrsSettings settings, ILog log)
         {
             _settings = settings;
-            _log      = log;
+            _log = log;
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -64,7 +64,7 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 new TransportResolver(transports),
                 new RabbitMqTransportFactory()
             );
-            
+
             // Command handlers
             builder
                 .RegisterType<BeginBalanceMonitoringCommandHandler>();
@@ -85,35 +85,35 @@ namespace Lykke.Service.BlockchainWallets.Modules
 
             var enpointResolverRegistration = Register.DefaultEndpointResolver(new RabbitMqConventionEndpointResolver
             (
-                transport:           "RabbitMq",
+                transport: "RabbitMq",
                 serializationFormat: "protobuf",
-                environment:         "lykke.bcn-integration"
+                environment: "lykke"
             ));
-            
+
+            const string defaultPipeline = "commands";
+            const string defaultRoute = "self";
 
             var boundedContextRegistration = Register.BoundedContext(WalletsBoundedContext.Name)
                 .FailedCommandRetryDelay(defaultRetryDelay)
 
                 .ListeningCommands(typeof(BeginBalanceMonitoringCommand))
-                .On("begin-balance-monitoring")
+                .On(defaultRoute)
                 .WithCommandsHandler<BeginBalanceMonitoringCommandHandler>()
 
                 .ListeningCommands(typeof(EndBalanceMonitoringCommand))
-                .On("end-balance-monitoring")
+                .On(defaultRoute)
                 .WithCommandsHandler<EndBalanceMonitoringCommandHandler>()
 
-                .ProcessingOptions("begin-balance-monitoring").MultiThreaded(10).QueueCapacity(1024)
-                .ProcessingOptions("end-balance-monitoring").MultiThreaded(10).QueueCapacity(1024);
-
+                .ProcessingOptions(defaultRoute).MultiThreaded(8).QueueCapacity(1024);
 
             return new CqrsEngine
             (
-                log:                    _log,
-                dependencyResolver:     ctx.Resolve<IDependencyResolver>(),
-                messagingEngine:        messagingEngine,
-                endpointProvider:       new DefaultEndpointProvider(),
+                log: _log,
+                dependencyResolver: ctx.Resolve<IDependencyResolver>(),
+                messagingEngine: messagingEngine,
+                endpointProvider: new DefaultEndpointProvider(),
                 createMissingEndpoints: true,
-                registrations:          new IRegistration[]
+                registrations: new IRegistration[]
                 {
                     enpointResolverRegistration,
                     boundedContextRegistration
