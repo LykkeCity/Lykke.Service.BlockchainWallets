@@ -95,15 +95,19 @@ namespace Lykke.Service.BlockchainWallets.Modules
 
             var boundedContextRegistration = Register.BoundedContext(WalletsBoundedContext.Name)
                 .FailedCommandRetryDelay(defaultRetryDelay)
-
+                
                 .ListeningCommands(typeof(BeginBalanceMonitoringCommand))
                 .On(defaultRoute)
                 .WithCommandsHandler<BeginBalanceMonitoringCommandHandler>()
-
+                
                 .ListeningCommands(typeof(EndBalanceMonitoringCommand))
                 .On(defaultRoute)
                 .WithCommandsHandler<EndBalanceMonitoringCommandHandler>()
 
+                .PublishingCommands(typeof(BeginBalanceMonitoringCommand), typeof(EndBalanceMonitoringCommand))
+                .To(WalletsBoundedContext.Name)
+                .With(defaultRoute)
+                
                 .ProcessingOptions(defaultRoute).MultiThreaded(8).QueueCapacity(1024);
 
             return new CqrsEngine
