@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lykke.Common" Version="4.1.0" />
+    <PackageReference Include="Lykke.Common" Version="4.2.0" />
     <PackageReference Include="Lykke.Cqrs" Version="0.1.15" />
-    <PackageReference Include="Lykke.Service.BlockchainApi.Client" Version="9.0.1" />
+    <PackageReference Include="Lykke.Service.BlockchainApi.Client" Version="9.2.0" />
     <PackageReference Include="Lykke.Service.BlockchainSignService.Client" Version="1.0.13" />
   </ItemGroup>
 

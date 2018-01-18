@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lykke.Common" Version="4.1.0" />
+    <PackageReference Include="Lykke.Common" Version="4.2.0" />
     <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.1.0" />
     <PackageReference Include="Lykke.Cqrs" Version="0.1.15" />
     <PackageReference Include="Lykke.Logs" Version="3.5.1" />

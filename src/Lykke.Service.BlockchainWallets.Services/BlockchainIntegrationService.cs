@@ -39,7 +39,7 @@ namespace Lykke.Service.BlockchainWallets.Services
 
             if (apiClient != null)
             {
-                return await apiClient.GetAssetAsync(assetId) != null;
+                return await apiClient.TryGetAssetAsync(assetId) != null;
             }
 
             return false;
