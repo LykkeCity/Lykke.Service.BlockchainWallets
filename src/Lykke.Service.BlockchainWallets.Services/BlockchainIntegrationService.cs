@@ -28,7 +28,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             _signServiceClients = settings.Blockchains.ToImmutableDictionary
             (
                 x => x.Type,
-                y => new BlockchainSignServiceClient(y.ApiUrl, log)
+                y => new BlockchainSignServiceClient(y.SignFacadeUrl, log)
             );
         }
 
