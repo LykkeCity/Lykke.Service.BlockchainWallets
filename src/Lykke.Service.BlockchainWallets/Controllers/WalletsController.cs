@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Lykke.Service.BlockchainWallets.Controllers
 {
-    [Route("api/wallets/{integrationLayerId}/{assetId}")]
+    [Route("api/wallets/{integrationLayerId}/{integrationLayerAssetId}")]
     public class WalletsController : Controller
     {
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
@@ -25,19 +25,19 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
 
         [HttpPost("by-client-ids/{clientId}")]
-        public async Task<IActionResult> CreateWallet([FromRoute] string integrationLayerId, [FromRoute] string assetId, [FromRoute] Guid clientId)
+        public async Task<IActionResult> CreateWallet([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
         {
-            if (!await _blockchainIntegrationService.AssetIsSupported(integrationLayerId, assetId))
+            if (!await _blockchainIntegrationService.AssetIsSupported(integrationLayerId, integrationLayerAssetId))
             {
                 return NotFound();
             }
             
-            if (await _walletService.WalletExistsAsync(integrationLayerId, assetId, clientId))
+            if (await _walletService.WalletExistsAsync(integrationLayerId, integrationLayerAssetId, clientId))
             {
                 return StatusCode((int) HttpStatusCode.Conflict);
             }
 
-            var walletAddress = await _walletService.CreateWalletAsync(integrationLayerId, assetId, clientId);
+            var walletAddress = await _walletService.CreateWalletAsync(integrationLayerId, integrationLayerAssetId, clientId);
 
             return Ok(new WalletCreatedResponse
             {
@@ -46,27 +46,27 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         }
 
         [HttpDelete("by-client-ids/{clientId}")]
-        public async Task<IActionResult> DeleteWallet([FromRoute] string integrationLayerId, [FromRoute] string assetId, [FromRoute] Guid clientId)
+        public async Task<IActionResult> DeleteWallet([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
         {
-            if (!await _blockchainIntegrationService.AssetIsSupported(integrationLayerId, assetId))
+            if (!await _blockchainIntegrationService.AssetIsSupported(integrationLayerId, integrationLayerAssetId))
             {
                 return NotFound();
             }
 
-            if (!await _walletService.WalletExistsAsync(integrationLayerId, assetId, clientId))
+            if (!await _walletService.WalletExistsAsync(integrationLayerId, integrationLayerAssetId, clientId))
             {
                 return NotFound();
             }
 
-            await _walletService.DeleteWalletAsync(integrationLayerId, assetId, clientId);
+            await _walletService.DeleteWalletAsync(integrationLayerId, integrationLayerAssetId, clientId);
 
             return Accepted();
         }
 
         [HttpGet("by-client-ids/{clientId}/address")]
-        public async Task<IActionResult> GetAddress([FromRoute] string integrationLayerId, [FromRoute] string assetId, [FromRoute] Guid clientId)
+        public async Task<IActionResult> GetAddress([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
         {
-            var address = await _walletService.GetAddressAsync(integrationLayerId, assetId, clientId);
+            var address = await _walletService.GetAddressAsync(integrationLayerId, integrationLayerAssetId, clientId);
 
             if (string.IsNullOrEmpty(address))
             {
@@ -80,9 +80,9 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         }
 
         [HttpGet("by-addresses/{address}/client-id")]
-        public async Task<IActionResult> GetClientId([FromRoute] string integrationLayerId, [FromRoute] string assetId, [FromRoute] string address)
+        public async Task<IActionResult> GetClientId([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] string address)
         {
-            var clientId = await _walletService.GetClientIdAsync(integrationLayerId, assetId, address);
+            var clientId = await _walletService.GetClientIdAsync(integrationLayerId, integrationLayerAssetId, address);
 
             if (!clientId.HasValue)
             {
