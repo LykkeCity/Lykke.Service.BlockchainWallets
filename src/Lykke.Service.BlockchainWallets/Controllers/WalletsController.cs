@@ -117,16 +117,16 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
         private static bool ValidateRequest(string integrationLayerId, string integrationLayerAssetId, string address)
         {
-            return string.IsNullOrWhiteSpace(integrationLayerId)      ||
-                   string.IsNullOrWhiteSpace(integrationLayerAssetId) ||
-                   string.IsNullOrWhiteSpace(address);
+            return !(string.IsNullOrWhiteSpace(integrationLayerId)      ||
+                     string.IsNullOrWhiteSpace(integrationLayerAssetId) ||
+                     string.IsNullOrWhiteSpace(address));
         }
 
         private static bool ValidateRequest(string integrationLayerId, string integrationLayerAssetId, Guid clientId)
         {
-            return string.IsNullOrWhiteSpace(integrationLayerId)      ||
-                   string.IsNullOrWhiteSpace(integrationLayerAssetId) ||
-                   clientId == Guid.Empty;
+            return !(string.IsNullOrWhiteSpace(integrationLayerId)      ||
+                     string.IsNullOrWhiteSpace(integrationLayerAssetId) ||
+                     clientId == Guid.Empty);
         }
     }
 }
