@@ -27,6 +27,11 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         [HttpPost("by-client-ids/{clientId}")]
         public async Task<IActionResult> CreateWallet([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
         {
+            if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, clientId))
+            {
+                return BadRequest();
+            }
+
             if (!await _blockchainIntegrationService.AssetIsSupported(integrationLayerId, integrationLayerAssetId))
             {
                 return NotFound();
@@ -48,6 +53,11 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         [HttpDelete("by-client-ids/{clientId}")]
         public async Task<IActionResult> DeleteWallet([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
         {
+            if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, clientId))
+            {
+                return BadRequest();
+            }
+
             if (!await _blockchainIntegrationService.AssetIsSupported(integrationLayerId, integrationLayerAssetId))
             {
                 return NotFound();
@@ -66,6 +76,11 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         [HttpGet("by-client-ids/{clientId}/address")]
         public async Task<IActionResult> GetAddress([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
         {
+            if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, clientId))
+            {
+                return BadRequest();
+            }
+
             var address = await _walletService.GetAddressAsync(integrationLayerId, integrationLayerAssetId, clientId);
 
             if (string.IsNullOrEmpty(address))
@@ -82,6 +97,11 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         [HttpGet("by-addresses/{address}/client-id")]
         public async Task<IActionResult> GetClientId([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] string address)
         {
+            if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, address))
+            {
+                return BadRequest();
+            }
+
             var clientId = await _walletService.GetClientIdAsync(integrationLayerId, integrationLayerAssetId, address);
 
             if (!clientId.HasValue)
@@ -93,6 +113,20 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             {
                 ClientId = clientId.Value
             });
+        }
+
+        private static bool ValidateRequest(string integrationLayerId, string integrationLayerAssetId, string address)
+        {
+            return string.IsNullOrWhiteSpace(integrationLayerId)      ||
+                   string.IsNullOrWhiteSpace(integrationLayerAssetId) ||
+                   string.IsNullOrWhiteSpace(address);
+        }
+
+        private static bool ValidateRequest(string integrationLayerId, string integrationLayerAssetId, Guid clientId)
+        {
+            return string.IsNullOrWhiteSpace(integrationLayerId)      ||
+                   string.IsNullOrWhiteSpace(integrationLayerAssetId) ||
+                   clientId == Guid.Empty;
         }
     }
 }
