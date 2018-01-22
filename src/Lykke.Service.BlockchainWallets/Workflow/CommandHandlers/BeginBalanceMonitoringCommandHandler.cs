@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Cqrs;
+using Lykke.Service.BlockchainWallets.Contract.Events;
 using Lykke.Service.BlockchainWallets.Core.Domain.Wallet.Commands;
 using Lykke.Service.BlockchainWallets.Core.Services;
 
@@ -30,6 +31,13 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
             if (apiClient != null)
             {
                 await apiClient.StartBalanceObservationAsync(command.Address);
+
+                publisher.PublishEvent(new WalletCreatedEvent
+                {
+                    Address            = command.Address,
+                    AssetId            = command.AssetId,
+                    IntegrationLayerId = command.IntegrationLayerId
+                });
 
                 return CommandHandlingResult.Ok();
             }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Lykke.Cqrs;
+using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.Domain.Wallet;
 using Lykke.Service.BlockchainWallets.Core.Domain.Wallet.Commands;
 using Lykke.Service.BlockchainWallets.Core.Services;
@@ -48,8 +49,8 @@ namespace Lykke.Service.BlockchainWallets.Services
             _cqrsEngine.SendCommand
             (
                 command:              command,
-                boundedContext:       WalletsBoundedContext.Name,
-                remoteBoundedContext: WalletsBoundedContext.Name
+                boundedContext:       BlockchainWalletsBoundedContext.Name,
+                remoteBoundedContext: BlockchainWalletsBoundedContext.Name
             );
             
             return address;
@@ -71,8 +72,8 @@ namespace Lykke.Service.BlockchainWallets.Services
             _cqrsEngine.SendCommand
             (
                 command:              command,
-                boundedContext:       WalletsBoundedContext.Name,
-                remoteBoundedContext: WalletsBoundedContext.Name
+                boundedContext:       BlockchainWalletsBoundedContext.Name,
+                remoteBoundedContext: BlockchainWalletsBoundedContext.Name
             );
         }
 

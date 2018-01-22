@@ -7,6 +7,8 @@ using Inceptum.Messaging.Contract;
 using Inceptum.Messaging.RabbitMq;
 using Lykke.Cqrs;
 using Lykke.Messaging;
+using Lykke.Service.BlockchainWallets.Contract;
+using Lykke.Service.BlockchainWallets.Contract.Events;
 using Lykke.Service.BlockchainWallets.Core.Domain.Wallet;
 using Lykke.Service.BlockchainWallets.Core.Domain.Wallet.Commands;
 using Lykke.Service.BlockchainWallets.Core.Settings.ServiceSettings;
@@ -93,7 +95,7 @@ namespace Lykke.Service.BlockchainWallets.Modules
             const string defaultPipeline = "commands";
             const string defaultRoute = "self";
 
-            var boundedContextRegistration = Register.BoundedContext(WalletsBoundedContext.Name)
+            var boundedContextRegistration = Register.BoundedContext(BlockchainWalletsBoundedContext.Name)
                 .FailedCommandRetryDelay(defaultRetryDelay)
                 
                 .ListeningCommands(typeof(BeginBalanceMonitoringCommand))
@@ -105,9 +107,12 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .WithCommandsHandler<EndBalanceMonitoringCommandHandler>()
 
                 .PublishingCommands(typeof(BeginBalanceMonitoringCommand), typeof(EndBalanceMonitoringCommand))
-                .To(WalletsBoundedContext.Name)
+                .To(BlockchainWalletsBoundedContext.Name)
                 .With(defaultRoute)
                 
+                .PublishingEvents(typeof(WalletCreatedEvent), typeof(WalletDeletedEvent))
+                .With("events")
+
                 .ProcessingOptions(defaultRoute).MultiThreaded(8).QueueCapacity(1024);
 
             return new CqrsEngine
