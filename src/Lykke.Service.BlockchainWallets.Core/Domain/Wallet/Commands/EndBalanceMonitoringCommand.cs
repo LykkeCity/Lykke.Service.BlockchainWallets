@@ -1,17 +1,18 @@
-﻿using ProtoBuf;
+﻿using MessagePack;
+
 
 namespace Lykke.Service.BlockchainWallets.Core.Domain.Wallet.Commands
 {
-    [ProtoContract]
+    [MessagePackObject]
     public class EndBalanceMonitoringCommand
     {
-        [ProtoMember(1)]
+        [Key(0)]
         public string Address { get; set; }
 
-        [ProtoMember(2)]
+        [Key(1)]
         public string AssetId { get; set; }
 
-        [ProtoMember(3)]
+        [Key(2)]
         public string IntegrationLayerId { get; set; }
     }
 }

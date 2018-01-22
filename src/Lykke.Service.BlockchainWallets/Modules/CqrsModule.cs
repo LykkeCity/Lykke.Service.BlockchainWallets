@@ -86,7 +86,7 @@ namespace Lykke.Service.BlockchainWallets.Modules
             var enpointResolverRegistration = Register.DefaultEndpointResolver(new RabbitMqConventionEndpointResolver
             (
                 transport: "RabbitMq",
-                serializationFormat: "protobuf",
+                serializationFormat: "messagepack",
                 environment: "lykke"
             ));
 
