@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Lykke.Service.BlockchainWallets.Core.Services;
@@ -27,9 +29,9 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         [HttpPost("by-client-ids/{clientId}")]
         public async Task<IActionResult> CreateWallet([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
         {
-            if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, clientId))
+            if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, clientId, out var badRequest))
             {
-                return BadRequest();
+                return badRequest;
             }
 
             if (!await _blockchainIntegrationService.AssetIsSupportedAsync(integrationLayerId, integrationLayerAssetId))
@@ -53,9 +55,9 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         [HttpDelete("by-client-ids/{clientId}")]
         public async Task<IActionResult> DeleteWallet([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
         {
-            if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, clientId))
+            if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, clientId, out var badRequest))
             {
-                return BadRequest();
+                return badRequest;
             }
 
             if (!await _blockchainIntegrationService.AssetIsSupportedAsync(integrationLayerId, integrationLayerAssetId))
@@ -76,9 +78,9 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         [HttpGet("by-client-ids/{clientId}/address")]
         public async Task<IActionResult> GetAddress([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
         {
-            if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, clientId))
+            if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, clientId, out var badRequest))
             {
-                return BadRequest();
+                return badRequest;
             }
 
             var address = await _walletService.GetAddressAsync(integrationLayerId, integrationLayerAssetId, clientId);
@@ -97,9 +99,9 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         [HttpGet("by-addresses/{address}/client-id")]
         public async Task<IActionResult> GetClientId([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] string address)
         {
-            if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, address))
+            if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, address, out var badRequest))
             {
-                return BadRequest();
+                return badRequest;
             }
 
             var clientId = await _walletService.GetClientIdAsync(integrationLayerId, integrationLayerAssetId, address);
@@ -115,18 +117,70 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             });
         }
 
-        private static bool ValidateRequest(string integrationLayerId, string integrationLayerAssetId, string address)
+        private bool ValidateRequest(string integrationLayerId, string integrationLayerAssetId, string address, out IActionResult badRequest)
         {
-            return !(string.IsNullOrWhiteSpace(integrationLayerId)      ||
-                     string.IsNullOrWhiteSpace(integrationLayerAssetId) ||
-                     string.IsNullOrWhiteSpace(address));
+            var invalidInputParams = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(integrationLayerId))
+            {
+                invalidInputParams.Add(nameof(integrationLayerId));
+            }
+
+            if (string.IsNullOrWhiteSpace(integrationLayerAssetId))
+            {
+                invalidInputParams.Add(nameof(integrationLayerAssetId));
+            }
+
+            if (string.IsNullOrWhiteSpace(address))
+            {
+                invalidInputParams.Add(nameof(address));
+            }
+
+            if (!invalidInputParams.Any())
+            {
+                badRequest = null;
+
+                return true;
+            }
+            else
+            {
+                badRequest = BadRequest($"One or more input parameters [{string.Join(", ", invalidInputParams)}] are invalid.");
+
+                return false;
+            }
         }
 
-        private static bool ValidateRequest(string integrationLayerId, string integrationLayerAssetId, Guid clientId)
+        private bool ValidateRequest(string integrationLayerId, string integrationLayerAssetId, Guid clientId, out IActionResult badRequest)
         {
-            return !(string.IsNullOrWhiteSpace(integrationLayerId)      ||
-                     string.IsNullOrWhiteSpace(integrationLayerAssetId) ||
-                     clientId == Guid.Empty);
+            var invalidInputParams = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(integrationLayerId))
+            {
+                invalidInputParams.Add(nameof(integrationLayerId));
+            }
+
+            if (string.IsNullOrWhiteSpace(integrationLayerAssetId))
+            {
+                invalidInputParams.Add(nameof(integrationLayerAssetId));
+            }
+
+            if (clientId == Guid.Empty)
+            {
+                invalidInputParams.Add(nameof(clientId));
+            }
+
+            if (!invalidInputParams.Any())
+            {
+                badRequest = null;
+
+                return true;
+            }
+            else
+            {
+                badRequest = BadRequest($"One or more input parameters [{string.Join(", ", invalidInputParams)}] are invalid.");
+
+                return false;
+            }
         }
     }
 }
