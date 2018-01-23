@@ -31,7 +31,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             var signServiceClient = _blockchainIntegrationService.GetSignServiceClient(integrationLayerId);
             if (signServiceClient == null)
             {
-                throw new NotSupportedException($"Blockchain integration [{integrationLayerId}] is not suppoerted.");
+                throw new NotSupportedException($"Blockchain integration [{integrationLayerId}] is not supported.");
             }
             
 
