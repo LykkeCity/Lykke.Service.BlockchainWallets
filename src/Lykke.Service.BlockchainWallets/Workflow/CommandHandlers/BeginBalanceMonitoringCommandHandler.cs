@@ -43,15 +43,7 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
             }
             else
             {
-                await _log.WriteWarningAsync
-                (
-                    component: nameof(BeginBalanceMonitoringCommandHandler),
-                    process:   nameof(Handle),
-                    context:   command.IntegrationLayerId,
-                    info:      "Blockchain integration layer is not supported"
-                );
-
-                return CommandHandlingResult.Fail(TimeSpan.FromMinutes(15));
+                throw new NotSupportedException($"Blockchain integration layer [{command.IntegrationLayerId}] is not supported");
             }
         }
     }
