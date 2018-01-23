@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Service.BlockchainApi.Client;
@@ -35,7 +34,7 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         public async Task<bool> AssetIsSupportedAsync(string integrationLayerId, string assetId)
         {
-            var apiClient = GetApiClient(integrationLayerId);
+            var apiClient = TryGetApiClient(integrationLayerId);
 
             if (apiClient != null)
             {
@@ -45,14 +44,14 @@ namespace Lykke.Service.BlockchainWallets.Services
             return false;
         }
 
-        public IBlockchainApiClient GetApiClient(string integrationLayerId)
+        public IBlockchainApiClient TryGetApiClient(string integrationLayerId)
         {
             return _apiClients.TryGetValue(integrationLayerId, out var client) 
                  ? client
                  : null;
         }
 
-        public IBlockchainSignServiceClient GetSignServiceClient(string integrationLayerId)
+        public IBlockchainSignServiceClient TryGetSignServiceClient(string integrationLayerId)
         {
             return _signServiceClients.TryGetValue(integrationLayerId, out var client)
                  ? client

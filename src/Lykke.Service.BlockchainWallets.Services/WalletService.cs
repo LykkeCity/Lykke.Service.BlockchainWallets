@@ -28,7 +28,7 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         public async Task<string> CreateWalletAsync(string integrationLayerId, string assetId, Guid clientId)
         {
-            var signServiceClient = _blockchainIntegrationService.GetSignServiceClient(integrationLayerId);
+            var signServiceClient = _blockchainIntegrationService.TryGetSignServiceClient(integrationLayerId);
             if (signServiceClient == null)
             {
                 throw new NotSupportedException($"Blockchain integration [{integrationLayerId}] is not supported.");

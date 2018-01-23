@@ -26,7 +26,7 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
 
         public async Task<CommandHandlingResult> Handle(EndBalanceMonitoringCommand command, IEventPublisher publisher)
         {
-            var apiClient = _blockchainIntegrationService.GetApiClient(command.IntegrationLayerId);
+            var apiClient = _blockchainIntegrationService.TryGetApiClient(command.IntegrationLayerId);
 
             if (apiClient != null)
             {
