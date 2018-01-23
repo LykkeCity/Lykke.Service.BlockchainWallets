@@ -26,21 +26,8 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
         public async Task AddAsync(string integrationLayerId, string assetId, Guid clientId, string address)
         {
-            // Wallet entity
-
             var partitionKey = WalletEntity.GetPartitionKey(integrationLayerId, assetId);
             var rowKey       = WalletEntity.GetRowKey(clientId);
-
-            await _walletsTable.InsertAsync(new WalletEntity
-            {
-                PartitionKey = partitionKey,
-                RowKey       = rowKey,
-
-                Address            = address,
-                AssetId            = assetId,
-                ClientId           = clientId,
-                IntegrationLayerId = integrationLayerId
-            });
 
             // Address index
 
@@ -52,6 +39,20 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                 primaryPartitionKey: partitionKey,
                 primaryRowKey:       rowKey
             ));
+
+
+            // Wallet entity
+            
+            await _walletsTable.InsertOrReplaceAsync(new WalletEntity
+            {
+                PartitionKey = partitionKey,
+                RowKey       = rowKey,
+
+                Address            = address,
+                AssetId            = assetId,
+                ClientId           = clientId,
+                IntegrationLayerId = integrationLayerId
+            });
         }
 
         public async Task DeleteIfExistsAsync(string integrationLayerId, string assetId, Guid clientId)
@@ -65,8 +66,8 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             {
                 (var indexPartitionKey, var indexRowKey) = GetAddressIndexKeys(wallet);
 
-                await _walletsTable.DeleteAsync(wallet);
-                await _addressIndexTable.DeleteAsync(indexPartitionKey, indexRowKey);
+                await _walletsTable.DeleteIfExistAsync(wallet.PartitionKey, wallet.RowKey);
+                await _addressIndexTable.DeleteIfExistAsync(indexPartitionKey, indexRowKey);
             }
         }
 
