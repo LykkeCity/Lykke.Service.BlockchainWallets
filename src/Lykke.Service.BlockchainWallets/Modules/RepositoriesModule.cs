@@ -24,8 +24,7 @@ namespace Lykke.Service.BlockchainWallets.Modules
         {
             builder
                 .Register(c => WalletRepository.Create(_dbSettings.Nested(x => x.DataConnString), _log))
-                .As<IWalletRepository>()
-                .SingleInstance();
+                .As<IWalletRepository>();
         }
     }
 }

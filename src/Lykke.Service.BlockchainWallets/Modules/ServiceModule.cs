@@ -40,13 +40,11 @@ namespace Lykke.Service.BlockchainWallets.Modules
 
             builder
                 .RegisterType<HealthService>()
-                .As<IHealthService>()
-                .SingleInstance();
+                .As<IHealthService>();
 
             builder
                 .RegisterType<WalletService>()
-                .As<IWalletService>()
-                .SingleInstance();
+                .As<IWalletService>();
 
             builder
                 .RegisterType<StartupManager>()
