@@ -53,15 +53,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <inheritdoc />
         public async Task<string> CreateWalletAsync(string integrationLayerId, string assetId, Guid clientId)
         {
-            if (string.IsNullOrEmpty(integrationLayerId))
-            {
-                throw new ArgumentException(nameof(integrationLayerId));
-            }
-
-            if (string.IsNullOrEmpty(assetId))
-            {
-                throw new ArgumentException(nameof(assetId));
-            }
+            ValidateInputParameters(integrationLayerId, assetId, clientId);
 
             try
             {
@@ -93,15 +85,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <inheritdoc />
         public async Task<bool> DeleteWalletAsync(string integrationLayerId, string assetId, Guid clientId)
         {
-            if (string.IsNullOrEmpty(integrationLayerId))
-            {
-                throw new ArgumentException(nameof(integrationLayerId));
-            }
-
-            if (string.IsNullOrEmpty(assetId))
-            {
-                throw new ArgumentException(nameof(assetId));
-            }
+            ValidateInputParameters(integrationLayerId, assetId, clientId);
 
             try
             {
@@ -129,15 +113,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <inheritdoc />
         public async Task<string> GetAddressAsync(string integrationLayerId, string assetId, Guid clientId)
         {
-            if (string.IsNullOrEmpty(integrationLayerId))
-            {
-                throw new ArgumentException(nameof(integrationLayerId));
-            }
-
-            if (string.IsNullOrEmpty(assetId))
-            {
-                throw new ArgumentException(nameof(assetId));
-            }
+            ValidateInputParameters(integrationLayerId, assetId, clientId);
 
             var address = await _apiRunner.RunWithRetriesAsync(() => _api.GetAddress
             (
@@ -152,20 +128,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <inheritdoc />
         public async Task<Guid> GetClientIdAsync(string integrationLayerId, string assetId, string address)
         {
-            if (string.IsNullOrEmpty(integrationLayerId))
-            {
-                throw new ArgumentException(nameof(integrationLayerId));
-            }
-
-            if (string.IsNullOrEmpty(assetId))
-            {
-                throw new ArgumentException(nameof(assetId));
-            }
-
-            if (string.IsNullOrEmpty(address))
-            {
-                throw new ArgumentException(nameof(address));
-            }
+            ValidateInputParameters(integrationLayerId, assetId, address);
 
             var clientId = await _apiRunner.RunWithRetriesAsync(() => _api.GetClientId
             (
@@ -180,6 +143,8 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <inheritdoc />
         public async Task<string> TryGetAddressAsync(string integrationLayerId, string assetId, Guid clientId)
         {
+            ValidateInputParameters(integrationLayerId, assetId, clientId);
+
             try
             {
                 return await GetAddressAsync(integrationLayerId, assetId, clientId);
@@ -199,6 +164,8 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <inheritdoc />
         public async Task<Guid?> TryGetClientIdAsync(string integrationLayerId, string assetId, string address)
         {
+            ValidateInputParameters(integrationLayerId, assetId, address);
+
             try
             {
                 return await GetClientIdAsync(integrationLayerId, assetId, address);
@@ -232,6 +199,39 @@ namespace Lykke.Service.BlockchainWallets.Client
                 exception: e,
                 dateTime:  DateTime.UtcNow
             );
+        }
+
+        private static void ValidateInputParameters(string integrationLayerId, string assetId)
+        {
+            if (string.IsNullOrEmpty(integrationLayerId))
+            {
+                throw new ArgumentException(nameof(integrationLayerId));
+            }
+
+            if (string.IsNullOrEmpty(assetId))
+            {
+                throw new ArgumentException(nameof(assetId));
+            }
+        }
+
+        private static void ValidateInputParameters(string integrationLayerId, string assetId, string address)
+        {
+            ValidateInputParameters(integrationLayerId, assetId);
+
+            if (string.IsNullOrEmpty(address))
+            {
+                throw new ArgumentException(nameof(address));
+            }
+        }
+
+        private static void ValidateInputParameters(string integrationLayerId, string assetId, Guid clientId)
+        {
+            ValidateInputParameters(integrationLayerId, assetId);
+
+            if (clientId == Guid.Empty)
+            {
+                throw new ArgumentException(nameof(clientId));
+            }
         }
     }
 }
