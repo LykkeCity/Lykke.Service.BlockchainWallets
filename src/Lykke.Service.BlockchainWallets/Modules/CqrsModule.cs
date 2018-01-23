@@ -34,13 +34,7 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .Register(ctx => new AutofacDependencyResolver(ctx))
                 .As<IDependencyResolver>()
                 .SingleInstance();
-
-            builder
-                .RegisterType<RetryDelayProvider>()
-                .AsSelf()
-                .WithParameter(TypedParameter.From(_settings.RetryDelay))
-                .SingleInstance();
-
+            
             var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory
             {
                 Uri = _settings.RabbitConnectionString
