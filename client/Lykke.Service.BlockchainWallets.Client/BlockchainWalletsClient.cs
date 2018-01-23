@@ -23,7 +23,8 @@ namespace Lykke.Service.BlockchainWallets.Client
             _log    = log;
             HostUrl = hostUrl ?? throw new ArgumentNullException(nameof(hostUrl));
 
-            _httpClient = new HttpClient
+
+            _httpClient = new HttpClient(new HttpErrorLoggingHandler(log))
             {
                 BaseAddress           = new Uri(hostUrl),
                 DefaultRequestHeaders =
@@ -74,12 +75,6 @@ namespace Lykke.Service.BlockchainWallets.Client
             {
                 return null;
             }
-            catch (Exception e)
-            {
-                await LogErrorAsync(e, nameof(GetClientIdAsync));
-
-                throw;
-            }
         }
 
         /// <inheritdoc />
@@ -101,12 +96,6 @@ namespace Lykke.Service.BlockchainWallets.Client
             catch (ErrorResponseException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
                 return false;
-            }
-            catch (Exception e)
-            {
-                await LogErrorAsync(e, nameof(GetClientIdAsync));
-
-                throw;
             }
         }
 
@@ -153,12 +142,6 @@ namespace Lykke.Service.BlockchainWallets.Client
             {
                 return null;
             }
-            catch (Exception e)
-            {
-                await LogErrorAsync(e, nameof(TryGetAddressAsync));
-
-                throw;
-            }
         }
 
         /// <inheritdoc />
@@ -174,12 +157,6 @@ namespace Lykke.Service.BlockchainWallets.Client
             {
                 return null;
             }
-            catch (Exception e)
-            {
-                await LogErrorAsync(e, nameof(TryGetClientIdAsync));
-
-                throw;
-            }
         }
 
         /// <inheritdoc />
@@ -188,19 +165,6 @@ namespace Lykke.Service.BlockchainWallets.Client
             _httpClient?.Dispose();
         }
         
-
-        private async Task LogErrorAsync(Exception e, string process)
-        {
-            await _log.WriteErrorAsync
-            (
-                component: nameof(BlockchainWalletsClient),
-                process:   process,
-                context:   string.Empty,
-                exception: e,
-                dateTime:  DateTime.UtcNow
-            );
-        }
-
         private static void ValidateInputParameters(string integrationLayerId, string assetId)
         {
             if (string.IsNullOrEmpty(integrationLayerId))
