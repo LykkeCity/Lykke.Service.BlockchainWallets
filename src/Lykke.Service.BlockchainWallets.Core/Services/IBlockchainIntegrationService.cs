@@ -6,7 +6,7 @@ namespace Lykke.Service.BlockchainWallets.Core.Services
 {
     public interface IBlockchainIntegrationService
     {
-        Task<bool> AssetIsSupported(string blockchain, string assetId);
+        Task<bool> AssetIsSupportedAsync(string blockchain, string assetId);
 
         IBlockchainApiClient GetApiClient(string integrationLayerId);
 

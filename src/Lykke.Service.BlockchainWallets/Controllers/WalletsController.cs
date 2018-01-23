@@ -32,7 +32,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 return BadRequest();
             }
 
-            if (!await _blockchainIntegrationService.AssetIsSupported(integrationLayerId, integrationLayerAssetId))
+            if (!await _blockchainIntegrationService.AssetIsSupportedAsync(integrationLayerId, integrationLayerAssetId))
             {
                 return NotFound();
             }
@@ -58,7 +58,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 return BadRequest();
             }
 
-            if (!await _blockchainIntegrationService.AssetIsSupported(integrationLayerId, integrationLayerAssetId))
+            if (!await _blockchainIntegrationService.AssetIsSupportedAsync(integrationLayerId, integrationLayerAssetId))
             {
                 return NotFound();
             }

@@ -33,7 +33,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             );
         }
 
-        public async Task<bool> AssetIsSupported(string integrationLayerId, string assetId)
+        public async Task<bool> AssetIsSupportedAsync(string integrationLayerId, string assetId)
         {
             var apiClient = GetApiClient(integrationLayerId);
 
