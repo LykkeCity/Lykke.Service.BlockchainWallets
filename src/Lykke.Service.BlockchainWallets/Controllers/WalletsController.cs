@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Lykke.Common.Api.Contract.Responses;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -33,15 +34,22 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             {
                 return badRequest;
             }
-
+            
             if (!await _blockchainIntegrationService.AssetIsSupportedAsync(integrationLayerId, integrationLayerAssetId))
             {
-                return NotFound();
+                return BadRequest
+                (
+                    ErrorResponse.Create($"Asset [{integrationLayerAssetId}] or/and integration layer [{integrationLayerId}] is not supported.")
+                );
             }
             
             if (await _walletService.WalletExistsAsync(integrationLayerId, integrationLayerAssetId, clientId))
             {
-                return StatusCode((int) HttpStatusCode.Conflict);
+                return StatusCode
+                (
+                    (int) HttpStatusCode.Conflict,
+                    ErrorResponse.Create($"Wallet for specified client [{clientId}] has already been created.")
+                );
             }
 
             var walletAddress = await _walletService.CreateWalletAsync(integrationLayerId, integrationLayerAssetId, clientId);
@@ -62,12 +70,18 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
             if (!await _blockchainIntegrationService.AssetIsSupportedAsync(integrationLayerId, integrationLayerAssetId))
             {
-                return NotFound();
+                return BadRequest
+                (
+                    ErrorResponse.Create($"Asset [{integrationLayerAssetId}] or/and integration layer [{integrationLayerId}] is not supported.")
+                );
             }
 
             if (!await _walletService.WalletExistsAsync(integrationLayerId, integrationLayerAssetId, clientId))
             {
-                return NotFound();
+                return NotFound
+                (
+                    ErrorResponse.Create($"Wallet for specified client [{clientId}] does not exist.")
+                );
             }
 
             await _walletService.DeleteWalletAsync(integrationLayerId, integrationLayerAssetId, clientId);
@@ -87,7 +101,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
             if (string.IsNullOrEmpty(address))
             {
-                return NotFound();
+                return NoContent();
             }
 
             return Ok(new AddressResponse
@@ -108,7 +122,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
             if (!clientId.HasValue)
             {
-                return NotFound();
+                return NoContent();
             }
 
             return Ok(new ClientIdResponse
@@ -144,7 +158,10 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             }
             else
             {
-                badRequest = BadRequest($"One or more input parameters [{string.Join(", ", invalidInputParams)}] are invalid.");
+                badRequest = BadRequest
+                (
+                    ErrorResponse.Create($"One or more input parameters [{string.Join(", ", invalidInputParams)}] are invalid.")
+                );
 
                 return false;
             }
@@ -177,7 +194,10 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             }
             else
             {
-                badRequest = BadRequest($"One or more input parameters [{string.Join(", ", invalidInputParams)}] are invalid.");
+                badRequest = BadRequest
+                (
+                    ErrorResponse.Create($"One or more input parameters [{string.Join(", ", invalidInputParams)}] are invalid.")
+                );
 
                 return false;
             }

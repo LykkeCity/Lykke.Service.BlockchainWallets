@@ -62,14 +62,10 @@ namespace Lykke.Service.BlockchainWallets.Client
                 (
                     integrationLayerId,
                     assetId,
-                    clientId)
-                );
+                    clientId
+                ));
 
                 return newWallet.Address;
-            }
-            catch (ErrorResponseException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
-            {
-                return null;
             }
             catch (ErrorResponseException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
             {
@@ -93,7 +89,7 @@ namespace Lykke.Service.BlockchainWallets.Client
 
                 return true;
             }
-            catch (ErrorResponseException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            catch (ErrorResponseException ex) when (ex.StatusCode == HttpStatusCode.NotFound && ex.Error != null)
             {
                 return false;
             }
@@ -101,6 +97,32 @@ namespace Lykke.Service.BlockchainWallets.Client
 
         /// <inheritdoc />
         public async Task<string> GetAddressAsync(string integrationLayerId, string assetId, Guid clientId)
+        {
+            var address = await TryGetAddressAsync(integrationLayerId, assetId, clientId);
+
+            if (string.IsNullOrEmpty(address))
+            {
+                throw new ResultValidationException("Address not found.");
+            }
+
+            return address;
+        }
+
+        /// <inheritdoc />
+        public async Task<Guid> GetClientIdAsync(string integrationLayerId, string assetId, string address)
+        {
+            var clientId = await TryGetClientIdAsync(integrationLayerId, assetId, address);
+
+            if (!clientId.HasValue)
+            {
+                throw new ResultValidationException("Client not found.");
+            }
+
+            return clientId.Value;
+        }
+
+        /// <inheritdoc />
+        public async Task<string> TryGetAddressAsync(string integrationLayerId, string assetId, Guid clientId)
         {
             ValidateInputParameters(integrationLayerId, assetId, clientId);
 
@@ -111,11 +133,11 @@ namespace Lykke.Service.BlockchainWallets.Client
                 clientId
             ));
 
-            return address.Address;
+            return address?.Address;
         }
 
         /// <inheritdoc />
-        public async Task<Guid> GetClientIdAsync(string integrationLayerId, string assetId, string address)
+        public async Task<Guid?> TryGetClientIdAsync(string integrationLayerId, string assetId, string address)
         {
             ValidateInputParameters(integrationLayerId, assetId, address);
 
@@ -126,37 +148,7 @@ namespace Lykke.Service.BlockchainWallets.Client
                 address
             ));
 
-            return clientId.ClientId;
-        }
-
-        /// <inheritdoc />
-        public async Task<string> TryGetAddressAsync(string integrationLayerId, string assetId, Guid clientId)
-        {
-            ValidateInputParameters(integrationLayerId, assetId, clientId);
-
-            try
-            {
-                return await GetAddressAsync(integrationLayerId, assetId, clientId);
-            }
-            catch (ErrorResponseException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
-            {
-                return null;
-            }
-        }
-
-        /// <inheritdoc />
-        public async Task<Guid?> TryGetClientIdAsync(string integrationLayerId, string assetId, string address)
-        {
-            ValidateInputParameters(integrationLayerId, assetId, address);
-
-            try
-            {
-                return await GetClientIdAsync(integrationLayerId, assetId, address);
-            }
-            catch (ErrorResponseException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
-            {
-                return null;
-            }
+            return clientId?.ClientId;
         }
 
         /// <inheritdoc />
