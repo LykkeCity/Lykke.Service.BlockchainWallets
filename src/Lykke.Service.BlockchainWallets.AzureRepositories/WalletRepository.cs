@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using AzureStorage;
 using AzureStorage.Tables;
 using AzureStorage.Tables.Templates.Index;
+using Common;
 using Common.Log;
 using Lykke.Service.BlockchainWallets.Core.Domain.Wallet;
 using Lykke.SettingsReader;
@@ -26,6 +27,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         public static IWalletRepository Create(IReloadingManager<string> connectionString, ILog log)
         {
             const string tableName = "Wallets";
+            const string indexTableName = "WalletsAddressIndex";
 
             var addressIndexTable = AzureTableStorage<AzureIndex>.Create
             (
@@ -37,7 +39,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             var walletsTable = AzureTableStorage<WalletEntity>.Create
             (
                 connectionString,
-                tableName,
+                indexTableName,
                 log
             );
 
@@ -49,10 +51,9 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             return GetAddressIndexKeys(wallet.IntegrationLayerId, wallet.AssetId, wallet.Address);
         }
 
-        private static (string PartitionKey, string RowKey) GetAddressIndexKeys(string integrationLayerId,
-            string assetId, string address)
+        private static (string PartitionKey, string RowKey) GetAddressIndexKeys(string integrationLayerId, string assetId, string address)
         {
-            var partitionKey = $"AddressIndex-{WalletEntity.GetPartitionKey(integrationLayerId, assetId)}";
+            var partitionKey = $"{integrationLayerId}-{assetId}-{address.CalculateHexHash32(32)}";
             var rowKey = address;
 
             return (partitionKey, rowKey);
@@ -61,7 +62,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
         public async Task AddAsync(string integrationLayerId, string assetId, Guid clientId, string address)
         {
-            var partitionKey = WalletEntity.GetPartitionKey(integrationLayerId, assetId);
+            var partitionKey = WalletEntity.GetPartitionKey(integrationLayerId, assetId, clientId);
             var rowKey = WalletEntity.GetRowKey(clientId);
 
             // Address index
@@ -92,7 +93,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
         public async Task DeleteIfExistsAsync(string integrationLayerId, string assetId, Guid clientId)
         {
-            var partitionKey = WalletEntity.GetPartitionKey(integrationLayerId, assetId);
+            var partitionKey = WalletEntity.GetPartitionKey(integrationLayerId, assetId, clientId);
             var rowKey = WalletEntity.GetRowKey(clientId);
 
             var wallet = await _walletsTable.GetDataAsync(partitionKey, rowKey);
@@ -134,7 +135,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
         public async Task<IWallet> TryGetAsync(string integrationLayerId, string assetId, Guid clientId)
         {
-            var partitionKey = WalletEntity.GetPartitionKey(integrationLayerId, assetId);
+            var partitionKey = WalletEntity.GetPartitionKey(integrationLayerId, assetId, clientId);
             var rowKey = WalletEntity.GetRowKey(clientId);
 
             return await _walletsTable.GetDataAsync(partitionKey, rowKey);
