@@ -73,15 +73,15 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
         public async Task<bool> ExistsAsync(string integrationLayerId, string assetId, string address)
         {
-            return (await GetAsync(integrationLayerId, assetId, address)) != null;
+            return (await TryGetAsync(integrationLayerId, assetId, address)) != null;
         }
 
         public async Task<bool> ExistsAsync(string integrationLayerId, string assetId, Guid clientId)
         {
-            return (await GetAsync(integrationLayerId, assetId, clientId)) != null;
+            return (await TryGetAsync(integrationLayerId, assetId, clientId)) != null;
         }
 
-        public async Task<IWallet> GetAsync(string integrationLayerId, string assetId, string address)
+        public async Task<IWallet> TryGetAsync(string integrationLayerId, string assetId, string address)
         {
             (var indexPartitionKey, var indexRowKey) = GetAddressIndexKeys(integrationLayerId, assetId, address);
 
@@ -99,7 +99,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             }
         }
 
-        public async Task<IWallet> GetAsync(string integrationLayerId, string assetId, Guid clientId)
+        public async Task<IWallet> TryGetAsync(string integrationLayerId, string assetId, Guid clientId)
         {
             var partitionKey = WalletEntity.GetPartitionKey(integrationLayerId, assetId);
             var rowKey       = WalletEntity.GetRowKey(clientId);

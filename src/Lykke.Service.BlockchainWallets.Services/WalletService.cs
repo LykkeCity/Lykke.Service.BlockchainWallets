@@ -58,7 +58,7 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         public async Task DeleteWalletAsync(string integrationLayerId, string assetId, Guid clientId)
         {
-            var wallet  = await _walletRepository.GetAsync(integrationLayerId, assetId, clientId);
+            var wallet  = await _walletRepository.TryGetAsync(integrationLayerId, assetId, clientId);
             var address = wallet.Address;
             var command = new EndBalanceMonitoringCommand
             {
@@ -78,10 +78,10 @@ namespace Lykke.Service.BlockchainWallets.Services
         }
 
         public async Task<string> GetAddressAsync(string integrationLayerId, string assetId, Guid clientId)
-            => (await _walletRepository.GetAsync(integrationLayerId, assetId, clientId))?.Address;
+            => (await _walletRepository.TryGetAsync(integrationLayerId, assetId, clientId))?.Address;
 
         public async Task<Guid?> GetClientIdAsync(string integrationLayerId, string assetId, string address)
-            => (await _walletRepository.GetAsync(integrationLayerId, assetId, address))?.ClientId;
+            => (await _walletRepository.TryGetAsync(integrationLayerId, assetId, address))?.ClientId;
 
         public async Task<bool> WalletExistsAsync(string integrationLayerId, string assetId, Guid clientId)
             => await _walletRepository.ExistsAsync(integrationLayerId, assetId, clientId);
