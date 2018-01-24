@@ -4,6 +4,14 @@
         <name>Lykke.Service.BlockchainWallets.Client</name>
     </assembly>
     <members>
+        <member name="M:Lykke.Service.BlockchainWallets.Client.BlockchainWalletsClient.#ctor(System.Net.Http.HttpClient)">
+            <summary>
+               This constructor intended for testing purposes only.
+            </summary>
+            <param name="httpClient">
+               Instance of mockable httpClient.
+            </param>
+        </member>
         <member name="P:Lykke.Service.BlockchainWallets.Client.BlockchainWalletsClient.HostUrl">
             <inheritdoc />
         </member>

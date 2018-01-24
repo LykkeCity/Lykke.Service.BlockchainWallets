@@ -14,12 +14,10 @@ namespace Lykke.Service.BlockchainWallets.Client
         private readonly IBlockchainWalletsApi _api;
         private readonly ApiRunner _apiRunner;
         private readonly HttpClient _httpClient;
-        private readonly ILog _log;
-
+        
 
         public BlockchainWalletsClient(string hostUrl, ILog log, int retriesCount = 5)
         {
-            _log = log;
             HostUrl = hostUrl ?? throw new ArgumentNullException(nameof(hostUrl));
 
 
@@ -37,6 +35,19 @@ namespace Lykke.Service.BlockchainWallets.Client
 
             _api = RestService.For<IBlockchainWalletsApi>(_httpClient);
             _apiRunner = new ApiRunner(retriesCount);
+        }
+
+        /// <summary>
+        ///    This constructor intended for testing purposes only.
+        /// </summary>
+        /// <param name="httpClient">
+        ///    Instance of mockable httpClient.
+        /// </param>
+        internal BlockchainWalletsClient(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+            _api = RestService.For<IBlockchainWalletsApi>(_httpClient);
+            _apiRunner = new ApiRunner(1);
         }
 
         private static void ValidateInputParameters(string integrationLayerId, string assetId)

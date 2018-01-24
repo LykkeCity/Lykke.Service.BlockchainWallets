@@ -75,8 +75,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             {
                 return BadRequest
                 (
-                    ErrorResponse.Create(
-                        $"Asset [{integrationLayerAssetId}] or/and integration layer [{integrationLayerId}] is not supported.")
+                    ErrorResponse.Create($"Asset [{integrationLayerAssetId}] or/and integration layer [{integrationLayerId}] is not supported.")
                 );
             }
 
