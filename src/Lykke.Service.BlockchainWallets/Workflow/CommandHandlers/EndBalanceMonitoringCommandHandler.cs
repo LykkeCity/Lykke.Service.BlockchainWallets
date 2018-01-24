@@ -6,13 +6,12 @@ using Lykke.Service.BlockchainWallets.Contract.Events;
 using Lykke.Service.BlockchainWallets.Core.Domain.Wallet.Commands;
 using Lykke.Service.BlockchainWallets.Core.Services;
 
-
 namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
 {
     public class EndBalanceMonitoringCommandHandler
     {
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
-        private readonly ILog                          _log;
+        private readonly ILog _log;
 
 
         public EndBalanceMonitoringCommandHandler(
@@ -20,7 +19,7 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
             ILog log)
         {
             _blockchainIntegrationService = blockchainIntegrationService;
-            _log                          = log;
+            _log = log;
         }
 
 
@@ -34,17 +33,16 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
 
                 publisher.PublishEvent(new WalletDeletedEvent
                 {
-                    Address            = command.Address,
-                    AssetId            = command.AssetId,
+                    Address = command.Address,
+                    AssetId = command.AssetId,
                     IntegrationLayerId = command.IntegrationLayerId
                 });
 
                 return CommandHandlingResult.Ok();
             }
-            else
-            {
-                throw new NotSupportedException($"Blockchain integration layer [{command.IntegrationLayerId}] is not supported");
-            }
+
+            throw new NotSupportedException(
+                $"Blockchain integration layer [{command.IntegrationLayerId}] is not supported");
         }
     }
 }

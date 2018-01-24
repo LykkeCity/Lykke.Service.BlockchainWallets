@@ -8,8 +8,8 @@ namespace Lykke.Service.BlockchainWallets.Core.Domain.Wallet
 
         string AssetId { get; set; }
 
-        string IntegrationLayerId { get; set; }
-
         Guid ClientId { get; set; }
+
+        string IntegrationLayerId { get; set; }
     }
 }

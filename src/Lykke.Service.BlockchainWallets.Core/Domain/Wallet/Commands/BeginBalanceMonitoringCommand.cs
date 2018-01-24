@@ -1,6 +1,5 @@
 ﻿using MessagePack;
 
-
 namespace Lykke.Service.BlockchainWallets.Core.Domain.Wallet.Commands
 {
     [MessagePackObject]

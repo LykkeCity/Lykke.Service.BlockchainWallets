@@ -8,41 +8,42 @@ using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Models;
 using Microsoft.AspNetCore.Mvc;
 
-
 namespace Lykke.Service.BlockchainWallets.Controllers
 {
     [Route("api/wallets/{integrationLayerId}/{integrationLayerAssetId}")]
     public class WalletsController : Controller
     {
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
-        private readonly IWalletService                _walletService;
+        private readonly IWalletService _walletService;
 
 
         public WalletsController(
             IBlockchainIntegrationService blockchainIntegrationService,
             IWalletService walletService)
         {
-            _walletService     = walletService;
+            _walletService = walletService;
             _blockchainIntegrationService = blockchainIntegrationService;
         }
 
 
         [HttpPost("by-client-ids/{clientId}")]
-        public async Task<IActionResult> CreateWallet([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
+        public async Task<IActionResult> CreateWallet([FromRoute] string integrationLayerId,
+            [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
         {
             if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, clientId, out var badRequest))
             {
                 return badRequest;
             }
-            
+
             if (!await _blockchainIntegrationService.AssetIsSupportedAsync(integrationLayerId, integrationLayerAssetId))
             {
                 return BadRequest
                 (
-                    ErrorResponse.Create($"Asset [{integrationLayerAssetId}] or/and integration layer [{integrationLayerId}] is not supported.")
+                    ErrorResponse.Create(
+                        $"Asset [{integrationLayerAssetId}] or/and integration layer [{integrationLayerId}] is not supported.")
                 );
             }
-            
+
             if (await _walletService.WalletExistsAsync(integrationLayerId, integrationLayerAssetId, clientId))
             {
                 return StatusCode
@@ -52,7 +53,8 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 );
             }
 
-            var walletAddress = await _walletService.CreateWalletAsync(integrationLayerId, integrationLayerAssetId, clientId);
+            var walletAddress =
+                await _walletService.CreateWalletAsync(integrationLayerId, integrationLayerAssetId, clientId);
 
             return Ok(new WalletCreatedResponse
             {
@@ -61,7 +63,8 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         }
 
         [HttpDelete("by-client-ids/{clientId}")]
-        public async Task<IActionResult> DeleteWallet([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
+        public async Task<IActionResult> DeleteWallet([FromRoute] string integrationLayerId,
+            [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
         {
             if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, clientId, out var badRequest))
             {
@@ -72,7 +75,8 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             {
                 return BadRequest
                 (
-                    ErrorResponse.Create($"Asset [{integrationLayerAssetId}] or/and integration layer [{integrationLayerId}] is not supported.")
+                    ErrorResponse.Create(
+                        $"Asset [{integrationLayerAssetId}] or/and integration layer [{integrationLayerId}] is not supported.")
                 );
             }
 
@@ -90,7 +94,8 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         }
 
         [HttpGet("by-client-ids/{clientId}/address")]
-        public async Task<IActionResult> GetAddress([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
+        public async Task<IActionResult> GetAddress([FromRoute] string integrationLayerId,
+            [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
         {
             if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, clientId, out var badRequest))
             {
@@ -111,7 +116,8 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         }
 
         [HttpGet("by-addresses/{address}/client-id")]
-        public async Task<IActionResult> GetClientId([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] string address)
+        public async Task<IActionResult> GetClientId([FromRoute] string integrationLayerId,
+            [FromRoute] string integrationLayerAssetId, [FromRoute] string address)
         {
             if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, address, out var badRequest))
             {
@@ -131,7 +137,8 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             });
         }
 
-        private bool ValidateRequest(string integrationLayerId, string integrationLayerAssetId, string address, out IActionResult badRequest)
+        private bool ValidateRequest(string integrationLayerId, string integrationLayerAssetId, string address,
+            out IActionResult badRequest)
         {
             var invalidInputParams = new List<string>();
 
@@ -156,18 +163,18 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
                 return true;
             }
-            else
-            {
-                badRequest = BadRequest
-                (
-                    ErrorResponse.Create($"One or more input parameters [{string.Join(", ", invalidInputParams)}] are invalid.")
-                );
 
-                return false;
-            }
+            badRequest = BadRequest
+            (
+                ErrorResponse.Create(
+                    $"One or more input parameters [{string.Join(", ", invalidInputParams)}] are invalid.")
+            );
+
+            return false;
         }
 
-        private bool ValidateRequest(string integrationLayerId, string integrationLayerAssetId, Guid clientId, out IActionResult badRequest)
+        private bool ValidateRequest(string integrationLayerId, string integrationLayerAssetId, Guid clientId,
+            out IActionResult badRequest)
         {
             var invalidInputParams = new List<string>();
 
@@ -192,15 +199,14 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
                 return true;
             }
-            else
-            {
-                badRequest = BadRequest
-                (
-                    ErrorResponse.Create($"One or more input parameters [{string.Join(", ", invalidInputParams)}] are invalid.")
-                );
 
-                return false;
-            }
+            badRequest = BadRequest
+            (
+                ErrorResponse.Create(
+                    $"One or more input parameters [{string.Join(", ", invalidInputParams)}] are invalid.")
+            );
+
+            return false;
         }
     }
 }

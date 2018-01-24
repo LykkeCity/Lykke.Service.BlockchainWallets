@@ -10,7 +10,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         public ErrorResponseException(ErrorResponse error, ApiException inner) :
             base(error.GetSummaryMessage() ?? string.Empty, inner)
         {
-            Error      = error;
+            Error = error;
             StatusCode = inner.StatusCode;
         }
 

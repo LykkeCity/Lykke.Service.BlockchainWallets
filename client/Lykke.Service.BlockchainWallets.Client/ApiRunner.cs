@@ -79,6 +79,27 @@ namespace Lykke.Service.BlockchainWallets.Client
                 });
         }
 
+        private static bool FilterRetryExceptions(Exception ex)
+        {
+            if (ex.InnerException is ApiException innerApiException)
+            {
+                return innerApiException.StatusCode == HttpStatusCode.InternalServerError ||
+                       innerApiException.StatusCode == HttpStatusCode.BadGateway ||
+                       innerApiException.StatusCode == HttpStatusCode.ServiceUnavailable ||
+                       innerApiException.StatusCode == HttpStatusCode.GatewayTimeout;
+            }
+
+            if (ex is ApiException apiException)
+            {
+                return apiException.StatusCode == HttpStatusCode.InternalServerError ||
+                       apiException.StatusCode == HttpStatusCode.BadGateway ||
+                       apiException.StatusCode == HttpStatusCode.ServiceUnavailable ||
+                       apiException.StatusCode == HttpStatusCode.GatewayTimeout;
+            }
+
+            return true;
+        }
+
         private static ErrorResponse GetErrorResponse(ApiException ex)
         {
             ErrorResponse errorResponse;
@@ -93,27 +114,6 @@ namespace Lykke.Service.BlockchainWallets.Client
             }
 
             return errorResponse ?? ErrorResponse.Create("Blockchain API is not specify the error response");
-        }
-
-        private static bool FilterRetryExceptions(Exception ex)
-        {
-            if (ex.InnerException is ApiException innerApiException)
-            {
-                return innerApiException.StatusCode == HttpStatusCode.InternalServerError ||
-                        innerApiException.StatusCode == HttpStatusCode.BadGateway         ||
-                        innerApiException.StatusCode == HttpStatusCode.ServiceUnavailable ||
-                        innerApiException.StatusCode == HttpStatusCode.GatewayTimeout;
-            }
-
-            if (ex is ApiException apiException)
-            {
-                return apiException.StatusCode == HttpStatusCode.InternalServerError ||
-                       apiException.StatusCode == HttpStatusCode.BadGateway          ||
-                       apiException.StatusCode == HttpStatusCode.ServiceUnavailable  ||
-                       apiException.StatusCode == HttpStatusCode.GatewayTimeout;
-            }
-
-            return true;
         }
 
         private static TimeSpan GetRetryDelay(int retryAttempt)

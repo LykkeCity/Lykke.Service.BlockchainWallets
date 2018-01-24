@@ -3,6 +3,7 @@ using System.Net;
 using Lykke.Common.Api.Contract.Responses;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.PlatformAbstractions;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Service.BlockchainWallets.Controllers
@@ -19,28 +20,28 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         }
 
         /// <summary>
-        /// Checks service is alive
+        ///     Checks service is alive
         /// </summary>
         /// <returns></returns>
         [HttpGet]
         [SwaggerOperation("IsAlive")]
-        [ProducesResponseType(typeof(IsAliveResponse), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(IsAliveResponse), (int) HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.InternalServerError)]
         public IActionResult Get()
         {
             var healthViloationMessage = _healthService.GetHealthViolationMessage();
             if (healthViloationMessage != null)
             {
                 return StatusCode(
-                    (int)HttpStatusCode.InternalServerError,
+                    (int) HttpStatusCode.InternalServerError,
                     ErrorResponse.Create($"Service is unhealthy: {healthViloationMessage}"));
             }
 
             // NOTE: Feel free to extend IsAliveResponse, to display job-specific indicators
             return Ok(new IsAliveResponse
             {
-                Name = Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationName,
-                Version = Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion,
+                Name = PlatformServices.Default.Application.ApplicationName,
+                Version = PlatformServices.Default.Application.ApplicationVersion,
                 Env = Program.EnvInfo,
 #if DEBUG
                 IsDebug = true,

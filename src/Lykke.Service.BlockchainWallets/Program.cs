@@ -12,12 +12,13 @@ namespace Lykke.Service.BlockchainWallets
 
         public static async Task Main(string[] args)
         {
-            Console.WriteLine($"{PlatformServices.Default.Application.ApplicationName} version {PlatformServices.Default.Application.ApplicationVersion}");
+            Console.WriteLine(
+                $"{PlatformServices.Default.Application.ApplicationName} version {PlatformServices.Default.Application.ApplicationVersion}");
 #if DEBUG
             Console.WriteLine("Is DEBUG");
 #else
             Console.WriteLine("Is RELEASE");
-#endif           
+#endif
             Console.WriteLine($"ENV_INFO: {EnvInfo}");
 
             try

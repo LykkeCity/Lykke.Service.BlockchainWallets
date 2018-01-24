@@ -8,9 +8,6 @@ namespace Lykke.Service.BlockchainWallets.Client
 {
     internal interface IBlockchainWalletsApi
     {
-        [Get("/api/isalive")]
-        Task<IsAliveResponse> GetIsAliveAsync();
-
         [Post("/api/wallets/{integrationLayerId}/{assetId}/by-client-ids/{clientId}")]
         Task<WalletResponse> CreateWallet(string integrationLayerId, string assetId, Guid clientId);
 
@@ -22,5 +19,8 @@ namespace Lykke.Service.BlockchainWallets.Client
 
         [Get("/api/wallets/{integrationLayerId}/{assetId}/by-addresses/{address}/client-id")]
         Task<ClientIdResponse> GetClientId(string integrationLayerId, string assetId, string address);
+
+        [Get("/api/isalive")]
+        Task<IsAliveResponse> GetIsAliveAsync();
     }
 }

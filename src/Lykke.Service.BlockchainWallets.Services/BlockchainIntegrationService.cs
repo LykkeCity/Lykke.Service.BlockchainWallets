@@ -6,12 +6,11 @@ using Lykke.Service.BlockchainSignService.Client;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Settings.BlockchainIntegrationSettings;
 
-
 namespace Lykke.Service.BlockchainWallets.Services
 {
     public class BlockchainIntegrationService : IBlockchainIntegrationService
     {
-        private readonly ImmutableDictionary<string, BlockchainApiClient>         _apiClients;
+        private readonly ImmutableDictionary<string, BlockchainApiClient> _apiClients;
         private readonly ImmutableDictionary<string, BlockchainSignServiceClient> _signServiceClients;
 
 
@@ -46,16 +45,16 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         public IBlockchainApiClient TryGetApiClient(string integrationLayerId)
         {
-            return _apiClients.TryGetValue(integrationLayerId, out var client) 
-                 ? client
-                 : null;
+            return _apiClients.TryGetValue(integrationLayerId, out var client)
+                ? client
+                : null;
         }
 
         public IBlockchainSignServiceClient TryGetSignServiceClient(string integrationLayerId)
         {
             return _signServiceClients.TryGetValue(integrationLayerId, out var client)
-                 ? client
-                 : null;
+                ? client
+                : null;
         }
     }
 }

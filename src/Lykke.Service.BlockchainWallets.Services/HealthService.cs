@@ -14,7 +14,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         public IEnumerable<HealthIssue> GetHealthIssues()
         {
             var issues = new HealthIssuesCollection();
-            
+
             return issues;
         }
     }

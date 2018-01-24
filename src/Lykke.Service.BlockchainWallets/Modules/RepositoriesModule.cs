@@ -10,13 +10,13 @@ namespace Lykke.Service.BlockchainWallets.Modules
     public class RepositoriesModule : Module
     {
         private readonly IReloadingManager<DbSettings> _dbSettings;
-        private readonly ILog                          _log;
+        private readonly ILog _log;
 
         public RepositoriesModule(
             IReloadingManager<DbSettings> dbSettings,
-            ILog                          log)
+            ILog log)
         {
-            _log        = log;
+            _log = log;
             _dbSettings = dbSettings;
         }
 

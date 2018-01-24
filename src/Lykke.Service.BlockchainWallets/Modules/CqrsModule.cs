@@ -9,18 +9,17 @@ using Lykke.Cqrs;
 using Lykke.Messaging;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Contract.Events;
-using Lykke.Service.BlockchainWallets.Core.Domain.Wallet;
 using Lykke.Service.BlockchainWallets.Core.Domain.Wallet.Commands;
 using Lykke.Service.BlockchainWallets.Core.Settings.ServiceSettings;
-using Lykke.Service.BlockchainWallets.Workflow;
 using Lykke.Service.BlockchainWallets.Workflow.CommandHandlers;
+using RabbitMQ.Client;
 
 namespace Lykke.Service.BlockchainWallets.Modules
 {
     public class CqrsModule : Module
     {
-        private readonly CqrsSettings _settings;
         private readonly ILog _log;
+        private readonly CqrsSettings _settings;
 
         public CqrsModule(CqrsSettings settings, ILog log)
         {
@@ -34,8 +33,8 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .Register(ctx => new AutofacDependencyResolver(ctx))
                 .As<IDependencyResolver>()
                 .SingleInstance();
-            
-            var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory
+
+            var rabbitMqSettings = new ConnectionFactory
             {
                 Uri = _settings.RabbitConnectionString
             };
@@ -81,8 +80,8 @@ namespace Lykke.Service.BlockchainWallets.Modules
 
             var enpointResolverRegistration = Register.DefaultEndpointResolver(new RabbitMqConventionEndpointResolver
             (
-                transport: "RabbitMq",
-                serializationFormat: "messagepack",
+                "RabbitMq",
+                "messagepack",
                 environment: "lykke"
             ));
 
@@ -91,37 +90,26 @@ namespace Lykke.Service.BlockchainWallets.Modules
 
             var boundedContextRegistration = Register.BoundedContext(BlockchainWalletsBoundedContext.Name)
                 .FailedCommandRetryDelay(defaultRetryDelay)
-                
                 .ListeningCommands(typeof(BeginBalanceMonitoringCommand))
                 .On(defaultRoute)
                 .WithCommandsHandler<BeginBalanceMonitoringCommandHandler>()
-                
                 .ListeningCommands(typeof(EndBalanceMonitoringCommand))
                 .On(defaultRoute)
                 .WithCommandsHandler<EndBalanceMonitoringCommandHandler>()
-
                 .PublishingCommands(typeof(BeginBalanceMonitoringCommand), typeof(EndBalanceMonitoringCommand))
                 .To(BlockchainWalletsBoundedContext.Name)
                 .With(defaultRoute)
-                
                 .PublishingEvents(typeof(WalletCreatedEvent), typeof(WalletDeletedEvent))
                 .With("events")
-
                 .ProcessingOptions(defaultRoute).MultiThreaded(8).QueueCapacity(1024);
 
             return new CqrsEngine
             (
-                log: _log,
-                dependencyResolver: ctx.Resolve<IDependencyResolver>(),
-                messagingEngine: messagingEngine,
-                endpointProvider: new DefaultEndpointProvider(),
-                createMissingEndpoints: true,
-                registrations: new IRegistration[]
-                {
-                    enpointResolverRegistration,
-                    boundedContextRegistration
-                }
-            );
+                _log,
+                ctx.Resolve<IDependencyResolver>(),
+                messagingEngine,
+                new DefaultEndpointProvider(),
+                true, enpointResolverRegistration, boundedContextRegistration);
         }
     }
 }

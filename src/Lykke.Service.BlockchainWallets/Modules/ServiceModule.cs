@@ -4,13 +4,12 @@ using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Settings.BlockchainIntegrationSettings;
 using Lykke.Service.BlockchainWallets.Services;
 
-
 namespace Lykke.Service.BlockchainWallets.Modules
 {
     public class ServiceModule : Module
     {
-        private readonly ILog                           _log;
         private readonly BlockchainsIntegrationSettings _blockchainsIntegrationSettings;
+        private readonly ILog _log;
 
 
         public ServiceModule(
@@ -18,7 +17,7 @@ namespace Lykke.Service.BlockchainWallets.Modules
             ILog log)
         {
             _blockchainsIntegrationSettings = blockchainsIntegrationSettings;
-            _log                            = log;
+            _log = log;
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -32,7 +31,7 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .RegisterInstance(_log)
                 .As<ILog>()
                 .SingleInstance();
-            
+
             builder
                 .RegisterType<BlockchainIntegrationService>()
                 .As<IBlockchainIntegrationService>()

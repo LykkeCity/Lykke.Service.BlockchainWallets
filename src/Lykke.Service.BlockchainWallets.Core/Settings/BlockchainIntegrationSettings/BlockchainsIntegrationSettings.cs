@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 
-
 namespace Lykke.Service.BlockchainWallets.Core.Settings.BlockchainIntegrationSettings
 {
     public class BlockchainsIntegrationSettings

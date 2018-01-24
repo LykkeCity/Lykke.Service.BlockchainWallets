@@ -7,26 +7,25 @@ using Lykke.Common.Api.Contract.Responses;
 using Microsoft.Extensions.PlatformAbstractions;
 using Refit;
 
-
 namespace Lykke.Service.BlockchainWallets.Client
 {
     public class BlockchainWalletsClient : IBlockchainWalletsClient, IDisposable
     {
         private readonly IBlockchainWalletsApi _api;
-        private readonly ApiRunner             _apiRunner;
-        private readonly HttpClient            _httpClient;
-        private readonly ILog                  _log;
+        private readonly ApiRunner _apiRunner;
+        private readonly HttpClient _httpClient;
+        private readonly ILog _log;
 
 
         public BlockchainWalletsClient(string hostUrl, ILog log, int retriesCount = 5)
         {
-            _log    = log;
+            _log = log;
             HostUrl = hostUrl ?? throw new ArgumentNullException(nameof(hostUrl));
 
 
             _httpClient = new HttpClient(new HttpErrorLoggingHandler(log))
             {
-                BaseAddress           = new Uri(hostUrl),
+                BaseAddress = new Uri(hostUrl),
                 DefaultRequestHeaders =
                 {
                     {
@@ -36,8 +35,41 @@ namespace Lykke.Service.BlockchainWallets.Client
                 }
             };
 
-            _api       = RestService.For<IBlockchainWalletsApi>(_httpClient);
+            _api = RestService.For<IBlockchainWalletsApi>(_httpClient);
             _apiRunner = new ApiRunner(retriesCount);
+        }
+
+        private static void ValidateInputParameters(string integrationLayerId, string assetId)
+        {
+            if (string.IsNullOrEmpty(integrationLayerId))
+            {
+                throw new ArgumentException(nameof(integrationLayerId));
+            }
+
+            if (string.IsNullOrEmpty(assetId))
+            {
+                throw new ArgumentException(nameof(assetId));
+            }
+        }
+
+        private static void ValidateInputParameters(string integrationLayerId, string assetId, string address)
+        {
+            ValidateInputParameters(integrationLayerId, assetId);
+
+            if (string.IsNullOrEmpty(address))
+            {
+                throw new ArgumentException(nameof(address));
+            }
+        }
+
+        private static void ValidateInputParameters(string integrationLayerId, string assetId, Guid clientId)
+        {
+            ValidateInputParameters(integrationLayerId, assetId);
+
+            if (clientId == Guid.Empty)
+            {
+                throw new ArgumentException(nameof(clientId));
+            }
         }
 
 
@@ -155,39 +187,6 @@ namespace Lykke.Service.BlockchainWallets.Client
         public void Dispose()
         {
             _httpClient?.Dispose();
-        }
-        
-        private static void ValidateInputParameters(string integrationLayerId, string assetId)
-        {
-            if (string.IsNullOrEmpty(integrationLayerId))
-            {
-                throw new ArgumentException(nameof(integrationLayerId));
-            }
-
-            if (string.IsNullOrEmpty(assetId))
-            {
-                throw new ArgumentException(nameof(assetId));
-            }
-        }
-
-        private static void ValidateInputParameters(string integrationLayerId, string assetId, string address)
-        {
-            ValidateInputParameters(integrationLayerId, assetId);
-
-            if (string.IsNullOrEmpty(address))
-            {
-                throw new ArgumentException(nameof(address));
-            }
-        }
-
-        private static void ValidateInputParameters(string integrationLayerId, string assetId, Guid clientId)
-        {
-            ValidateInputParameters(integrationLayerId, assetId);
-
-            if (clientId == Guid.Empty)
-            {
-                throw new ArgumentException(nameof(clientId));
-            }
         }
     }
 }

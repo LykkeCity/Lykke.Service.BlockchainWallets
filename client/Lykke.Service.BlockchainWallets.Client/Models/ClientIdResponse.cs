@@ -3,12 +3,12 @@
 namespace Lykke.Service.BlockchainWallets.Client.Models
 {
     /// <summary>
-    ///    Client id.
+    ///     Client id.
     /// </summary>
     public class ClientIdResponse
     {
         /// <summary>
-        ///    Lykke client id.
+        ///     Lykke client id.
         /// </summary>
         public Guid ClientId { get; set; }
     }

@@ -6,6 +6,16 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 {
     public class WalletEntity : AzureTableEntity, IWallet
     {
+        public static string GetPartitionKey(string integrationLayerId, string assetId)
+        {
+            return $"{integrationLayerId}-{assetId}";
+        }
+
+        public static string GetRowKey(Guid clientId)
+        {
+            return $"{clientId:N}";
+        }
+
         public string Address { get; set; }
 
         public string AssetId { get; set; }
@@ -13,12 +23,5 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         public string IntegrationLayerId { get; set; }
 
         public Guid ClientId { get; set; }
-
-
-        public static string GetPartitionKey(string integrationLayerId, string assetId)
-            => $"{integrationLayerId}-{assetId}";
-
-        public static string GetRowKey(Guid clientId)
-            => $"{clientId:N}";
     }
 }

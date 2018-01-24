@@ -4,14 +4,14 @@ namespace Lykke.Service.BlockchainWallets.Core.Settings.BlockchainIntegrationSet
 {
     public class BlockchainSettings
     {
-        public string Type { get; set; }
-
         [HttpCheck("/api/isalive")]
         public string ApiUrl { get; set; }
+
+        public string HotWalletAddress { get; set; }
 
         [HttpCheck("/api/isalive")]
         public string SignFacadeUrl { get; set; }
 
-        public string HotWalletAddress { get; set; }
+        public string Type { get; set; }
     }
 }

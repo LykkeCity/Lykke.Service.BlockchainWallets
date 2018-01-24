@@ -12,7 +12,7 @@ namespace Lykke.Service.BlockchainWallets.Core.Domain.Wallet
         Task<bool> ExistsAsync(string integrationLayerId, string assetId, string address);
 
         Task<bool> ExistsAsync(string integrationLayerId, string assetId, Guid clientId);
-        
+
         Task<IWallet> TryGetAsync(string integrationLayerId, string assetId, string address);
 
         Task<IWallet> TryGetAsync(string integrationLayerId, string assetId, Guid clientId);

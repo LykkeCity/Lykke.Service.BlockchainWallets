@@ -19,7 +19,8 @@ namespace Lykke.Service.BlockchainWallets.Client
             _log = log;
         }
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+            CancellationToken cancellationToken)
         {
             var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
             var id = Guid.NewGuid();
@@ -31,6 +32,20 @@ namespace Lykke.Service.BlockchainWallets.Client
             }
 
             return response;
+        }
+
+        private static bool IsTextBasedContentType(HttpHeaders headers)
+        {
+            string[] types = {"html", "text", "xml", "json", "txt", "x-www-form-urlencoded"};
+
+            if (!headers.TryGetValues("Content-Type", out var values))
+            {
+                return false;
+            }
+
+            var header = string.Join(" ", values).ToLowerInvariant();
+
+            return types.Any(t => header.Contains(t));
         }
 
         private async Task LogRequestAsync(HttpRequestMessage request, Guid id)
@@ -68,7 +83,8 @@ namespace Lykke.Service.BlockchainWallets.Client
         {
             var message = new StringBuilder();
 
-            message.AppendLine($"Response {id}: {(int)response.StatusCode} {response.StatusCode} - {response.ReasonPhrase}");
+            message.AppendLine(
+                $"Response {id}: {(int) response.StatusCode} {response.StatusCode} - {response.ReasonPhrase}");
 
             foreach (var header in response.Headers)
             {
@@ -93,19 +109,6 @@ namespace Lykke.Service.BlockchainWallets.Client
             }
 
             _log.WriteWarning("HTTP API response <-", message.ToString(), "Response status is non success");
-        }
-
-        private static bool IsTextBasedContentType(HttpHeaders headers)
-        {
-            string[] types = { "html", "text", "xml", "json", "txt", "x-www-form-urlencoded" };
-
-            if (!headers.TryGetValues("Content-Type", out var values))
-            {
-                return false;
-            }
-            var header = string.Join(" ", values).ToLowerInvariant();
-
-            return types.Any(t => header.Contains(t));
         }
     }
 }

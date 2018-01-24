@@ -9,7 +9,7 @@
         {
             return new HealthIssue
             {
-                Type  = type,
+                Type = type,
                 Value = value
             };
         }
