@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWal
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "contract", "contract", "{498AADC5-2423-4ED2-9F06-5762EBC8BE5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Service.BlockchainWallets.Contract", "src\contract\Lykke.Service.BlockchainWallets.Contract\Lykke.Service.BlockchainWallets.Contract.csproj", "{57F25327-F0BB-4751-93F0-C3A62ECA50B0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Service.BlockchainWallets.Contract", "contract\Lykke.Service.BlockchainWallets.Contract\Lykke.Service.BlockchainWallets.Contract.csproj", "{57F25327-F0BB-4751-93F0-C3A62ECA50B0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

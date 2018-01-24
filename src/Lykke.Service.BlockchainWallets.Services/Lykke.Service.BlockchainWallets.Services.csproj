@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\contract\Lykke.Service.BlockchainWallets.Contract\Lykke.Service.BlockchainWallets.Contract.csproj" />
+    <ProjectReference Include="..\..\contract\Lykke.Service.BlockchainWallets.Contract\Lykke.Service.BlockchainWallets.Contract.csproj" />
     <ProjectReference Include="..\Lykke.Service.BlockchainWallets.Core\Lykke.Service.BlockchainWallets.Core.csproj" />
   </ItemGroup>
 
