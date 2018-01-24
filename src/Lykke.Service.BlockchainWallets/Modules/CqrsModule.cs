@@ -84,23 +84,27 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 "messagepack",
                 environment: "lykke"
             ));
+            
 
-            const string defaultPipeline = "commands";
             const string defaultRoute = "self";
 
             var boundedContextRegistration = Register.BoundedContext(BlockchainWalletsBoundedContext.Name)
                 .FailedCommandRetryDelay(defaultRetryDelay)
                 .ListeningCommands(typeof(BeginBalanceMonitoringCommand))
                 .On(defaultRoute)
+
                 .WithCommandsHandler<BeginBalanceMonitoringCommandHandler>()
                 .ListeningCommands(typeof(EndBalanceMonitoringCommand))
                 .On(defaultRoute)
+
                 .WithCommandsHandler<EndBalanceMonitoringCommandHandler>()
                 .PublishingCommands(typeof(BeginBalanceMonitoringCommand), typeof(EndBalanceMonitoringCommand))
                 .To(BlockchainWalletsBoundedContext.Name)
                 .With(defaultRoute)
+
                 .PublishingEvents(typeof(WalletCreatedEvent), typeof(WalletDeletedEvent))
-                .With("events")
+                .With(BlockchainWalletsBoundedContext.EventsRoute)
+
                 .ProcessingOptions(defaultRoute).MultiThreaded(8).QueueCapacity(1024);
 
             return new CqrsEngine
