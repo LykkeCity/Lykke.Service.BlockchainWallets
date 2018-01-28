@@ -32,14 +32,14 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             var addressIndexTable = AzureTableStorage<AzureIndex>.Create
             (
                 connectionString,
-                tableName,
+                indexTableName,
                 log
             );
 
             var walletsTable = AzureTableStorage<WalletEntity>.Create
             (
                 connectionString,
-                indexTableName,
+                tableName,
                 log
             );
 
