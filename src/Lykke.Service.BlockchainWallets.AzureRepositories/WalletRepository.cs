@@ -53,7 +53,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
         private static (string PartitionKey, string RowKey) GetAddressIndexKeys(string integrationLayerId, string assetId, string address)
         {
-            var partitionKey = $"{integrationLayerId}-{assetId}-{address.CalculateHexHash32(32)}";
+            var partitionKey = $"{integrationLayerId}-{assetId}-{address.CalculateHexHash32(3)}";
             var rowKey = address;
 
             return (partitionKey, rowKey);
