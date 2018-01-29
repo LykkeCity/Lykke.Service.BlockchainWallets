@@ -18,6 +18,16 @@ namespace Lykke.Service.BlockchainWallets.Services
             BlockchainsIntegrationSettings settings,
             ILog log)
         {
+            foreach (var blockchain in settings.Blockchains)
+            {
+                log.WriteInfo
+                (
+                    "Blockchains registration",
+                    "",
+                    $"Registering blockchain: {blockchain.Type} -> \r\nAPI: {blockchain.ApiUrl}\r\nSign facade:{blockchain.SignFacadeUrl}\r\nHW: {blockchain.HotWalletAddress}"
+                );
+            }
+
             _apiClients = settings.Blockchains.ToImmutableDictionary
             (
                 x => x.Type,
