@@ -5,8 +5,6 @@ namespace Lykke.Service.BlockchainWallets.Core.Services
 {
     public interface IWalletService
     {
-        Task ConvertDefaultToAdditionalAsync(string integrationLayerId, string assetId);
-
         Task<string> CreateWalletAsync(string integrationLayerId, string assetId, Guid clientId);
 
         Task<bool> DefaultWalletExistsAsync(string integrationLayerId, string assetId, Guid clientId);

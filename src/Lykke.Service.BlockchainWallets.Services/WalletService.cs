@@ -17,21 +17,18 @@ namespace Lykke.Service.BlockchainWallets.Services
         private readonly ICqrsEngine _cqrsEngine;
         private readonly IWalletRepository _walletRepository;
         private readonly IAdditionalWalletRepository _additionalWalletRepository;
-        private readonly BlockchainWalletsSettings _settings;
 
 
         public WalletService(
             ICqrsEngine cqrsEngine,
             IBlockchainIntegrationService blockchainIntegrationService,
             IWalletRepository walletRepository,
-            IAdditionalWalletRepository additionalWalletRepository,
-            BlockchainWalletsSettings settings)
+            IAdditionalWalletRepository additionalWalletRepository)
         {
             _blockchainIntegrationService = blockchainIntegrationService;
             _cqrsEngine = cqrsEngine;
             _walletRepository = walletRepository;
             _additionalWalletRepository = additionalWalletRepository;
-            _settings = settings;
         }
 
         private async Task<bool> AdditionalWalletExistsAsync(string integrationLayerId, string assetId, Guid clientId)
@@ -39,34 +36,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             return await _additionalWalletRepository.ExistsAsync(integrationLayerId, assetId, clientId);
         }
 
-        public async Task ConvertDefaultToAdditionalAsync(string integrationLayerId, string assetId)
-        {
-            if (_settings.AllowConversion)
-            {
-                string continuationToken = null;
-
-                do
-                {
-                    IEnumerable<IWallet> wallets;
-
-                    (wallets, continuationToken) = await _walletRepository.GetAsync(integrationLayerId, assetId, 100, continuationToken);
-
-                    var tasks = wallets.Select(async x =>
-                    {
-                        await _additionalWalletRepository.AddAsync(x.IntegrationLayerId, x.AssetId, x.ClientId, x.Address);
-                        await _walletRepository.DeleteIfExistsAsync(x.IntegrationLayerId, x.AssetId, x.ClientId);
-                    });
-
-                    await Task.WhenAll(tasks);
-
-                } while (continuationToken != null);
-            }
-            else
-            {
-                throw new InvalidOperationException("Conversion should be allowed.");
-            }
-        }
-
+        
         public async Task<string> CreateWalletAsync(string integrationLayerId, string assetId, Guid clientId)
         {
             var signServiceClient = _blockchainIntegrationService.TryGetSignServiceClient(integrationLayerId);

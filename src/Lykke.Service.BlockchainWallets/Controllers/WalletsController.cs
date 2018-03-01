@@ -25,15 +25,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             _blockchainIntegrationService = blockchainIntegrationService;
         }
 
-
-        [HttpPost("convert-default-to-additional")]
-        public async Task<IActionResult> ConvertDefaultToAdditional([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId)
-        {
-            await _walletService.ConvertDefaultToAdditionalAsync(integrationLayerId, integrationLayerAssetId);
-
-            return Ok();
-        }
-
+        
         [HttpPost("by-client-ids/{clientId}")]
         public async Task<IActionResult> CreateWallet([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
         {
