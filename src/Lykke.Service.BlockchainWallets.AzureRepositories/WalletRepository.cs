@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AzureStorage;
 using AzureStorage.Tables;
@@ -7,6 +8,7 @@ using Common;
 using Common.Log;
 using Lykke.Service.BlockchainWallets.Core.Domain.Wallet;
 using Lykke.SettingsReader;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Lykke.Service.BlockchainWallets.AzureRepositories
 {
@@ -115,6 +117,21 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         public async Task<bool> ExistsAsync(string integrationLayerId, string assetId, Guid clientId)
         {
             return await TryGetAsync(integrationLayerId, assetId, clientId) != null;
+        }
+
+        // NB! This method should be used only by conversion utility or in similar cases.
+        internal async Task<(IEnumerable<IWallet> wallets, string continuationToken)> GetAsync(string integrationLayerId, string assetId, int take, string continuationToken)
+        {
+            var filterCondition = TableQuery.CombineFilters
+            (
+                TableQuery.GenerateFilterCondition("IntegrationLayerId", QueryComparisons.Equal, integrationLayerId),
+                TableOperators.And,
+                TableQuery.GenerateFilterCondition("AssetId", QueryComparisons.Equal, assetId)
+            );
+
+            var query = new TableQuery<WalletEntity>().Where(filterCondition);
+
+            return await _walletsTable.GetDataWithContinuationTokenAsync(query, take, continuationToken);
         }
 
         public async Task<IWallet> TryGetAsync(string integrationLayerId, string assetId, string address)

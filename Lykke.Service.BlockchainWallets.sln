@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2024
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets", "src\Lykke.Service.BlockchainWallets\Lykke.Service.BlockchainWallets.csproj", "{E414FDB9-FEEA-4CD0-9BBA-D1541601DF29}"
 EndProject
@@ -23,7 +23,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWal
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "contract", "contract", "{498AADC5-2423-4ED2-9F06-5762EBC8BE5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Service.BlockchainWallets.Contract", "contract\Lykke.Service.BlockchainWallets.Contract\Lykke.Service.BlockchainWallets.Contract.csproj", "{57F25327-F0BB-4751-93F0-C3A62ECA50B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.Contract", "contract\Lykke.Service.BlockchainWallets.Contract\Lykke.Service.BlockchainWallets.Contract.csproj", "{57F25327-F0BB-4751-93F0-C3A62ECA50B0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{99C358B9-1CAD-4D77-A93B-93EE02E3C984}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Service.BlockchainWallets.AddressesConverter", "tools\Lykke.Service.BlockchainWallets.AddressesConverter\Lykke.Service.BlockchainWallets.AddressesConverter.csproj", "{1F03C3AF-2246-4B51-A355-F0FC041881A8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +63,10 @@ Global
 		{57F25327-F0BB-4751-93F0-C3A62ECA50B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57F25327-F0BB-4751-93F0-C3A62ECA50B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57F25327-F0BB-4751-93F0-C3A62ECA50B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F03C3AF-2246-4B51-A355-F0FC041881A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F03C3AF-2246-4B51-A355-F0FC041881A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F03C3AF-2246-4B51-A355-F0FC041881A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F03C3AF-2246-4B51-A355-F0FC041881A8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -71,6 +79,7 @@ Global
 		{3C300C31-97D3-41E8-A627-C53491BDA28B} = {841F0F6F-78C7-43C8-8B81-C06448C16DA4}
 		{CE98079B-B211-48FB-A023-CC935C7A4DB6} = {8F9036B1-5106-4C69-B2D2-B78EE52687A0}
 		{57F25327-F0BB-4751-93F0-C3A62ECA50B0} = {498AADC5-2423-4ED2-9F06-5762EBC8BE5D}
+		{1F03C3AF-2246-4B51-A355-F0FC041881A8} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C8DE961A-1EFD-437E-B6AC-65490D9ADBE4}

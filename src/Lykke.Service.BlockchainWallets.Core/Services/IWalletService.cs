@@ -7,12 +7,14 @@ namespace Lykke.Service.BlockchainWallets.Core.Services
     {
         Task<string> CreateWalletAsync(string integrationLayerId, string assetId, Guid clientId);
 
-        Task DeleteWalletAsync(string integrationLayerId, string assetId, Guid clientId);
+        Task<bool> DefaultWalletExistsAsync(string integrationLayerId, string assetId, Guid clientId);
 
-        Task<string> GetAddressAsync(string integrationLayerId, string assetId, Guid clientId);
+        Task DeleteWalletsAsync(string integrationLayerId, string assetId, Guid clientId);
+
+        Task<string> GetDefaultAddressAsync(string integrationLayerId, string assetId, Guid clientId);
 
         Task<Guid?> GetClientIdAsync(string integrationLayerId, string assetId, string address);
-
+        
         Task<bool> WalletExistsAsync(string integrationLayerId, string assetId, Guid clientId);
     }
 }
