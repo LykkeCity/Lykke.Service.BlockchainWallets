@@ -119,7 +119,8 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             return await TryGetAsync(integrationLayerId, assetId, clientId) != null;
         }
 
-        public async Task<(IEnumerable<IWallet> wallets, string continuationToken)> GetAsync(string integrationLayerId, string assetId, int take, string continuationToken)
+        // NB! This method should be used only by conversion utility or in similar cases.
+        internal async Task<(IEnumerable<IWallet> wallets, string continuationToken)> GetAsync(string integrationLayerId, string assetId, int take, string continuationToken)
         {
             var filterCondition = TableQuery.CombineFilters
             (
