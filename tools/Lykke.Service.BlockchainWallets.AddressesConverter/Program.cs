@@ -77,7 +77,7 @@ namespace Lykke.Service.BlockchainWallets.AddressesConverter
             var log = new LogToConsole();
             var settings = (new SettingsServiceReloadingManager<AppSettings>(settingsUrl)).Nested(x => x.BlockchainWalletsService.Db.DataConnString);
             
-            var defaultWalletsRepository = WalletRepository.Create(settings, log);
+            var defaultWalletsRepository = (WalletRepository) WalletRepository.Create(settings, log);
             var additionalWalletsRepository = AdditionalWalletRepository.Create(settings, log);
 
             string continuationToken = null;
@@ -110,7 +110,7 @@ namespace Lykke.Service.BlockchainWallets.AddressesConverter
                     );
 
                     Console.SetCursorPosition(0, Console.CursorTop);
-                    Console.WriteLine($"{++progressCounter} wallets converted");
+                    Console.Write($"{++progressCounter} wallets converted");
                 }
 
 
