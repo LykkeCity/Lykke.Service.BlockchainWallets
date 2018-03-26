@@ -36,7 +36,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             return await _additionalWalletRepository.ExistsAsync(integrationLayerId, assetId, clientId);
         }
 
-        
+
         public async Task<string> CreateWalletAsync(string integrationLayerId, string assetId, Guid clientId)
         {
             var signServiceClient = _blockchainIntegrationService.TryGetSignServiceClient(integrationLayerId);
@@ -121,5 +121,13 @@ namespace Lykke.Service.BlockchainWallets.Services
             return await DefaultWalletExistsAsync(integrationLayerId, assetId, clientId)
                 || await AdditionalWalletExistsAsync(integrationLayerId, assetId, clientId);
         }
-    }
+
+        public async Task<(IEnumerable<IWallet>, string continuationToken)> GetClientWalletsAsync(Guid clientId, int take,
+            string continuationToken)
+        {
+            var (wallets, token) = await _walletRepository.TryGetForClientAsync(clientId, take, continuationToken);
+
+            return (wallets, token);
+        }
+}
 }

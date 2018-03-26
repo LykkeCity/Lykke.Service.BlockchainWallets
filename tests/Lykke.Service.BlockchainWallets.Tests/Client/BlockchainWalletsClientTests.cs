@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Lykke.Common.Api.Contract.Responses;
 using Lykke.Service.BlockchainWallets.Client;
 using Lykke.Service.BlockchainWallets.Client.Models;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Lykke.Service.BlockchainWallets.Tests.Client
@@ -18,21 +20,21 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             var handlerStub = new DelegatingHandlerStub();
             var client = CreateClient(handlerStub);
 
-            var integrationLayerIdCases = new []
+            var integrationLayerIdCases = new[]
             {
                 new { Case = (string) null, IsValid = false },
                 new { Case = "", IsValid = false },
                 new { Case = "EthereumClassic", IsValid = true }
             };
 
-            var integrationLayerAssetIdCases = new []
+            var integrationLayerAssetIdCases = new[]
             {
                 new { Case = (string) null, IsValid = false },
                 new { Case = "", IsValid = false },
                 new { Case = "ETC", IsValid = true }
             };
 
-            var clientIdCases = new []
+            var clientIdCases = new[]
             {
                 new {Case = Guid.Empty, IsValid = false},
                 new {Case = Guid.NewGuid(), IsValid = true}
@@ -45,7 +47,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
                 async (a, b, c) => { await client.GetAddressAsync(a, b, c); },
                 async (a, b, c) => { await client.TryGetAddressAsync(a, b, c); },
             };
-            
+
             foreach (var clientAction in clientActions)
             {
                 foreach (var integrationLayerIdCase in integrationLayerIdCases)
@@ -147,13 +149,13 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
                 Assert.IsType<ErrorResponseException>(e);
             }
         }
-        
+
         [Fact]
         public async Task CreateWalletAsync_Called__Asset_Is_Not_Supported__Exception_Thrown()
         {
             var handlerStub = new DelegatingHandlerStub(HttpStatusCode.BadRequest, new ErrorResponse());
             var client = CreateClient(handlerStub);
-            
+
             try
             {
                 await client.CreateWalletAsync("EthereumClassic", "ETC", Guid.NewGuid());
@@ -170,7 +172,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             var handlerStub = new DelegatingHandlerStub(HttpStatusCode.Conflict, new ErrorResponse());
             var client = CreateClient(handlerStub);
             var response = await client.CreateWalletAsync("EthereumClassic", "ETC", Guid.NewGuid());
-            
+
             Assert.Null(response);
         }
 
@@ -272,12 +274,114 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             }
         }
 
+        [Fact]
+        public async Task GetClientWalletsAsync_Called__Wallets_Exists__Return_ClientWalletResponse()
+        {
+            var clientId = Guid.Parse("25c47ff8-e31e-4913-8e02-8c2512f0111e");
+            var handlerStub = new DelegatingHandlerStub(HttpStatusCode.OK, new ClientWalletsResponse()
+            {
+                ContinuationToken = null,
+                Wallets = new[]
+                {
+                    new ClientWalletResponse()
+                    {
+                        Address = "0x00000000...",
+                        ClientId = clientId,
+                        IntegrationLayerId = "EthereumClassic",
+                        IntegrationLayerAssetId = "ETC"
+                    }
+                }
+
+            });
+            var client = CreateClient(handlerStub);
+
+            var result = await client.TryGetClientWalletsAsync(clientId, 10, null);
+
+            Assert.True(result?.Wallets.FirstOrDefault()?.ClientId == clientId);
+        }
+
+        [Fact]
+        public async Task GetClientWalletsAsync_Called__Wallets_Exists__Return_Many_ClientWalletResponse()
+        {
+            var clientId = Guid.Parse("25c47ff8-e31e-4913-8e02-8c2512f0111e");
+            var counter = 0;
+            
+            #region Responses
+
+            var content1 = new ClientWalletsResponse()
+            {
+                ContinuationToken = "1",
+                Wallets = new[]
+                {
+                    new ClientWalletResponse()
+                    {
+                        Address = "0x00000000...",
+                        ClientId = clientId,
+                        IntegrationLayerId = "EthereumClassic",
+                        IntegrationLayerAssetId = "ETC"
+                    }
+                }
+            };
+
+            var content2 = new ClientWalletsResponse()
+            {
+                ContinuationToken = null,
+                Wallets = new[]
+                {
+                    new ClientWalletResponse()
+                    {
+                        Address = "0x00000001...",//Does not matter
+                        ClientId = clientId,
+                        IntegrationLayerId = "LiteCoin",
+                        IntegrationLayerAssetId = "LTC"
+                    }
+                }
+            };
+
+            #endregion
+
+            var handlerStub = new DelegatingHandlerStub((request, cancellationToken) =>
+            {
+                var content = content1;
+                if (counter > 0)
+                {
+                    content = content2;
+                }
+
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(content))
+                };
+
+                counter++;
+
+                return Task.FromResult(response);
+            });
+
+            var client = CreateClient(handlerStub);
+
+            var result = await client.TryGetAllClientWalletsAsync(clientId, 1);
+
+            Assert.True(result?.Count() == 2);
+            Assert.True(result?.FirstOrDefault()?.ClientId == clientId);
+        }
+
 
         private static BlockchainWalletsClient CreateClient(HttpMessageHandler handlerStub)
         {
             var httpClient = new HttpClient(handlerStub)
             {
                 BaseAddress = new Uri("http://localhost")
+            };
+
+            return new BlockchainWalletsClient(httpClient);
+        }
+
+        private static BlockchainWalletsClient CreateClient()
+        {
+            var httpClient = new HttpClient()
+            {
+                BaseAddress = new Uri("http://localhost:5000")
             };
 
             return new BlockchainWalletsClient(httpClient);

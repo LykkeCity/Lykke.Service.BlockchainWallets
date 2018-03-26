@@ -22,5 +22,8 @@ namespace Lykke.Service.BlockchainWallets.Client
 
         [Get("/api/isalive")]
         Task<IsAliveResponse> GetIsAliveAsync();
+
+        [Get("/api/wallets/all/by-client-ids/{clientId}")]
+        Task<ClientWalletsResponse> GetClientWalletsAsync(Guid clientId, int take, string continuationToken);
     }
 }
