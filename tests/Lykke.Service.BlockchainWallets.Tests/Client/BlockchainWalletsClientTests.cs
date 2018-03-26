@@ -272,12 +272,39 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             }
         }
 
+        [Fact]
+        public async Task GetClientWalletsAsync_Called__()
+        {
+            var handlerStub = new DelegatingHandlerStub(HttpStatusCode.NoContent);
+            var client = CreateClient();
+            var clientId = Guid.Parse("25c47ff8-e31e-4913-8e02-8c2512f0111e");
+
+            try
+            {
+                var result = await client.TryGetClientWalletsAsync(clientId, 10, null);
+            }
+            catch (Exception e)
+            {
+                Assert.IsType<ResultValidationException>(e);
+            }
+        }
+
 
         private static BlockchainWalletsClient CreateClient(HttpMessageHandler handlerStub)
         {
             var httpClient = new HttpClient(handlerStub)
             {
-                BaseAddress = new Uri("http://localhost")
+                BaseAddress = new Uri("http://localhost:5000")
+            };
+
+            return new BlockchainWalletsClient(httpClient);
+        }
+
+        private static BlockchainWalletsClient CreateClient()
+        {
+            var httpClient = new HttpClient()
+            {
+                BaseAddress = new Uri("http://localhost:5000")
             };
 
             return new BlockchainWalletsClient(httpClient);

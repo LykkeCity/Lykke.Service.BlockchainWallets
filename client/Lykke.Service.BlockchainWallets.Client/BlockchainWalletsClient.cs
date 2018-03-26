@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Common.Api.Contract.Responses;
+using Lykke.Service.BlockchainWallets.Client.Models;
 using Microsoft.Extensions.PlatformAbstractions;
 using Refit;
 
@@ -192,6 +193,18 @@ namespace Lykke.Service.BlockchainWallets.Client
             ));
 
             return clientId?.ClientId;
+        }
+
+        public async Task<ClientWalletsResponse> TryGetClientWalletsAsync(Guid clientId, int take, string continuationToken)
+        {
+            if (clientId == Guid.Empty)
+            {
+                throw  new ArgumentException(nameof(clientId));
+            }
+
+            var response = await _apiRunner.RunWithRetriesAsync(() => _api.GetClientWalletsAsync(clientId, take, continuationToken));
+
+            return response;
         }
 
         /// <inheritdoc />

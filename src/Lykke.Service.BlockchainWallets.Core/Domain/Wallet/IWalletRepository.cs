@@ -17,5 +17,8 @@ namespace Lykke.Service.BlockchainWallets.Core.Domain.Wallet
         Task<IWallet> TryGetAsync(string integrationLayerId, string assetId, string address);
 
         Task<IWallet> TryGetAsync(string integrationLayerId, string assetId, Guid clientId);
+
+        Task<(IEnumerable<IWallet>, string continuationToken)> TryGetForClientAsync(Guid clientId, int take,
+            string continuationToken);
     }
 }

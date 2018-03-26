@@ -2,6 +2,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using Lykke.Common.Api.Contract.Responses;
+using Lykke.Service.BlockchainWallets.Client.Models;
 
 namespace Lykke.Service.BlockchainWallets.Client
 {
@@ -126,5 +127,22 @@ namespace Lykke.Service.BlockchainWallets.Client
         ///     Lykke client id, if operation succeeded, null otherwise.
         /// </returns>
         Task<Guid?> TryGetClientIdAsync(string integrationLayerId, string assetId, string address);
+
+        /// <summary>
+        ///     Returns Lykke clients wallets.
+        /// </summary>
+        /// <param name="clientId">
+        ///     Client Id.
+        /// </param>
+        /// <param name="take">
+        ///     Amount of wallets to retrieve.
+        /// </param>
+        /// <param name="continuationToken">
+        ///     Continuation token for azure storage.
+        /// </param>
+        /// <returns>
+        ///     Lykke client id, if operation succeeded, null otherwise.
+        /// </returns>
+        Task<ClientWalletsResponse> TryGetClientWalletsAsync(Guid clientId, int take, string continuationToken);
     }
 }
