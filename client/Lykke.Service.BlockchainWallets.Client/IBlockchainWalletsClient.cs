@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Lykke.Common.Api.Contract.Responses;
@@ -141,8 +142,22 @@ namespace Lykke.Service.BlockchainWallets.Client
         ///     Continuation token for azure storage.
         /// </param>
         /// <returns>
-        ///     Lykke client id, if operation succeeded, null otherwise.
+        ///     Lykke clients wallets.
         /// </returns>
         Task<ClientWalletsResponse> TryGetClientWalletsAsync(Guid clientId, int take, string continuationToken);
+
+        /// <summary>
+        ///     Returns Lykke clients wallets.
+        /// </summary>
+        /// <param name="clientId">
+        ///     Client Id.
+        /// </param>
+        /// <param name="batchSize">
+        ///     Amount of wallets to retrieve per request to service.
+        /// </param>
+        /// <returns>
+        ///     Lykke clients wallets.
+        /// </returns>
+        Task<IEnumerable<ClientWalletResponse>> TryGetAllClientWalletsAsync(Guid clientId, int batchSize = 50);
     }
 }

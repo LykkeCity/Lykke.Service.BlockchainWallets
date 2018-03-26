@@ -36,6 +36,9 @@
         <member name="M:Lykke.Service.BlockchainWallets.Client.BlockchainWalletsClient.TryGetClientIdAsync(System.String,System.String,System.String)">
             <inheritdoc />
         </member>
+        <member name="M:Lykke.Service.BlockchainWallets.Client.BlockchainWalletsClient.TryGetClientWalletsAsync(System.Guid,System.Int32,System.String)">
+            <inheritdoc />
+        </member>
         <member name="M:Lykke.Service.BlockchainWallets.Client.BlockchainWalletsClient.Dispose">
             <inheritdoc />
         </member>
@@ -175,7 +178,21 @@
                 Continuation token for azure storage.
             </param>
             <returns>
-                Lykke client id, if operation succeeded, null otherwise.
+                Lykke clients wallets.
+            </returns>
+        </member>
+        <member name="M:Lykke.Service.BlockchainWallets.Client.IBlockchainWalletsClient.TryGetAllClientWalletsAsync(System.Guid,System.Int32)">
+            <summary>
+                Returns Lykke clients wallets.
+            </summary>
+            <param name="clientId">
+                Client Id.
+            </param>
+            <param name="batchSize">
+                Amount of wallets to retrieve per request to service.
+            </param>
+            <returns>
+                Lykke clients wallets.
             </returns>
         </member>
         <member name="T:Lykke.Service.BlockchainWallets.Client.Models.AddressResponse">

@@ -9,7 +9,7 @@ namespace Lykke.Service.BlockchainWallets.Client.Models
     /// </summary>
     public class ClientWalletsResponse
     {
-        public IEnumerable<WalletResponse> Wallets { get; set; }
+        public IEnumerable<ClientWalletResponse> Wallets { get; set; }
 
         public string ContinuationToken { get; set; }
     }
