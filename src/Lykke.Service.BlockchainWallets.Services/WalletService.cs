@@ -1,34 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Lykke.Cqrs;
+using Lykke.Service.BlockchainSignFacade.Client;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.Domain.Wallet;
 using Lykke.Service.BlockchainWallets.Core.Domain.Wallet.Commands;
 using Lykke.Service.BlockchainWallets.Core.Services;
-using Lykke.Service.BlockchainWallets.Core.Settings.ServiceSettings;
+
 
 namespace Lykke.Service.BlockchainWallets.Services
 {
     public class WalletService : IWalletService
     {
-        private readonly IBlockchainIntegrationService _blockchainIntegrationService;
         private readonly ICqrsEngine _cqrsEngine;
         private readonly IWalletRepository _walletRepository;
         private readonly IAdditionalWalletRepository _additionalWalletRepository;
+        private readonly IBlockchainSignFacadeClient _blockchainSignFacadeClient;
 
 
         public WalletService(
             ICqrsEngine cqrsEngine,
-            IBlockchainIntegrationService blockchainIntegrationService,
             IWalletRepository walletRepository,
-            IAdditionalWalletRepository additionalWalletRepository)
+            IAdditionalWalletRepository additionalWalletRepository,
+            IBlockchainSignFacadeClient blockchainSignFacadeClient)
         {
-            _blockchainIntegrationService = blockchainIntegrationService;
             _cqrsEngine = cqrsEngine;
             _walletRepository = walletRepository;
             _additionalWalletRepository = additionalWalletRepository;
+            _blockchainSignFacadeClient = blockchainSignFacadeClient;
         }
 
         private async Task<bool> AdditionalWalletExistsAsync(string integrationLayerId, string assetId, Guid clientId)
@@ -39,14 +38,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         
         public async Task<string> CreateWalletAsync(string integrationLayerId, string assetId, Guid clientId)
         {
-            var signServiceClient = _blockchainIntegrationService.TryGetSignServiceClient(integrationLayerId);
-            if (signServiceClient == null)
-            {
-                throw new NotSupportedException($"Blockchain integration [{integrationLayerId}] is not supported.");
-            }
-
-
-            var wallet = await signServiceClient.CreateWalletAsync();
+            var wallet = await _blockchainSignFacadeClient.CreateWalletAsync(integrationLayerId);
             var address = wallet.PublicAddress;
             var command = new BeginBalanceMonitoringCommand
             {
