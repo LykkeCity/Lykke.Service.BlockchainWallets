@@ -41,10 +41,10 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .RegisterInstance(_log)
                 .As<ILog>()
                 .SingleInstance();
-
+            
             builder
                 .RegisterInstance(CreateBlockchainSignFacadeClient())
-                .AsSelf();
+                .As<IBlockchainSignFacadeClient>();
 
             builder
                 .RegisterType<BlockchainIntegrationService>()
