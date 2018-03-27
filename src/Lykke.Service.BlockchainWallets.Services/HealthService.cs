@@ -30,7 +30,6 @@ namespace Lykke.Service.BlockchainWallets.Services
             foreach (var blockchain in _settings.Blockchains)
             {
                 issues.Add($"{blockchain.Type} - API", blockchain.ApiUrl);
-                issues.Add($"{blockchain.Type} - Sign Facade", blockchain.SignFacadeUrl);
                 issues.Add($"{blockchain.Type} - Hot Wallet", blockchain.HotWalletAddress);
             }
 
