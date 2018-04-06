@@ -218,19 +218,18 @@ namespace Lykke.Service.BlockchainWallets.Client
             }
 
             string continuationToken = null;
-            List<ClientWalletResponse> wallets = new List<ClientWalletResponse>(batchSize);
+            List<ClientWalletResponse> wallets = new List<ClientWalletResponse>();
 
             do
             {
-                var response = await _apiRunner.RunWithRetriesAsync(() =>
-                    _api.GetClientWalletsAsync(clientId, 200, continuationToken));
+                ClientWalletsResponse response = await TryGetClientWalletsAsync(clientId, batchSize, continuationToken);
                 continuationToken = response?.ContinuationToken;
+
                 if (response?.Wallets != null &&
                     response.Wallets.Count() != 0)
                 {
                     wallets.AddRange(response.Wallets);
                 }
-
             } while (!string.IsNullOrEmpty(continuationToken));
 
             return wallets;
