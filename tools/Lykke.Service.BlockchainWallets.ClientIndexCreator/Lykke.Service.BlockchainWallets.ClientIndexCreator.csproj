@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <AssemblyName>client-index-migration</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Lykke.Logs" Version="3.6.0" />
+    <PackageReference Include="Lykke.SettingsReader" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Lykke.Service.BlockchainWallets.AzureRepositories\Lykke.Service.BlockchainWallets.AzureRepositories.csproj" />
+    <ProjectReference Include="..\..\src\Lykke.Service.BlockchainWallets.Core\Lykke.Service.BlockchainWallets.Core.csproj" />
+  </ItemGroup>
+
+</Project>
