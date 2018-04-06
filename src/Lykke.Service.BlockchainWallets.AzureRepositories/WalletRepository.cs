@@ -203,7 +203,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
         public async Task<(IEnumerable<IWallet>, string continuationToken)> TryGetForClientAsync(Guid clientId, int take, string continuationToken)
         {
-            var indexes = await GetForClientIndixesAsync(clientId, take, continuationToken);
+            var indexes = await GetForClientIndicesAsync(clientId, take, continuationToken);
             var keys = indexes.wallets.Select(x => Tuple.Create<string, string>(x.walletPartitionKey, x.walletRowKey));
             var wallets = await _walletsTable.GetDataAsync(keys, take);
 
@@ -211,8 +211,8 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         }
 
         // NB! This method should be used only by conversion utility or in similar cases.
-        internal async Task<(IEnumerable<(string walletPartitionKey, string walletRowKey)> wallets, string continuationToken)> 
-            GetForClientIndixesAsync(Guid clientId, int take, string continuationToken)
+        internal async Task<(IEnumerable<(string walletPartitionKey, string walletRowKey)> wallets, string continuationToken)>
+            GetForClientIndicesAsync(Guid clientId, int take, string continuationToken)
         {
             var partitionKey = GetClientPartitionKey(clientId);
             var indexes = await _clientIndexTable.GetDataWithContinuationTokenAsync(partitionKey, take, continuationToken);

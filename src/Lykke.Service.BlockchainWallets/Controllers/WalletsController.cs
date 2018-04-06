@@ -14,7 +14,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
     [Route("api/wallets")]
     public class WalletsController : Controller
     {
-        public const string _routeSuffix = "{integrationLayerId}/{integrationLayerAssetId}";
+        private const string RouteSuffix = "{integrationLayerId}/{integrationLayerAssetId}";
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
         private readonly IWalletService _walletService;
 
@@ -28,7 +28,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         }
 
 
-        [HttpPost(_routeSuffix + "/by-client-ids/{clientId}")]
+        [HttpPost(RouteSuffix + "/by-client-ids/{clientId}")]
         public async Task<IActionResult> CreateWallet([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
         {
             if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, clientId, out var badRequest))
@@ -61,7 +61,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             });
         }
 
-        [HttpDelete(_routeSuffix + "/by-client-ids/{clientId}")]
+        [HttpDelete(RouteSuffix + "/by-client-ids/{clientId}")]
         public async Task<IActionResult> DeleteWallet([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
         {
             if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, clientId, out var badRequest))
@@ -119,7 +119,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             });
         }
 
-        [HttpGet(_routeSuffix + "/by-client-ids/{clientId}/address")]
+        [HttpGet(RouteSuffix + "/by-client-ids/{clientId}/address")]
         public async Task<IActionResult> GetAddress([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
         {
             if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, clientId, out var badRequest))
@@ -140,7 +140,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             });
         }
 
-        [HttpGet(_routeSuffix + "/by-addresses/{address}/client-id")]
+        [HttpGet(RouteSuffix + "/by-addresses/{address}/client-id")]
         public async Task<IActionResult> GetClientId([FromRoute] string integrationLayerId, [FromRoute] string integrationLayerAssetId, [FromRoute] string address)
         {
             if (!ValidateRequest(integrationLayerId, integrationLayerAssetId, address, out var badRequest))
