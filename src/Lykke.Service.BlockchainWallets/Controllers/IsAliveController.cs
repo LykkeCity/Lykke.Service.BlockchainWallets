@@ -4,11 +4,10 @@ using Lykke.Common.Api.Contract.Responses;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.PlatformAbstractions;
-using Swashbuckle.AspNetCore.SwaggerGen;
+
 
 namespace Lykke.Service.BlockchainWallets.Controllers
 {
-    // NOTE: See https://lykkex.atlassian.net/wiki/spaces/LKEWALLET/pages/35755585/Add+your+app+to+Monitoring
     [Route("api/[controller]")]
     public class IsAliveController : Controller
     {
@@ -22,11 +21,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         /// <summary>
         ///     Checks service is alive
         /// </summary>
-        /// <returns></returns>
         [HttpGet]
-        [SwaggerOperation("IsAlive")]
-        [ProducesResponseType(typeof(IsAliveResponse), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.InternalServerError)]
         public IActionResult Get()
         {
             var healthViloationMessage = _healthService.GetHealthViolationMessage();

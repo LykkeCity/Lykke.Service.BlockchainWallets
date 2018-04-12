@@ -4,14 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Service.BlockchainWallets.AzureRepositories;
-using Lykke.Service.BlockchainWallets.Core.Domain.Wallet;
+using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.Settings;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.CommandLineUtils;
 
 namespace Lykke.Service.BlockchainWallets.ClientIndexCreator
 {
-    internal class Program
+    internal static class Program
     {
         private const string SettingsUrl = "settingsUrl";
 
@@ -83,14 +83,15 @@ namespace Lykke.Service.BlockchainWallets.ClientIndexCreator
             {
                 try
                 {
-                    IEnumerable<IWallet> wallets;
+                    IEnumerable<WalletDto> wallets;
 
                     (wallets, continuationToken) = await defaultWalletsRepository.GetAllAsync(100, continuationToken);
 
                     foreach (var defaultWallet in wallets)
                     {
-                        await defaultWalletsRepository.AddAsync(
-                            defaultWallet.IntegrationLayerId,
+                        await defaultWalletsRepository.AddAsync
+                        (
+                            defaultWallet.BlockchainType,
                             defaultWallet.AssetId,
                             defaultWallet.ClientId,
                             defaultWallet.Address

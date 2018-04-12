@@ -9,5 +9,10 @@
         ///     Blockchain address.
         /// </summary>
         public string Address { get; set; }
+
+        /// <summary>
+        ///     Blockchain address extension.
+        /// </summary>
+        public string AddressExtension { get; set; }
     }
 }

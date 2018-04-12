@@ -41,9 +41,9 @@ namespace Lykke.Service.BlockchainWallets.Services
             );
         }
 
-        public async Task<bool> AssetIsSupportedAsync(string integrationLayerId, string assetId)
+        public async Task<bool> AssetIsSupportedAsync(string blockchainType, string assetId)
         {
-            var apiClient = TryGetApiClient(integrationLayerId);
+            var apiClient = TryGetApiClient(blockchainType);
 
             if (apiClient != null)
             {
@@ -53,16 +53,21 @@ namespace Lykke.Service.BlockchainWallets.Services
             return false;
         }
 
-        public IBlockchainApiClient TryGetApiClient(string integrationLayerId)
+        public bool BlockchainIsSupported(string blockchainType)
         {
-            return _apiClients.TryGetValue(integrationLayerId, out var client)
+            return TryGetApiClient(blockchainType) != null;
+        }
+
+        public IBlockchainApiClient TryGetApiClient(string blockchainType)
+        {
+            return _apiClients.TryGetValue(blockchainType, out var client)
                 ? client
                 : null;
         }
 
-        public IBlockchainSignServiceClient TryGetSignServiceClient(string integrationLayerId)
+        public IBlockchainSignServiceClient TryGetSignServiceClient(string blockchainType)
         {
-            return _signServiceClients.TryGetValue(integrationLayerId, out var client)
+            return _signServiceClients.TryGetValue(blockchainType, out var client)
                 ? client
                 : null;
         }

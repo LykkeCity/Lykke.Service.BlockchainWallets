@@ -54,6 +54,21 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .RegisterType<ShutdownManager>()
                 .As<IShutdownManager>()
                 .SingleInstance();
+
+            builder
+                .RegisterType<AddressService>()
+                .As<IAddressService>()
+                .SingleInstance();
+
+            builder
+                .RegisterType<CapabilitiesService>()
+                .As<ICapabilitiesService>()
+                .SingleInstance();
+
+            builder
+                .RegisterType<ConstantsService>()
+                .As<IConstantsService>()
+                .SingleInstance();
         }
     }
 }
