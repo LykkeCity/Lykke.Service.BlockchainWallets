@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Lykke.Service.BlockchainApi.Client;
-using Lykke.Service.BlockchainSignService.Client;
 
 namespace Lykke.Service.BlockchainWallets.Core.Services
 {
@@ -11,7 +10,5 @@ namespace Lykke.Service.BlockchainWallets.Core.Services
         bool BlockchainIsSupported(string blockchainType);
 
         IBlockchainApiClient TryGetApiClient(string blockchainType);
-
-        IBlockchainSignServiceClient TryGetSignServiceClient(string blockchainType);
     }
 }

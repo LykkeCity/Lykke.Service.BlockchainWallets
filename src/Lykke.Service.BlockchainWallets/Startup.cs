@@ -97,7 +97,11 @@ namespace Lykke.Service.BlockchainWallets
                 builder
                     .RegisterModule(new CqrsModule(appSettings.CurrentValue.BlockchainWalletsService.Cqrs, Log))
                     .RegisterModule(new RepositoriesModule(appSettings.Nested(x => x.BlockchainWalletsService.Db), Log))
-                    .RegisterModule(new ServiceModule(appSettings.CurrentValue.BlockchainsIntegration, Log));
+                    .RegisterModule(new ServiceModule(
+                        appSettings.CurrentValue.BlockchainsIntegration,
+                        appSettings.CurrentValue.BlockchainSignFacadeClient,
+                        appSettings.CurrentValue.BlockchainWalletsService,
+                        Log));
 
                 builder
                     .Populate(services);
