@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Lykke.Cqrs;
@@ -15,7 +17,6 @@ namespace Lykke.Service.BlockchainWallets.Services
     [UsedImplicitly]
     public class WalletService : IWalletService
     {
-        private readonly IBlockchainIntegrationService _blockchainIntegrationService;
         private readonly ICapabilitiesService _capabilitiesService;
         private readonly IConstantsService _constantsService;
         private readonly ICqrsEngine _cqrsEngine;
@@ -25,7 +26,6 @@ namespace Lykke.Service.BlockchainWallets.Services
 
 
         public WalletService(
-            IBlockchainIntegrationService blockchainIntegrationService,
             ICapabilitiesService capabilitiesService,
             IConstantsService constantsService,
             ICqrsEngine cqrsEngine,
@@ -33,7 +33,6 @@ namespace Lykke.Service.BlockchainWallets.Services
             IAdditionalWalletRepository additionalWalletRepository,
             IBlockchainSignFacadeClient blockchainSignFacadeClient)
         {
-            _blockchainIntegrationService = blockchainIntegrationService;
             _capabilitiesService = capabilitiesService;
             _constantsService = constantsService;
             _cqrsEngine = cqrsEngine;
@@ -50,7 +49,7 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         public async Task<WalletWithAddressExtensionDto> CreateWalletAsync(string blockchainType, string assetId, Guid clientId)
         {
-            var wallet = await _blockchainSignFacadeClient.CreateWalletAsync(integrationLayerId);
+            var wallet = await _blockchainSignFacadeClient.CreateWalletAsync(blockchainType);
             var address = wallet.PublicAddress;
             var command = new BeginBalanceMonitoringCommand
             {
