@@ -1,9 +1,9 @@
 ﻿using MessagePack;
 
-namespace Lykke.Service.BlockchainWallets.Core.Domain.Wallet.Commands
+namespace Lykke.Service.BlockchainWallets.Core.Commands
 {
     [MessagePackObject]
-    public class EndBalanceMonitoringCommand
+    public class BeginBalanceMonitoringCommand
     {
         [Key(0)]
         public string Address { get; set; }

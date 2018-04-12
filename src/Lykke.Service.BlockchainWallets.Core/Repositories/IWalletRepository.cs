@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Lykke.Service.BlockchainWallets.Core.DTOs;
 
-namespace Lykke.Service.BlockchainWallets.Core.Domain.Wallet
+namespace Lykke.Service.BlockchainWallets.Core.Repositories
 {
     public interface IWalletRepository
     {
@@ -13,12 +14,11 @@ namespace Lykke.Service.BlockchainWallets.Core.Domain.Wallet
         Task<bool> ExistsAsync(string integrationLayerId, string assetId, string address);
 
         Task<bool> ExistsAsync(string integrationLayerId, string assetId, Guid clientId);
-        
-        Task<IWallet> TryGetAsync(string integrationLayerId, string assetId, string address);
 
-        Task<IWallet> TryGetAsync(string integrationLayerId, string assetId, Guid clientId);
+        Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(Guid clientId, int take, string continuationToken = null);
 
-        Task<(IEnumerable<IWallet>, string continuationToken)> TryGetForClientAsync(Guid clientId, int take,
-            string continuationToken);
+        Task<WalletDto> TryGetAsync(string integrationLayerId, string assetId, string address);
+
+        Task<WalletDto> TryGetAsync(string integrationLayerId, string assetId, Guid clientId);
     }
 }

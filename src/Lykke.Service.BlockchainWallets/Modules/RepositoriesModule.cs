@@ -1,7 +1,7 @@
 ﻿using Autofac;
 using Common.Log;
 using Lykke.Service.BlockchainWallets.AzureRepositories;
-using Lykke.Service.BlockchainWallets.Core.Domain.Wallet;
+using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.Service.BlockchainWallets.Core.Settings.ServiceSettings;
 using Lykke.SettingsReader;
 

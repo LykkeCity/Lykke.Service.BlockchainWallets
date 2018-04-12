@@ -4,14 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Service.BlockchainWallets.AzureRepositories;
-using Lykke.Service.BlockchainWallets.Core.Domain.Wallet;
+using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.Settings;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.CommandLineUtils;
 
 namespace Lykke.Service.BlockchainWallets.AddressesConverter
 {
-    internal class Program
+    internal static class Program
     {
         private const string SettingsUrl = "settingsUrl";
         private const string IntegrationId = "integrationId";
@@ -88,7 +88,7 @@ namespace Lykke.Service.BlockchainWallets.AddressesConverter
 
             do
             {
-                IEnumerable<IWallet> defaultWallets;
+                IEnumerable<WalletDto> defaultWallets;
 
                 (defaultWallets, continuationToken) = await defaultWalletsRepository.GetAsync(integrationId, assetId, 100, continuationToken);
 
@@ -96,7 +96,7 @@ namespace Lykke.Service.BlockchainWallets.AddressesConverter
                 {
                     await additionalWalletsRepository.AddAsync
                     (
-                        defaultWallet.IntegrationLayerId,
+                        defaultWallet.BlockchainType,
                         defaultWallet.AssetId,
                         defaultWallet.ClientId,
                         defaultWallet.Address
@@ -104,7 +104,7 @@ namespace Lykke.Service.BlockchainWallets.AddressesConverter
 
                     await defaultWalletsRepository.DeleteIfExistsAsync
                     (
-                        defaultWallet.IntegrationLayerId,
+                        defaultWallet.BlockchainType,
                         defaultWallet.AssetId,
                         defaultWallet.ClientId
                     );

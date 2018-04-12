@@ -8,7 +8,7 @@ using Lykke.Messaging.Contract;
 using Lykke.Messaging.RabbitMq;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Contract.Events;
-using Lykke.Service.BlockchainWallets.Core.Domain.Wallet.Commands;
+using Lykke.Service.BlockchainWallets.Core.Commands;
 using Lykke.Service.BlockchainWallets.Core.Settings.ServiceSettings;
 using Lykke.Service.BlockchainWallets.Workflow.CommandHandlers;
 using RabbitMQ.Client;
