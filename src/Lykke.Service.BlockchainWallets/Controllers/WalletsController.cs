@@ -30,7 +30,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
 
         [HttpPost(RouteSuffix + "/by-client-ids/{clientId}")]
-        public async Task<IActionResult> CreateWallet([FromRoute] string blockchainType, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId, [FromQuery] WalletType walletType = WalletType.DepositWallet)
+        public async Task<IActionResult> CreateWallet([FromRoute] string blockchainType, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId, [FromQuery] WalletType? walletType)
         {
             if (!ValidateRequest(blockchainType, integrationLayerAssetId, clientId, out var badRequest))
             {
