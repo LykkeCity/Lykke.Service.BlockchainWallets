@@ -161,8 +161,8 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                     AddressExtension = x.AddressExtension,
                     BlockchainType = x.BlockchainType,
                     ClientId = x.ClientId,
-                    IntegrationLayerId = x.AssetId,
-                    IntegrationLayerAssetId = x.BlockchainType
+                    IntegrationLayerId = x.BlockchainType,
+                    IntegrationLayerAssetId = x.AssetId
                 }),
                 ContinuationToken = token
             };
