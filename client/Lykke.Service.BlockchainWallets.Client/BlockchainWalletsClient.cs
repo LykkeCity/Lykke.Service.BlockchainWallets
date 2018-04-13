@@ -198,7 +198,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         }
 
         /// <inheritdoc />
-        public async Task<ClientWalletsResponse> TryGetClientWalletsAsync(Guid clientId, int take, string continuationToken)
+        public async Task<WalletsResponse> TryGetClientWalletsAsync(Guid clientId, int take, string continuationToken)
         {
             if (clientId == Guid.Empty)
             {
@@ -210,7 +210,7 @@ namespace Lykke.Service.BlockchainWallets.Client
             return response;
         }
 
-        public async Task<IEnumerable<ClientWalletResponse>> TryGetAllClientWalletsAsync(Guid clientId, int batchSize = 50)
+        public async Task<IEnumerable<WalletResponse>> TryGetAllClientWalletsAsync(Guid clientId, int batchSize = 50)
         {
             if (clientId == Guid.Empty)
             {
@@ -218,11 +218,11 @@ namespace Lykke.Service.BlockchainWallets.Client
             }
 
             string continuationToken = null;
-            List<ClientWalletResponse> wallets = new List<ClientWalletResponse>();
+            List<WalletResponse> wallets = new List<WalletResponse>();
 
             do
             {
-                ClientWalletsResponse response = await TryGetClientWalletsAsync(clientId, batchSize, continuationToken);
+                WalletsResponse response = await TryGetClientWalletsAsync(clientId, batchSize, continuationToken);
                 continuationToken = response?.ContinuationToken;
 
                 if (response?.Wallets != null &&

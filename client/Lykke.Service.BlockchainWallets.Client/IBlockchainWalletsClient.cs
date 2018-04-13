@@ -144,7 +144,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <returns>
         ///     Lykke clients wallets.
         /// </returns>
-        Task<ClientWalletsResponse> TryGetClientWalletsAsync(Guid clientId, int take, string continuationToken);
+        Task<WalletsResponse> TryGetClientWalletsAsync(Guid clientId, int take, string continuationToken);
 
         /// <summary>
         ///     Returns Lykke clients wallets.
@@ -158,6 +158,6 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <returns>
         ///     Lykke clients wallets.
         /// </returns>
-        Task<IEnumerable<ClientWalletResponse>> TryGetAllClientWalletsAsync(Guid clientId, int batchSize = 50);
+        Task<IEnumerable<WalletResponse>> TryGetAllClientWalletsAsync(Guid clientId, int batchSize = 50);
     }
 }

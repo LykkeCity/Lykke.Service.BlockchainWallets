@@ -153,7 +153,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
             var (wallets, token) = await _walletService.GetClientWalletsAsync(clientId, take, continuationToken);
 
-            var response = new ClientWalletsResponse
+            var response = new WalletsResponse
             {
                 Wallets = wallets.Select(x => new WalletResponse
                 {

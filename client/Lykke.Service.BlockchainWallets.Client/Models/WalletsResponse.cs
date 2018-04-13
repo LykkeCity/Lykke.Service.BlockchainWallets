@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace Lykke.Service.BlockchainWallets.Models
+namespace Lykke.Service.BlockchainWallets.Client.Models
 {
     /// <summary>
     ///     All clients wallets.
     /// </summary>
-    public class ClientWalletsResponse
+    public class WalletsResponse
     {
         public IEnumerable<WalletResponse> Wallets { get; set; }
 
