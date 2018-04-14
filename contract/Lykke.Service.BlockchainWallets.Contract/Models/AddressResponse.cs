@@ -1,4 +1,4 @@
-﻿namespace Lykke.Service.BlockchainWallets.Models
+﻿namespace Lykke.Service.BlockchainWallets.Contract.Models
 {
     /// <summary>
     ///     Blockchain address.
@@ -9,6 +9,11 @@
         ///     Blockchain address.
         /// </summary>
         public string Address { get; set; }
+
+        /// <summary>
+        ///     Blockchain address base.
+        /// </summary>
+        public string BaseAddress { get; set; }
 
         /// <summary>
         ///     Blockchain address extension.

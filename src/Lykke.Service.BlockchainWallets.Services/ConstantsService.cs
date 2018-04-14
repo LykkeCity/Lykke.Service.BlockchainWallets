@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Lykke.Service.BlockchainWallets.Contract.Constants;
+using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.Services;
 
@@ -36,7 +36,8 @@ namespace Lykke.Service.BlockchainWallets.Services
                 {
                     _cache[blockchainType] = new AddressExtensionConstantsDto
                     {
-                        DisplayName = constants.PublicAddressExtension.DisplayName,
+                        AddressExtensionDisplayName = constants.PublicAddressExtension.DisplayName,
+                        BaseAddressDisplayName = constants.PublicAddressExtension.BaseDisplayName,
                         Separator = constants.PublicAddressExtension.Separator,
                         TypeForDeposit = AddressExtensionTypeForDeposit.Required,
                         TypeForWithdrawal = AddressExtensionTypeForWithdrawal.Optional

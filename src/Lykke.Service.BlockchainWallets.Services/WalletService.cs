@@ -154,24 +154,25 @@ namespace Lykke.Service.BlockchainWallets.Services
         
         private async Task<WalletWithAddressExtensionDto> ConvertWalletToWalletWithAddressExtensionAsync(WalletDto walletDto)
         {
-            var address = walletDto.Address;
             var addressExtension = string.Empty;
+            var baseAddress = string.Empty;
 
             if (await _capabilitiesService.IsPublicAddressExtensionRequiredAsync(walletDto.BlockchainType))
             {
                 var constants = await _constantsService.GetAddressExtensionConstantsAsync(walletDto.BlockchainType);
 
-                var addressAndExtension = address.Split(constants.Separator, 2);
+                var addressAndExtension = walletDto.Address.Split(constants.Separator, 2);
 
-                address = addressAndExtension[0];
+                baseAddress = addressAndExtension[0];
                 addressExtension = addressAndExtension[1];
             }
             
             return new WalletWithAddressExtensionDto
             {
-                Address = address,
+                Address = walletDto.Address,
                 AddressExtension = addressExtension,
                 AssetId = walletDto.AssetId,
+                BaseAddress = baseAddress,
                 BlockchainType = walletDto.BlockchainType,
                 ClientId = walletDto.ClientId
             };

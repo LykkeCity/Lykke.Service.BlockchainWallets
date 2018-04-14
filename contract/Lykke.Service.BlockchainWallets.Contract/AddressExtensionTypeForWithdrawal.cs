@@ -1,4 +1,4 @@
-﻿namespace Lykke.Service.BlockchainWallets.Contract.Constants
+﻿namespace Lykke.Service.BlockchainWallets.Contract
 {
     public enum AddressExtensionTypeForWithdrawal
     {

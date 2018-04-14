@@ -1,10 +1,10 @@
-﻿namespace Lykke.Service.BlockchainWallets.Models
+﻿namespace Lykke.Service.BlockchainWallets.Contract.Models
 {
     public class MergeAddressRequest
     {
-        public string Address { get; set; }
-
         public string AddressExtension { get; set; }
+
+        public string BaseAddress { get; set; }
 
         public string BlockchainType { get; set; }
     }
