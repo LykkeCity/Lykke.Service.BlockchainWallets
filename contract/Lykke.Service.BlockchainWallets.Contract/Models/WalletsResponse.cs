@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Lykke.Service.BlockchainWallets.Client.Models
+namespace Lykke.Service.BlockchainWallets.Contract.Models
 {
     /// <summary>
     ///     All clients wallets.

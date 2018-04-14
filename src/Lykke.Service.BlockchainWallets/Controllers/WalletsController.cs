@@ -5,8 +5,8 @@ using System.Net;
 using System.Threading.Tasks;
 using Lykke.Common.Api.Contract.Responses;
 using Lykke.Service.BlockchainWallets.Contract;
+using Lykke.Service.BlockchainWallets.Contract.Models;
 using Lykke.Service.BlockchainWallets.Core.Services;
-using Lykke.Service.BlockchainWallets.Models;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -60,6 +60,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             {
                 Address = wallet.Address,
                 AddressExtension = wallet.AddressExtension,
+                BaseAddress = wallet.BaseAddress,
                 BlockchainType = wallet.BlockchainType,
                 ClientId = wallet.ClientId,
                 IntegrationLayerId = wallet.AssetId,
@@ -111,7 +112,8 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 return Ok(new AddressResponse
                 {
                     Address = address.Address,
-                    AddressExtension = address.AddressExtension
+                    AddressExtension = address.AddressExtension,
+                    BaseAddress = address.BaseAddress
                 });
             }
             else
@@ -159,6 +161,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 {
                     Address = x.Address,
                     AddressExtension = x.AddressExtension,
+                    BaseAddress = x.BaseAddress,
                     BlockchainType = x.BlockchainType,
                     ClientId = x.ClientId,
                     IntegrationLayerId = x.BlockchainType,

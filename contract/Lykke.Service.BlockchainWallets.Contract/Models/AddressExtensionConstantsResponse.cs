@@ -1,12 +1,13 @@
 ﻿using JetBrains.Annotations;
-using Lykke.Service.BlockchainWallets.Contract.Constants;
 
-namespace Lykke.Service.BlockchainWallets.Client.Models
+namespace Lykke.Service.BlockchainWallets.Contract.Models
 {
     [PublicAPI]
     public class AddressExtensionConstantsResponse
     {
-        public string DisplayName { get; set; }
+        public string AddressExtensionDisplayName { get; set; }
+
+        public string BaseAddressDisplayName { get; set; }
 
         public AddressExtensionTypeForDeposit TypeForDeposit { get; set; }
 

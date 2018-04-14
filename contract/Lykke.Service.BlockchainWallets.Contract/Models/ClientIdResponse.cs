@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lykke.Service.BlockchainWallets.Client.Models
+namespace Lykke.Service.BlockchainWallets.Contract.Models
 {
     /// <summary>
     ///     Client id.

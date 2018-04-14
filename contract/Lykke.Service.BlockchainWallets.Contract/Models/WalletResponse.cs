@@ -1,10 +1,10 @@
 ﻿using System;
 using JetBrains.Annotations;
 
-namespace Lykke.Service.BlockchainWallets.Models
+namespace Lykke.Service.BlockchainWallets.Contract.Models
 {
     /// <summary>
-    ///     Blockchain wallet.
+    ///     Wallet
     /// </summary>
     public class WalletResponse
     {
@@ -13,7 +13,7 @@ namespace Lykke.Service.BlockchainWallets.Models
         /// </summary>
         [UsedImplicitly(ImplicitUseKindFlags.Access)]
         public string Address { get; set; }
-
+        
         /// <summary>
         ///     Blockchain address extension.
         /// </summary>
@@ -21,7 +21,13 @@ namespace Lykke.Service.BlockchainWallets.Models
         public string AddressExtension { get; set; }
 
         /// <summary>
-        ///     Blockchain Integration Layer Id.
+        ///     Blockchain address base.
+        /// </summary>
+        [UsedImplicitly(ImplicitUseKindFlags.Access)]
+        public string BaseAddress { get; set; }
+
+        /// <summary>
+        ///     Blockchain type (previously Blockchain Integration Layer Id).
         /// </summary>
         [UsedImplicitly(ImplicitUseKindFlags.Access)]
         public string BlockchainType { get; set; }
@@ -35,7 +41,7 @@ namespace Lykke.Service.BlockchainWallets.Models
         /// <summary>
         ///     Blockchain Integration Layer Id.
         /// </summary>
-        [UsedImplicitly(ImplicitUseKindFlags.Access), Obsolete]
+        [UsedImplicitly(ImplicitUseKindFlags.Access), Obsolete("Use BlockchainType instead")]
         public string IntegrationLayerId { get; set; }
 
         /// <summary>

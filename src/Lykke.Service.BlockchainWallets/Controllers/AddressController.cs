@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Lykke.Common.Api.Contract.Responses;
+using Lykke.Service.BlockchainWallets.Contract.Models;
 using Lykke.Service.BlockchainWallets.Core.Services;
-using Lykke.Service.BlockchainWallets.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lykke.Service.BlockchainWallets.Controllers
@@ -45,10 +45,10 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             
             return Ok(new MergedAddressResponse
             {
-                MergedAddress = await _addressService.MergeAsync
+                Address = await _addressService.MergeAsync
                 (
                     blockchainType: request.BlockchainType,
-                    publicAddress: request.Address,
+                    baseAddress: request.BaseAddress,
                     addressExtension: request.AddressExtension
                 )
             });

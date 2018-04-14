@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Lykke.Common.Api.Contract.Responses;
+using Lykke.Service.BlockchainWallets.Contract.Models;
 using Lykke.Service.BlockchainWallets.Core.Services;
-using Lykke.Service.BlockchainWallets.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lykke.Service.BlockchainWallets.Controllers
@@ -37,7 +37,8 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
             return Ok(new AddressExtensionConstantsResponse
             {
-                DisplayName = constants.DisplayName,
+                AddressExtensionDisplayName = constants.AddressExtensionDisplayName,
+                BaseAddressDisplayName = constants.BaseAddressDisplayName,
                 TypeForDeposit = constants.TypeForDeposit,
                 TypeForWithdrawal = constants.TypeForWithdrawal
             });

@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Lykke.Common.Api.Contract.Responses;
 using Lykke.Service.BlockchainWallets.Client;
-using Lykke.Service.BlockchainWallets.Client.Models;
+using Lykke.Service.BlockchainWallets.Contract.Models;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -224,7 +224,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             var client = CreateClient(handlerStub);
             var response = await client.GetAddressAsync("EthereumClassic", "ETC", Guid.NewGuid());
 
-            Assert.Equal(address, response);
+            Assert.Equal(address, response.Address);
         }
 
         [Fact]
@@ -295,7 +295,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             });
             var client = CreateClient(handlerStub);
 
-            var result = await client.TryGetClientWalletsAsync(clientId, 10, null);
+            var result = await client.GetWalletsAsync(clientId, 10, null);
 
             Assert.True(result?.Wallets.FirstOrDefault()?.ClientId == clientId);
         }
@@ -360,7 +360,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
 
             var client = CreateClient(handlerStub);
 
-            var result = await client.TryGetAllClientWalletsAsync(clientId, 1);
+            var result = await client.GetAllWalletsAsync(clientId, 1);
 
             Assert.True(result?.Count() == 2);
             Assert.True(result?.FirstOrDefault()?.ClientId == clientId);

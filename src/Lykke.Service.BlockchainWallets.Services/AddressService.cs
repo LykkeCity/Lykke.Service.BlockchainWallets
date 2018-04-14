@@ -19,7 +19,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         }
 
 
-        public async Task<string> MergeAsync(string blockchainType, string publicAddress, string addressExtension)
+        public async Task<string> MergeAsync(string blockchainType, string baseAddress, string addressExtension)
         {
             if (!await _capabilitiesService.IsPublicAddressExtensionRequiredAsync(blockchainType))
             {
@@ -28,7 +28,7 @@ namespace Lykke.Service.BlockchainWallets.Services
 
             var constants = await _constantsService.GetAddressExtensionConstantsAsync(blockchainType);
 
-            return $"{publicAddress}{constants.Separator}{addressExtension}";
+            return $"{baseAddress}{constants.Separator}{addressExtension}";
         }
     }
 }
