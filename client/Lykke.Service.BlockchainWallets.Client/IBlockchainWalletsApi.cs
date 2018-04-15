@@ -15,6 +15,9 @@ namespace Lykke.Service.BlockchainWallets.Client
         [Delete("/api/wallets/{blockchainType}/{assetId}/by-client-ids/{clientId}")]
         Task DeleteWalletAsync(string blockchainType, string assetId, Guid clientId);
 
+        [Get("/api/constants/{blockchainType}/address-extension")]
+        Task<AddressExtensionConstantsResponse> GetAddressExtensionConstantsAsync(string blockchainType);
+
         [Get("/api/wallets/{blockchainType}/{assetId}/by-client-ids/{clientId}/address")]
         Task<AddressResponse> GetAddressAsync(string blockchainType, string assetId, Guid clientId);
 
