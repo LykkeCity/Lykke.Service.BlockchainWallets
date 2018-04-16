@@ -81,6 +81,33 @@ namespace Lykke.Service.BlockchainWallets.Client
             return response;
         }
 
+        /// <inheritdoc cref="IBlockchainWalletsClient.MergeAddressAsync" />
+        public async Task<string> MergeAddressAsync(string blockchainType, string baseAddress, string addressExtension)
+        {
+            ValidateInputParameters(blockchainType);
+
+            if (string.IsNullOrEmpty(baseAddress))
+            {
+                throw new ArgumentException(nameof(baseAddress));
+            }
+
+            if (string.IsNullOrEmpty(addressExtension))
+            {
+                throw new ArgumentException(nameof(addressExtension));
+            }
+
+            var request = new MergeAddressRequest
+            {
+                AddressExtension = addressExtension,
+                BaseAddress = baseAddress,
+                BlockchainType = blockchainType
+            };
+
+            var response = await _apiRunner.RunWithRetriesAsync(() => _api.MergeAddressAsync(request));
+
+            return response.Address;
+        }
+
         /// <inheritdoc cref="IBlockchainWalletsClient.CreateWalletAsync" />
         public async Task<WalletResponse> CreateWalletAsync(string blockchainType, string assetId, Guid clientId, WalletType walletType = WalletType.DepositWallet)
         {
