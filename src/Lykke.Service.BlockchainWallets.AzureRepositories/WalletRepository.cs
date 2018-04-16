@@ -230,7 +230,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             var indexes = await _clientIndexTable.GetDataWithContinuationTokenAsync(partitionKey, take, continuationToken);
             var values = indexes.Entities.Select(x => (x.PrimaryPartitionKey, x.PrimaryRowKey));
 
-            return (values, continuationToken);
+            return (values, indexes.ContinuationToken);
         }
 
         // NB! This method should be used only by conversion utility or in similar cases.
