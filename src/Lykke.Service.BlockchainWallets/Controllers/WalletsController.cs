@@ -63,8 +63,8 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 BaseAddress = wallet.BaseAddress,
                 BlockchainType = wallet.BlockchainType,
                 ClientId = wallet.ClientId,
-                IntegrationLayerId = wallet.AssetId,
-                IntegrationLayerAssetId = wallet.BlockchainType
+                IntegrationLayerId = wallet.BlockchainType,
+                IntegrationLayerAssetId = wallet.AssetId
             });
         }
 
@@ -148,6 +148,11 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         [HttpGet("all/by-client-ids/{clientId}")]
         public async Task<IActionResult> GetWallets([FromRoute] Guid clientId, [FromQuery] int take, [FromQuery] string continuationToken)
         {
+            if (take <= 0)
+            {
+                return BadRequest(ErrorResponse.Create($"{nameof(take)} should be greater then 0."));
+            }
+
             if (!ValidateRequest(clientId, out var badRequest))
             {
                 return badRequest;
