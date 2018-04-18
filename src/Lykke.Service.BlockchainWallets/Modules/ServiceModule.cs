@@ -94,5 +94,15 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 log: _log
             );
         }
+
+        private IBlockchainSignFacadeClient CreateBlockchainSignFacadeClient()
+        {
+            return new BlockchainSignFacadeClient
+            (
+                hostUrl: _blockchainSignFacadeClientSettings.ServiceUrl,
+                apiKey: _blockchainWalletsSettings.SignFacadeApiKey,
+                log: _log
+            );
+        }
     }
 }
