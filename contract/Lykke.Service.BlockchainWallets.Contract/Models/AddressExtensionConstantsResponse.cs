@@ -1,4 +1,6 @@
 ﻿using JetBrains.Annotations;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Lykke.Service.BlockchainWallets.Contract.Models
 {
@@ -9,8 +11,10 @@ namespace Lykke.Service.BlockchainWallets.Contract.Models
 
         public string BaseAddressDisplayName { get; set; }
 
+        [JsonConverter(typeof(StringEnumConverter))]
         public AddressExtensionTypeForDeposit TypeForDeposit { get; set; }
 
+        [JsonConverter(typeof(StringEnumConverter))]
         public AddressExtensionTypeForWithdrawal TypeForWithdrawal { get; set; }
     }
 }
