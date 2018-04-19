@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Lykke.Logs" Version="3.6.0" />
-    <PackageReference Include="Lykke.SettingsReader" Version="2.1.0" />
+    <PackageReference Include="Lykke.SettingsReader" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
   </ItemGroup>
 
