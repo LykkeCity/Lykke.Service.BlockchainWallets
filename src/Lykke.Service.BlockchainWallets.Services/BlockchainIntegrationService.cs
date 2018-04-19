@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Service.BlockchainApi.Client;
-using Lykke.Service.BlockchainSignService.Client;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Settings.BlockchainIntegrationSettings;
 
@@ -11,7 +10,6 @@ namespace Lykke.Service.BlockchainWallets.Services
     public class BlockchainIntegrationService : IBlockchainIntegrationService
     {
         private readonly ImmutableDictionary<string, BlockchainApiClient> _apiClients;
-        private readonly ImmutableDictionary<string, BlockchainSignServiceClient> _signServiceClients;
 
 
         public BlockchainIntegrationService(
@@ -24,7 +22,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                 (
                     "Blockchains registration",
                     "",
-                    $"Registering blockchain: {blockchain.Type} -> \r\nAPI: {blockchain.ApiUrl}\r\nSign facade:{blockchain.SignFacadeUrl}\r\nHW: {blockchain.HotWalletAddress}"
+                    $"Registering blockchain: {blockchain.Type} -> \r\nAPI: {blockchain.ApiUrl}\r\nHW: {blockchain.HotWalletAddress}"
                 );
             }
 
@@ -32,12 +30,6 @@ namespace Lykke.Service.BlockchainWallets.Services
             (
                 x => x.Type,
                 y => new BlockchainApiClient(log, y.ApiUrl)
-            );
-
-            _signServiceClients = settings.Blockchains.ToImmutableDictionary
-            (
-                x => x.Type,
-                y => new BlockchainSignServiceClient(y.SignFacadeUrl, log)
             );
         }
 
@@ -56,13 +48,6 @@ namespace Lykke.Service.BlockchainWallets.Services
         public IBlockchainApiClient TryGetApiClient(string integrationLayerId)
         {
             return _apiClients.TryGetValue(integrationLayerId, out var client)
-                ? client
-                : null;
-        }
-
-        public IBlockchainSignServiceClient TryGetSignServiceClient(string integrationLayerId)
-        {
-            return _signServiceClients.TryGetValue(integrationLayerId, out var client)
                 ? client
                 : null;
         }
