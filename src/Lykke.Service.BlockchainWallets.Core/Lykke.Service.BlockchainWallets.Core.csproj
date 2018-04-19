@@ -20,9 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Lykke.Service.BlockchainApi.Client">
-      <HintPath>..\..\..\..\..\.nuget\packages\lykke.service.blockchainapi.client\9.0.1\lib\netstandard2.0\Lykke.Service.BlockchainApi.Client.dll</HintPath>
-    </Reference>
+    <Reference Include="Lykke.Service.BlockchainApi.Client" />
   </ItemGroup>
 
 </Project>
