@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Cqrs;
 using Lykke.Service.BlockchainWallets.Contract.Events;
-using Lykke.Service.BlockchainWallets.Core.Domain.Wallet.Commands;
+using Lykke.Service.BlockchainWallets.Core.Commands;
 using Lykke.Service.BlockchainWallets.Core.Services;
 
 namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
@@ -23,27 +23,36 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
         }
 
 
-        public async Task<CommandHandlingResult> Handle(BeginBalanceMonitoringCommand command,
-            IEventPublisher publisher)
+        public async Task<CommandHandlingResult> Handle(BeginBalanceMonitoringCommand command, IEventPublisher publisher)
         {
-            var apiClient = _blockchainIntegrationService.TryGetApiClient(command.IntegrationLayerId);
+            _log.WriteInfo(nameof(BeginBalanceMonitoringCommand), command, "");
 
-            if (apiClient != null)
+            try
             {
-                await apiClient.StartBalanceObservationAsync(command.Address);
+                var apiClient = _blockchainIntegrationService.TryGetApiClient(command.IntegrationLayerId);
 
-                publisher.PublishEvent(new WalletCreatedEvent
+                if (apiClient != null)
                 {
-                    Address = command.Address,
-                    AssetId = command.AssetId,
-                    IntegrationLayerId = command.IntegrationLayerId
-                });
+                    await apiClient.StartBalanceObservationAsync(command.Address);
 
-                return CommandHandlingResult.Ok();
+                    publisher.PublishEvent(new WalletCreatedEvent
+                    {
+                        Address = command.Address,
+                        AssetId = command.AssetId,
+                        IntegrationLayerId = command.IntegrationLayerId
+                    });
+
+                    return CommandHandlingResult.Ok();
+                }
+
+                throw new NotSupportedException($"Blockchain integration layer [{command.IntegrationLayerId}] is not supported");
             }
+            catch (Exception e)
+            {
+                _log.WriteError(nameof(BeginBalanceMonitoringCommand), command, e);
 
-            throw new NotSupportedException(
-                $"Blockchain integration layer [{command.IntegrationLayerId}] is not supported");
+                throw;
+            }
         }
     }
 }

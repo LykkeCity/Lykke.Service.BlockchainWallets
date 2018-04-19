@@ -1,10 +1,9 @@
 ﻿using System;
 using Lykke.AzureStorage.Tables;
-using Lykke.Service.BlockchainWallets.Core.Domain.Wallet;
 
 namespace Lykke.Service.BlockchainWallets.AzureRepositories
 {
-    public class AdditionalWalletEntity : AzureTableEntity, IWallet
+    public class AdditionalWalletEntity : AzureTableEntity
     {
         public static string GetPartitionKey(string integrationLayerId, string assetId, Guid clientId)
         {

@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Common.Log;
+using JetBrains.Annotations;
 using Lykke.Cqrs;
 using Lykke.Service.BlockchainWallets.Contract.Events;
-using Lykke.Service.BlockchainWallets.Core.Domain.Wallet.Commands;
+using Lykke.Service.BlockchainWallets.Core.Commands;
 using Lykke.Service.BlockchainWallets.Core.Services;
 
 namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
 {
+    [UsedImplicitly]
     public class EndBalanceMonitoringCommandHandler
     {
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
@@ -22,27 +24,37 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
             _log = log;
         }
 
-
+        [UsedImplicitly]
         public async Task<CommandHandlingResult> Handle(EndBalanceMonitoringCommand command, IEventPublisher publisher)
         {
-            var apiClient = _blockchainIntegrationService.TryGetApiClient(command.IntegrationLayerId);
+            _log.WriteInfo(nameof(EndBalanceMonitoringCommand), command, "");
 
-            if (apiClient != null)
+            try
             {
-                await apiClient.StopBalanceObservationAsync(command.Address);
+                var apiClient = _blockchainIntegrationService.TryGetApiClient(command.IntegrationLayerId);
 
-                publisher.PublishEvent(new WalletDeletedEvent
+                if (apiClient != null)
                 {
-                    Address = command.Address,
-                    AssetId = command.AssetId,
-                    IntegrationLayerId = command.IntegrationLayerId
-                });
+                    await apiClient.StopBalanceObservationAsync(command.Address);
 
-                return CommandHandlingResult.Ok();
+                    publisher.PublishEvent(new WalletDeletedEvent
+                    {
+                        Address = command.Address,
+                        AssetId = command.AssetId,
+                        IntegrationLayerId = command.IntegrationLayerId
+                    });
+
+                    return CommandHandlingResult.Ok();
+                }
+
+                throw new NotSupportedException($"Blockchain integration layer [{command.IntegrationLayerId}] is not supported");
             }
+            catch (Exception e)
+            {
+                _log.WriteError(nameof(EndBalanceMonitoringCommand), command, e);
 
-            throw new NotSupportedException(
-                $"Blockchain integration layer [{command.IntegrationLayerId}] is not supported");
+                throw;
+            }
         }
     }
 }

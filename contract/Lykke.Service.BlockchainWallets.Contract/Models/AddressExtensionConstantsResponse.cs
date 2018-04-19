@@ -1,0 +1,20 @@
+﻿using JetBrains.Annotations;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
+namespace Lykke.Service.BlockchainWallets.Contract.Models
+{
+    [PublicAPI]
+    public class AddressExtensionConstantsResponse
+    {
+        public string AddressExtensionDisplayName { get; set; }
+
+        public string BaseAddressDisplayName { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public AddressExtensionTypeForDeposit TypeForDeposit { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public AddressExtensionTypeForWithdrawal TypeForWithdrawal { get; set; }
+    }
+}

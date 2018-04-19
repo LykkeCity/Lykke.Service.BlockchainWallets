@@ -6,7 +6,8 @@ using AzureStorage.Tables;
 using AzureStorage.Tables.Templates.Index;
 using Common;
 using Common.Log;
-using Lykke.Service.BlockchainWallets.Core.Domain.Wallet;
+using Lykke.Service.BlockchainWallets.Core.DTOs;
+using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.SettingsReader;
 
 namespace Lykke.Service.BlockchainWallets.AzureRepositories
@@ -48,23 +49,23 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         }
 
 
-        private static (string PartitionKey, string RowKey) GetAddressIndexKeys(string integrationLayerId, string assetId, string address)
+        private static (string PartitionKey, string RowKey) GetAddressIndexKeys(string blockchainType, string assetId, string address)
         {
-            var partitionKey = $"{integrationLayerId}-{assetId}-{address.CalculateHexHash32(3)}";
+            var partitionKey = $"{blockchainType}-{assetId}-{address.CalculateHexHash32(3)}";
             var rowKey = address;
 
             return (partitionKey, rowKey);
         }
 
 
-        public async Task AddAsync(string integrationLayerId, string assetId, Guid clientId, string address)
+        public async Task AddAsync(string blockchainType, string assetId, Guid clientId, string address)
         {
-            var partitionKey = AdditionalWalletEntity.GetPartitionKey(integrationLayerId, assetId, clientId);
+            var partitionKey = AdditionalWalletEntity.GetPartitionKey(blockchainType, assetId, clientId);
             var rowKey = AdditionalWalletEntity.GetRowKey(address);
 
             // Address index
 
-            (var indexPartitionKey, var indexRowKey) = GetAddressIndexKeys(integrationLayerId, assetId, address);
+            (var indexPartitionKey, var indexRowKey) = GetAddressIndexKeys(blockchainType, assetId, address);
             
             await _addressIndexTable.InsertOrReplaceAsync(new AzureIndex(
                 indexPartitionKey,
@@ -83,13 +84,13 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                 Address = address,
                 AssetId = assetId,
                 ClientId = clientId,
-                IntegrationLayerId = integrationLayerId
+                IntegrationLayerId = blockchainType
             });
         }
 
-        public async Task DeleteAllAsync(string integrationLayerId, string assetId, Guid clientId)
+        public async Task DeleteAllAsync(string blockchainType, string assetId, Guid clientId)
         {
-            var partitionKey = AdditionalWalletEntity.GetPartitionKey(integrationLayerId, assetId, clientId);
+            var partitionKey = AdditionalWalletEntity.GetPartitionKey(blockchainType, assetId, clientId);
             var wallets = await _additionalWalletsTable.GetDataAsync(partitionKey);
 
             foreach (var wallet in wallets)
@@ -101,24 +102,30 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             }
         }
 
-        public async Task<bool> ExistsAsync(string integrationLayerId, string assetId, Guid clientId)
+        public async Task<bool> ExistsAsync(string blockchainType, string assetId, Guid clientId)
         {
-            var partitionKey = AdditionalWalletEntity.GetPartitionKey(integrationLayerId, assetId, clientId);
+            var partitionKey = AdditionalWalletEntity.GetPartitionKey(blockchainType, assetId, clientId);
             
             return (await _additionalWalletsTable.GetDataAsync(partitionKey)).Any();
         }
 
-        public async Task<IWallet> TryGetAsync(string integrationLayerId, string assetId, string address)
+        public async Task<WalletDto> TryGetAsync(string blockchainType, string assetId, string address)
         {
-            (var indexPartitionKey, _) = GetAddressIndexKeys(integrationLayerId, assetId, address);
+            (var indexPartitionKey, _) = GetAddressIndexKeys(blockchainType, assetId, address);
 
             var index = (await _addressIndexTable.GetDataAsync(indexPartitionKey)).FirstOrDefault();
 
             if (index != null)
             {
-                var wallet = await _additionalWalletsTable.GetDataAsync(index.PrimaryPartitionKey, index.PrimaryRowKey);
+                var entity = await _additionalWalletsTable.GetDataAsync(index.PrimaryPartitionKey, index.PrimaryRowKey);
 
-                return wallet;
+                return new WalletDto
+                {
+                    Address = entity.Address,
+                    AssetId = entity.AssetId,
+                    BlockchainType = entity.IntegrationLayerId,
+                    ClientId = entity.ClientId
+                };
             }
 
             return null;

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
-using Common.Log;
-using Lykke.Service.BlockchainWallets.Core.Domain.Health;
+using Lykke.Common.Health;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Settings.BlockchainIntegrationSettings;
 
