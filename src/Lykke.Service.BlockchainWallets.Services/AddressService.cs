@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Lykke.Service.BlockchainWallets.Core.Services;
 
 namespace Lykke.Service.BlockchainWallets.Services
 {
+    [UsedImplicitly]
     public class AddressService : IAddressService
     {
         private readonly ICapabilitiesService _capabilitiesService;
