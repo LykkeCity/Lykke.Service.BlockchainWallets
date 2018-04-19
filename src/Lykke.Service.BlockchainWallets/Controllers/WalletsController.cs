@@ -28,7 +28,12 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             _blockchainIntegrationService = blockchainIntegrationService;
         }
 
-
+        /// <summary>
+        ///    Creates wallet for the specified client in the specified blockchain/asset pair.
+        /// </summary>
+        /// <remarks>
+        ///    walletType reserved for future use.
+        /// </remarks>
         [HttpPost(RouteSuffix + "/by-client-ids/{clientId}")]
         public async Task<IActionResult> CreateWallet([FromRoute] string blockchainType, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId, [FromQuery] WalletType? walletType)
         {
@@ -68,6 +73,9 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             });
         }
 
+        /// <summary>
+        ///    Removes wallet for the specified client in the specified blockchain type/asset pair
+        /// </summary>
         [HttpDelete(RouteSuffix + "/by-client-ids/{clientId}")]
         public async Task<IActionResult> DeleteWallet([FromRoute] string blockchainType, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
         {
@@ -97,6 +105,9 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             return Accepted();
         }
         
+        /// <summary>
+        ///    Returns wallet address for the specified client in the specified blockchain type/asset pair.
+        /// </summary>
         [HttpGet(RouteSuffix + "/by-client-ids/{clientId}/address")]
         public async Task<IActionResult> GetAddress([FromRoute] string blockchainType, [FromRoute] string integrationLayerAssetId, [FromRoute] Guid clientId)
         {
@@ -122,6 +133,9 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             }
         }
 
+        /// <summary>
+        ///    Return client id for the specified wallet.
+        /// </summary>
         [HttpGet(RouteSuffix + "/by-addresses/{address}/client-id")]
         public async Task<IActionResult> GetClientId([FromRoute] string blockchainType, [FromRoute] string integrationLayerAssetId, [FromRoute] string address)
         {
@@ -145,6 +159,9 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             }
         }
 
+        /// <summary>
+        ///    Returns all wallets for the specified client.
+        /// </summary>
         [HttpGet("all/by-client-ids/{clientId}")]
         public async Task<IActionResult> GetWallets([FromRoute] Guid clientId, [FromQuery] int take, [FromQuery] string continuationToken)
         {

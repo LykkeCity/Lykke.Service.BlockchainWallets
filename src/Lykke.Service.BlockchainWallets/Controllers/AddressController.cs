@@ -24,6 +24,9 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             _capabilitiesService = capabilitiesService;
         }
 
+        /// <summary>
+        ///    Merges base address with address extension, according to specified blockchain type settings
+        /// </summary>
         [HttpPost("merge")]
         public async Task<IActionResult> MergeAsync([FromBody] MergeAddressRequest request)
         {

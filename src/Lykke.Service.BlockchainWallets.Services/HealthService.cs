@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using Lykke.Common.Health;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Settings.BlockchainIntegrationSettings;
 
 namespace Lykke.Service.BlockchainWallets.Services
 {
+    [UsedImplicitly]
     public class HealthService : IHealthService
     {
         private readonly BlockchainsIntegrationSettings _settings;

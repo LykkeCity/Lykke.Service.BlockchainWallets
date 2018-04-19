@@ -21,10 +21,20 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             _constantsService = constantsService;
         }
 
-
+        /// <summary>
+        ///    Returns address extensions constants for the specified blockchain type.
+        /// </summary>
         [HttpGet("{blockchainType}/address-extension")]
         public async Task<IActionResult> GetAddressExtensionConstants(string blockchainType)
         {
+            if (string.IsNullOrEmpty(blockchainType))
+            {
+                return BadRequest
+                (
+                    ErrorResponse.Create($"{nameof(blockchainType)} should not be null or empty.")
+                );
+            }
+
             if (!_blockchainIntegrationService.BlockchainIsSupported(blockchainType))
             {
                 return BadRequest
