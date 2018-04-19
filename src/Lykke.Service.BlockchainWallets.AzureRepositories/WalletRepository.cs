@@ -6,10 +6,11 @@ using AzureStorage.Tables;
 using AzureStorage.Tables.Templates.Index;
 using Common;
 using Common.Log;
-using Lykke.Service.BlockchainWallets.Core.Domain.Wallet;
 using Lykke.SettingsReader;
 using Microsoft.WindowsAzure.Storage.Table;
 using System.Linq;
+using Lykke.Service.BlockchainWallets.Core.DTOs;
+using Lykke.Service.BlockchainWallets.Core.Repositories;
 
 namespace Lykke.Service.BlockchainWallets.AzureRepositories
 {
@@ -62,7 +63,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
         #region Keys
 
-        private static (string PartitionKey, string RowKey) GetAddressIndexKeys(IWallet wallet)
+        private static (string PartitionKey, string RowKey) GetAddressIndexKeys(WalletEntity wallet)
         {
             return GetAddressIndexKeys(wallet.IntegrationLayerId, wallet.AssetId, wallet.Address);
         }
@@ -75,7 +76,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             return (partitionKey, rowKey);
         }
 
-        private static (string PartitionKey, string RowKey) GetClientIndexKeys(IWallet wallet)
+        private static (string PartitionKey, string RowKey) GetClientIndexKeys(WalletEntity wallet)
         {
             return GetClientIndexKeys(wallet.IntegrationLayerId, wallet.AssetId, wallet.ClientId);
         }
@@ -91,6 +92,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         private static string GetClientPartitionKey(Guid clientId)
         {
             var partitionKey = $"{clientId}";
+
             return partitionKey;
         }
 
@@ -162,8 +164,19 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             return await TryGetAsync(integrationLayerId, assetId, clientId) != null;
         }
 
+        public async Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(Guid clientId, int take, string continuationToken)
+        {
+            var indexes = await GetForClientIndicesAsync(clientId, take, continuationToken);
+            var keys = indexes.wallets.Select(x => Tuple.Create(x.WalletPartitionKey, x.WalletRowKey));
+
+            var wallets = (await _walletsTable.GetDataAsync(keys, take))
+                .Select(ConvertEntityToDto);
+
+            return (wallets, indexes.continuationToken);
+        }
+
         // NB! This method should be used only by conversion utility or in similar cases.
-        internal async Task<(IEnumerable<IWallet> wallets, string continuationToken)> GetAsync(string integrationLayerId, string assetId, int take, string continuationToken)
+        internal async Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAsync(string integrationLayerId, string assetId, int take, string continuationToken)
         {
             var filterCondition = TableQuery.CombineFilters
             (
@@ -174,10 +187,14 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
             var query = new TableQuery<WalletEntity>().Where(filterCondition);
 
-            return await _walletsTable.GetDataWithContinuationTokenAsync(query, take, continuationToken);
+            IEnumerable<WalletEntity> entities;
+
+            (entities, continuationToken) = await _walletsTable.GetDataWithContinuationTokenAsync(query, take, continuationToken);
+
+            return (entities.Select(ConvertEntityToDto), continuationToken);
         }
 
-        public async Task<IWallet> TryGetAsync(string integrationLayerId, string assetId, string address)
+        public async Task<WalletDto> TryGetAsync(string integrationLayerId, string assetId, string address)
         {
             (var indexPartitionKey, var indexRowKey) = GetAddressIndexKeys(integrationLayerId, assetId, address);
 
@@ -185,49 +202,58 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
             if (index != null)
             {
-                var wallet = await _walletsTable.GetDataAsync(index.PrimaryPartitionKey, index.PrimaryRowKey);
+                var entity = await _walletsTable.GetDataAsync(index.PrimaryPartitionKey, index.PrimaryRowKey);
 
-                return wallet;
+                return entity != null
+                    ? ConvertEntityToDto(entity)
+                    : null;
             }
 
             return null;
         }
 
-        public async Task<IWallet> TryGetAsync(string integrationLayerId, string assetId, Guid clientId)
+        public async Task<WalletDto> TryGetAsync(string integrationLayerId, string assetId, Guid clientId)
         {
             var partitionKey = WalletEntity.GetPartitionKey(integrationLayerId, assetId, clientId);
             var rowKey = WalletEntity.GetRowKey(clientId);
-
-            return await _walletsTable.GetDataAsync(partitionKey, rowKey);
+            var entity = await _walletsTable.GetDataAsync(partitionKey, rowKey);
+            
+            return entity != null 
+                ? ConvertEntityToDto(entity) 
+                : null;
         }
-
-        public async Task<(IEnumerable<IWallet>, string continuationToken)> TryGetForClientAsync(Guid clientId, int take, string continuationToken)
-        {
-            var indexes = await GetForClientIndicesAsync(clientId, take, continuationToken);
-            var keys = indexes.wallets.Select(x => Tuple.Create<string, string>(x.walletPartitionKey, x.walletRowKey));
-            var wallets = await _walletsTable.GetDataAsync(keys, take);
-
-            return (wallets, indexes.continuationToken);
-        }
-
+        
         // NB! This method should be used only by conversion utility or in similar cases.
-        internal async Task<(IEnumerable<(string walletPartitionKey, string walletRowKey)> wallets, string continuationToken)>
-            GetForClientIndicesAsync(Guid clientId, int take, string continuationToken)
+        internal async Task<(IEnumerable<(string WalletPartitionKey, string WalletRowKey)> wallets, string continuationToken)> GetForClientIndicesAsync(Guid clientId, int take, string continuationToken)
         {
             var partitionKey = GetClientPartitionKey(clientId);
             var indexes = await _clientIndexTable.GetDataWithContinuationTokenAsync(partitionKey, take, continuationToken);
             var values = indexes.Entities.Select(x => (x.PrimaryPartitionKey, x.PrimaryRowKey));
 
-            return (values, continuationToken);
+            return (values, indexes.ContinuationToken);
         }
 
         // NB! This method should be used only by conversion utility or in similar cases.
-        internal async Task<(IEnumerable<IWallet> wallets, string continuationToken)>
-            GetAllAsync(int take, string continuationToken)
+        internal async Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(int take, string continuationToken)
         {
-            var indexes = await _walletsTable.GetDataWithContinuationTokenAsync(take, continuationToken);
+            IEnumerable<WalletEntity> entities;
 
-            return (indexes.Entities, indexes.ContinuationToken);
+            (entities, continuationToken) = await _walletsTable.GetDataWithContinuationTokenAsync(take, continuationToken);
+
+            var wallets = entities.Select(ConvertEntityToDto);
+
+            return (wallets, continuationToken);
+        }
+
+        private static WalletDto ConvertEntityToDto(WalletEntity entity)
+        {
+            return new WalletDto
+            {
+                Address = entity.Address,
+                AssetId = entity.AssetId,
+                BlockchainType = entity.IntegrationLayerId,
+                ClientId = entity.ClientId
+            };
         }
     }
 }

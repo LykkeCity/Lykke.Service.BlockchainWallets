@@ -1,12 +1,14 @@
 ﻿using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Common.Log;
+using JetBrains.Annotations;
 using Lykke.Service.BlockchainApi.Client;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Settings.BlockchainIntegrationSettings;
 
 namespace Lykke.Service.BlockchainWallets.Services
 {
+    [UsedImplicitly]
     public class BlockchainIntegrationService : IBlockchainIntegrationService
     {
         private readonly ImmutableDictionary<string, BlockchainApiClient> _apiClients;
@@ -33,9 +35,9 @@ namespace Lykke.Service.BlockchainWallets.Services
             );
         }
 
-        public async Task<bool> AssetIsSupportedAsync(string integrationLayerId, string assetId)
+        public async Task<bool> AssetIsSupportedAsync(string blockchainType, string assetId)
         {
-            var apiClient = TryGetApiClient(integrationLayerId);
+            var apiClient = TryGetApiClient(blockchainType);
 
             if (apiClient != null)
             {
@@ -45,9 +47,14 @@ namespace Lykke.Service.BlockchainWallets.Services
             return false;
         }
 
-        public IBlockchainApiClient TryGetApiClient(string integrationLayerId)
+        public bool BlockchainIsSupported(string blockchainType)
         {
-            return _apiClients.TryGetValue(integrationLayerId, out var client)
+            return TryGetApiClient(blockchainType) != null;
+        }
+
+        public IBlockchainApiClient TryGetApiClient(string blockchainType)
+        {
+            return _apiClients.TryGetValue(blockchainType, out var client)
                 ? client
                 : null;
         }
