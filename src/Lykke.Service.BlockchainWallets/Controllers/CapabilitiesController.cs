@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Lykke.Service.BlockchainWallets.Controllers
 {
+    [Route("/api/capabilities")]
     public class CapabilitiesController: Controller
     {
 
