@@ -23,6 +23,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         private readonly IWalletRepository _walletRepository;
         private readonly IAdditionalWalletRepository _additionalWalletRepository;
         private readonly IBlockchainSignFacadeClient _blockchainSignFacadeClient;
+        private readonly IAddressParser _addressParser;
 
 
         public WalletService(
@@ -31,7 +32,8 @@ namespace Lykke.Service.BlockchainWallets.Services
             ICqrsEngine cqrsEngine,
             IWalletRepository walletRepository,
             IAdditionalWalletRepository additionalWalletRepository,
-            IBlockchainSignFacadeClient blockchainSignFacadeClient)
+            IBlockchainSignFacadeClient blockchainSignFacadeClient,
+            IAddressParser addressParser)
         {
             _capabilitiesService = capabilitiesService;
             _constantsService = constantsService;
@@ -39,6 +41,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             _walletRepository = walletRepository;
             _additionalWalletRepository = additionalWalletRepository;
             _blockchainSignFacadeClient = blockchainSignFacadeClient;
+            _addressParser = addressParser;
         }
 
         private async Task<bool> AdditionalWalletExistsAsync(string integrationLayerId, string assetId, Guid clientId)
@@ -154,25 +157,14 @@ namespace Lykke.Service.BlockchainWallets.Services
         
         private async Task<WalletWithAddressExtensionDto> ConvertWalletToWalletWithAddressExtensionAsync(WalletDto walletDto)
         {
-            var addressExtension = string.Empty;
-            var baseAddress = string.Empty;
+            var parseAddressResult = await _addressParser.ExtractAddressParts(walletDto.BlockchainType, walletDto.Address);
 
-            if (await _capabilitiesService.IsPublicAddressExtensionRequiredAsync(walletDto.BlockchainType))
-            {
-                var constants = await _constantsService.GetAddressExtensionConstantsAsync(walletDto.BlockchainType);
-
-                var addressAndExtension = walletDto.Address.Split(constants.Separator, 2);
-
-                baseAddress = addressAndExtension[0];
-                addressExtension = addressAndExtension[1];
-            }
-            
             return new WalletWithAddressExtensionDto
             {
                 Address = walletDto.Address,
-                AddressExtension = addressExtension,
+                AddressExtension = parseAddressResult.AddressExtension,
                 AssetId = walletDto.AssetId,
-                BaseAddress = baseAddress,
+                BaseAddress = parseAddressResult.BaseAddress,
                 BlockchainType = walletDto.BlockchainType,
                 ClientId = walletDto.ClientId
             };

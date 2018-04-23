@@ -256,6 +256,31 @@ namespace Lykke.Service.BlockchainWallets.Client
             return clientId?.ClientId;
         }
 
+        public async Task<CapabilititesResponce> GetCapabilititesAsync(string blockchainType)
+        {
+            ValidateInputParameters(blockchainType);
+
+            var capabilitites = await _apiRunner.RunWithRetriesAsync(() => _api.GetCapabilititesAsync
+            (
+                blockchainType
+            ));
+
+            return capabilitites;
+        }
+
+        public async Task<AddressParseResultResponce> ParseAddressAsync(string blockchainType, string address)
+        {
+            ValidateInputParameters(blockchainType);
+
+            var parseResult = await _apiRunner.RunWithRetriesAsync(() => _api.ParseAddressAsync
+            (
+                blockchainType,
+                address
+            ));
+
+            return parseResult;
+        }
+
         private static void ValidateInputParameters(string blockchainType)
         {
             if (string.IsNullOrEmpty(blockchainType))
