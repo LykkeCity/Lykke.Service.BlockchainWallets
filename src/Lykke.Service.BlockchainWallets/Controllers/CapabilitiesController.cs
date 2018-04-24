@@ -15,15 +15,12 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
         private readonly ICapabilitiesService _capabilitiesService;
-        private readonly IAddressParser _addressParser;
 
         public CapabilitiesController(IBlockchainIntegrationService blockchainIntegrationService, 
-            ICapabilitiesService capabilitiesService, 
-            IAddressParser addressParser)
+            ICapabilitiesService capabilitiesService)
         {
             _blockchainIntegrationService = blockchainIntegrationService;
             _capabilitiesService = capabilitiesService;
-            _addressParser = addressParser;
         }
 
         /// <summary>
@@ -56,44 +53,6 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             });
         }
 
-        /// <summary>
-        ///    Extract address parts based on  capabilities for the specified blockchain type.
-        /// </summary>
-        [HttpGet("{blockchainType}/parse-address/{address}")]
-        public async Task<IActionResult> ParseAddress(string blockchainType, string address)
-        {
-            if (string.IsNullOrEmpty(blockchainType))
-            {
-                return BadRequest
-                (
-                    ErrorResponse.Create($"{nameof(blockchainType)} should not be null or empty.")
-                );
-            }
 
-            if (!_blockchainIntegrationService.BlockchainIsSupported(blockchainType))
-            {
-                return BadRequest
-                (
-                    ErrorResponse.Create($"Blockchain type [{blockchainType}] is not supported.")
-                );
-            }
-
-            if (string.IsNullOrEmpty(address))
-            {
-                return BadRequest
-                (
-                    ErrorResponse.Create($"{nameof(address)} should not be null or empty.")
-                );
-            }
-
-            var parseResult = await _addressParser.ExtractAddressParts(blockchainType, address);
-
-            return Ok(new AddressParseResultResponce
-            {
-                IsPublicAddressExtensionRequired = parseResult.IsPublicAddressExtensionRequired,
-                AddressExtension = parseResult.AddressExtension,
-                BaseAddress = parseResult.BaseAddress
-            });
-        }
     }
 }
