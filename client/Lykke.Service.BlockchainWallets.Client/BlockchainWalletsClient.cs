@@ -95,15 +95,9 @@ namespace Lykke.Service.BlockchainWallets.Client
             {
                 throw new ArgumentException(nameof(addressExtension));
             }
+            
 
-            var request = new MergeAddressRequest
-            {
-                AddressExtension = addressExtension,
-                BaseAddress = baseAddress,
-                BlockchainType = blockchainType
-            };
-
-            var response = await _apiRunner.RunWithRetriesAsync(() => _api.MergeAddressAsync(request));
+            var response = await _apiRunner.RunWithRetriesAsync(() => _api.MergeAddressAsync(blockchainType, baseAddress, addressExtension));
 
             return response.Address;
         }
