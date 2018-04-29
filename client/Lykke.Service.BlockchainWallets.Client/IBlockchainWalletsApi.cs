@@ -30,7 +30,14 @@ namespace Lykke.Service.BlockchainWallets.Client
         [Get("/api/wallets/all/by-client-ids/{clientId}")]
         Task<WalletsResponse> GetWalletsAsync(Guid clientId, int take, string continuationToken);
 
-        [Post("/api/address/merge")]
-        Task<MergedAddressResponse> MergeAddressAsync(MergeAddressRequest request);
+        [Get("/api/{blockchainType}/address/merged/{baseAddress}/{addressExtension}")]
+        Task<MergedAddressResponse> MergeAddressAsync(string blockchainType, string baseAddress, string addressExtension);
+
+        [Get("/api/capabilities/{blockchainType}")]
+        Task<CapabilititesResponce> GetCapabilititesAsync(string blockchainType);
+
+
+        [Get("/api/{blockchainType}/address/parsed/{address}")]
+        Task<AddressParseResultResponce> ParseAddressAsync(string blockchainType, string address);
     }
 }

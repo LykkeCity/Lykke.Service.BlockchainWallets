@@ -188,5 +188,25 @@ namespace Lykke.Service.BlockchainWallets.Client
         ///     Lykke client id, if operation succeeded, null otherwise.
         /// </returns>
         Task<Guid?> TryGetClientIdAsync(string blockchainType, string assetId, string address);
+
+        /// <summary>
+        ///     Returns capabilitites
+        /// </summary>
+        /// <param name="blockchainType">
+        ///     Target blockchain type.
+        /// </param>
+        Task<CapabilititesResponce> GetCapabilititesAsync(string blockchainType); 
+
+        /// <summary>
+        ///     Returns base address and address extension for given address
+        /// </summary>
+        /// <param name="blockchainType">
+        ///     Target blockchain type.
+        /// </param>
+        /// <param name="address">
+        ///     address to parse
+        /// </param>
+        Task<AddressParseResultResponce> ParseAddressAsync(string blockchainType, string address);
+
     }
 }

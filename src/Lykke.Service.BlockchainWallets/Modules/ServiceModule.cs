@@ -83,6 +83,10 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .RegisterType<ConstantsService>()
                 .As<IConstantsService>()
                 .SingleInstance();
+
+            builder
+                .RegisterType<AddressParser>()
+                .As<IAddressParser>();
         }
 
         private IBlockchainSignFacadeClient CreateBlockchainSignFacadeClient()
