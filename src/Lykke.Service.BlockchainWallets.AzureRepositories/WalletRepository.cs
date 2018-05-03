@@ -196,9 +196,13 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
         public async Task<WalletDto> TryGetAsync(string integrationLayerId, string assetId, string address)
         {
-            (var indexPartitionKey, var indexRowKey) = GetAddressIndexKeys(integrationLayerId, assetId, address);
+            var (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(integrationLayerId, assetId, address);
 
-            var index = await _addressIndexTable.GetDataAsync(indexPartitionKey, indexRowKey);
+            var index = await _addressIndexTable.GetDataAsync
+            (
+                partition: indexPartitionKey,
+                row: indexRowKey
+            );
 
             if (index != null)
             {
