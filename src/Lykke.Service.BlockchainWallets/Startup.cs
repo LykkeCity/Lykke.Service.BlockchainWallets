@@ -4,6 +4,7 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using AzureStorage.Tables;
 using Common.Log;
+using JetBrains.Annotations;
 using Lykke.AzureQueueIntegration;
 using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
@@ -22,6 +23,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace Lykke.Service.BlockchainWallets
 {
+    [UsedImplicitly]
     public class Startup
     {
         public Startup(IHostingEnvironment env)
@@ -29,16 +31,18 @@ namespace Lykke.Service.BlockchainWallets
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddEnvironmentVariables();
-            Configuration = builder.Build();
 
-            Environment = env;
+            Configuration = builder.Build();
         }
 
-        public IContainer ApplicationContainer { get; private set; }
-        public IConfigurationRoot Configuration { get; }
-        public IHostingEnvironment Environment { get; }
-        public ILog Log { get; private set; }
+        private IContainer ApplicationContainer { get; set; }
 
+        private IConfigurationRoot Configuration { get; }
+
+        private ILog Log { get; set; }
+
+
+        [UsedImplicitly]
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
         {
             try
@@ -73,6 +77,7 @@ namespace Lykke.Service.BlockchainWallets
             }
         }
 
+        [UsedImplicitly]
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             try
@@ -190,9 +195,24 @@ namespace Lykke.Service.BlockchainWallets
 
             aggregateLogger.AddLog(azureStorageLogger);
 
-            var personalSlackLogger = LykkeLogToSlack.Create(slackService, "BlockChainIntegration");
+            var allMessagesSlackLogger = LykkeLogToSlack.Create
+            (
+                slackService,
+                "BlockChainIntegration",
+                // ReSharper disable once RedundantArgumentDefaultValue
+                LogLevel.All
+            );
 
-            aggregateLogger.AddLog(personalSlackLogger);
+            aggregateLogger.AddLog(allMessagesSlackLogger);
+
+            var importantMessagesSlackLogger = LykkeLogToSlack.Create
+            (
+                slackService,
+                "BlockChainIntegrationImportantMessages",
+                LogLevel.All ^ LogLevel.Info
+            );
+
+            aggregateLogger.AddLog(importantMessagesSlackLogger);
 
             return aggregateLogger;
         }
