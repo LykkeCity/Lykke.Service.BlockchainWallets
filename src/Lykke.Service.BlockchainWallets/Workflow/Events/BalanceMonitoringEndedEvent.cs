@@ -1,9 +1,9 @@
 ﻿using MessagePack;
 
-namespace Lykke.Service.BlockchainWallets.Core.Commands
+namespace Lykke.Service.BlockchainWallets.Workflow.Events
 {
     [MessagePackObject]
-    public class BeginBalanceMonitoringCommand
+    public class BalanceMonitoringEndedEvent
     {
         [Key(0)]
         public string Address { get; set; }
@@ -12,6 +12,6 @@ namespace Lykke.Service.BlockchainWallets.Core.Commands
         public string AssetId { get; set; }
 
         [Key(2)]
-        public string IntegrationLayerId { get; set; }
+        public string BlockchainType { get; set; }
     }
 }

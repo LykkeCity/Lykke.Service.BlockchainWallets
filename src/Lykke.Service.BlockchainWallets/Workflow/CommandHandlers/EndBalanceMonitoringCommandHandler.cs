@@ -4,8 +4,9 @@ using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Cqrs;
 using Lykke.Service.BlockchainWallets.Contract.Events;
-using Lykke.Service.BlockchainWallets.Core.Commands;
 using Lykke.Service.BlockchainWallets.Core.Services;
+using Lykke.Service.BlockchainWallets.Workflow.Commands;
+using Lykke.Service.BlockchainWallets.Workflow.Events;
 
 namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
 {
@@ -31,23 +32,23 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
 
             try
             {
-                var apiClient = _blockchainIntegrationService.TryGetApiClient(command.IntegrationLayerId);
+                var apiClient = _blockchainIntegrationService.TryGetApiClient(command.BlockchainType);
 
                 if (apiClient != null)
                 {
                     await apiClient.StopBalanceObservationAsync(command.Address);
 
-                    publisher.PublishEvent(new WalletDeletedEvent
+                    publisher.PublishEvent(new BalanceMonitoringEndedEvent
                     {
                         Address = command.Address,
                         AssetId = command.AssetId,
-                        IntegrationLayerId = command.IntegrationLayerId
+                        BlockchainType = command.BlockchainType
                     });
 
                     return CommandHandlingResult.Ok();
                 }
 
-                throw new NotSupportedException($"Blockchain integration layer [{command.IntegrationLayerId}] is not supported");
+                throw new NotSupportedException($"Blockchain type [{command.BlockchainType}] is not supported");
             }
             catch (Exception e)
             {

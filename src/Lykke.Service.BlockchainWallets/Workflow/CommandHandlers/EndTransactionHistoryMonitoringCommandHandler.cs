@@ -7,17 +7,16 @@ using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Workflow.Commands;
 using Lykke.Service.BlockchainWallets.Workflow.Events;
 
-
 namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
 {
     [UsedImplicitly]
-    public class BeginBalanceMonitoringCommandHandler
+    public class EndTransactionHistoryMonitoringCommandHandler
     {
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
         private readonly ILog _log;
 
 
-        public BeginBalanceMonitoringCommandHandler(
+        public EndTransactionHistoryMonitoringCommandHandler(
             IBlockchainIntegrationService blockchainIntegrationService,
             ILog log)
         {
@@ -25,11 +24,10 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
             _log = log;
         }
 
-
         [UsedImplicitly]
-        public async Task<CommandHandlingResult> Handle(BeginBalanceMonitoringCommand command, IEventPublisher publisher)
+        public async Task<CommandHandlingResult> Handle(EndTransactionHistoryMonitoringCommand command, IEventPublisher publisher)
         {
-            _log.WriteInfo(nameof(BeginBalanceMonitoringCommand), command, "");
+            _log.WriteInfo(nameof(EndTransactionHistoryMonitoringCommand), command, "");
 
             try
             {
@@ -37,9 +35,9 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
 
                 if (apiClient != null)
                 {
-                    await apiClient.StartBalanceObservationAsync(command.Address);
-                    
-                    publisher.PublishEvent(new BalanceMonitoringBeganEvent
+                    await apiClient.StopBalanceObservationAsync(command.Address);
+
+                    publisher.PublishEvent(new BalanceMonitoringEndedEvent
                     {
                         Address = command.Address,
                         AssetId = command.AssetId,
@@ -53,7 +51,7 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
             }
             catch (Exception e)
             {
-                _log.WriteError(nameof(BeginBalanceMonitoringCommand), command, e);
+                _log.WriteError(nameof(EndTransactionHistoryMonitoringCommand), command, e);
 
                 throw;
             }

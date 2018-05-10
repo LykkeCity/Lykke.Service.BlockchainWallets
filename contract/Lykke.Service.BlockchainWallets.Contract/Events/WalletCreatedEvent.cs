@@ -1,8 +1,9 @@
-﻿using MessagePack;
+﻿using JetBrains.Annotations;
+using MessagePack;
 
 namespace Lykke.Service.BlockchainWallets.Contract.Events
 {
-    [MessagePackObject]
+    [MessagePackObject, PublicAPI]
     public class WalletCreatedEvent
     {
         [Key(0)]

@@ -12,8 +12,7 @@ namespace Lykke.Service.BlockchainWallets
 
         public static async Task Main(string[] args)
         {
-            Console.WriteLine(
-                $"{PlatformServices.Default.Application.ApplicationName} version {PlatformServices.Default.Application.ApplicationVersion}");
+            Console.WriteLine($"{PlatformServices.Default.Application.ApplicationName} version {PlatformServices.Default.Application.ApplicationVersion}");
 #if DEBUG
             Console.WriteLine("Is DEBUG");
 #else
