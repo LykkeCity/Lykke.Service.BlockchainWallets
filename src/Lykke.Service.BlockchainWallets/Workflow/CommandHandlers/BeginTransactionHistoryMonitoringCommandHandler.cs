@@ -11,13 +11,13 @@ using Lykke.Service.BlockchainWallets.Workflow.Events;
 namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
 {
     [UsedImplicitly]
-    public class BeginBalanceMonitoringCommandHandler
+    public class BeginTransactionHistoryMonitoringCommandHandler
     {
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
         private readonly ILog _log;
 
 
-        public BeginBalanceMonitoringCommandHandler(
+        public BeginTransactionHistoryMonitoringCommandHandler(
             IBlockchainIntegrationService blockchainIntegrationService,
             ILog log)
         {
@@ -25,11 +25,10 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
             _log = log;
         }
 
-
         [UsedImplicitly]
-        public async Task<CommandHandlingResult> Handle(BeginBalanceMonitoringCommand command, IEventPublisher publisher)
+        public async Task<CommandHandlingResult> Handle(BeginTransactionHistoryMonitoringCommand command, IEventPublisher publisher)
         {
-            _log.WriteInfo(nameof(BeginBalanceMonitoringCommand), command, "");
+            _log.WriteInfo(nameof(BeginTransactionHistoryMonitoringCommand), command, "");
 
             try
             {
@@ -38,8 +37,8 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
                 if (apiClient != null)
                 {
                     await apiClient.StartBalanceObservationAsync(command.Address);
-                    
-                    publisher.PublishEvent(new BalanceMonitoringBeganEvent
+
+                    publisher.PublishEvent(new TransactionHistoryMonitoringBeganEvent
                     {
                         Address = command.Address,
                         AssetId = command.AssetId,
@@ -53,7 +52,7 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
             }
             catch (Exception e)
             {
-                _log.WriteError(nameof(BeginBalanceMonitoringCommand), command, e);
+                _log.WriteError(nameof(BeginTransactionHistoryMonitoringCommand), command, e);
 
                 throw;
             }

@@ -6,7 +6,7 @@ using JetBrains.Annotations;
 using Lykke.Cqrs;
 using Lykke.Service.BlockchainSignFacade.Client;
 using Lykke.Service.BlockchainWallets.Contract;
-using Lykke.Service.BlockchainWallets.Core.Commands;
+using Lykke.Service.BlockchainWallets.Contract.Events;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.Service.BlockchainWallets.Core.Services;
@@ -17,8 +17,6 @@ namespace Lykke.Service.BlockchainWallets.Services
     [UsedImplicitly]
     public class WalletService : IWalletService
     {
-        private readonly ICapabilitiesService _capabilitiesService;
-        private readonly IConstantsService _constantsService;
         private readonly ICqrsEngine _cqrsEngine;
         private readonly IWalletRepository _walletRepository;
         private readonly IAdditionalWalletRepository _additionalWalletRepository;
@@ -27,16 +25,12 @@ namespace Lykke.Service.BlockchainWallets.Services
 
 
         public WalletService(
-            ICapabilitiesService capabilitiesService,
-            IConstantsService constantsService,
             ICqrsEngine cqrsEngine,
             IWalletRepository walletRepository,
             IAdditionalWalletRepository additionalWalletRepository,
             IBlockchainSignFacadeClient blockchainSignFacadeClient,
             IAddressParser addressParser)
         {
-            _capabilitiesService = capabilitiesService;
-            _constantsService = constantsService;
             _cqrsEngine = cqrsEngine;
             _walletRepository = walletRepository;
             _additionalWalletRepository = additionalWalletRepository;
@@ -54,22 +48,22 @@ namespace Lykke.Service.BlockchainWallets.Services
         {
             var wallet = await _blockchainSignFacadeClient.CreateWalletAsync(blockchainType);
             var address = wallet.PublicAddress;
-            var command = new BeginBalanceMonitoringCommand
+            
+            await _walletRepository.AddAsync(blockchainType, assetId, clientId, address);
+
+            var @event = new WalletCreatedEvent
             {
                 Address = address,
                 AssetId = assetId,
                 IntegrationLayerId = blockchainType
             };
 
-            await _walletRepository.AddAsync(blockchainType, assetId, clientId, address);
-
-            _cqrsEngine.SendCommand
+            _cqrsEngine.PublishEvent
             (
-                command,
-                BlockchainWalletsBoundedContext.Name,
+                @event,
                 BlockchainWalletsBoundedContext.Name
             );
-
+            
             return await ConvertWalletToWalletWithAddressExtensionAsync
             (
                 new WalletDto
@@ -102,20 +96,20 @@ namespace Lykke.Service.BlockchainWallets.Services
         private async Task DeleteDefaultWalletAsync(string integrationLayerId, string assetId, Guid clientId)
         {
             var wallet = await _walletRepository.TryGetAsync(integrationLayerId, assetId, clientId);
+            
+            await _walletRepository.DeleteIfExistsAsync(integrationLayerId, assetId, clientId);
+
             var address = wallet.Address;
-            var command = new EndBalanceMonitoringCommand
+            var @event = new WalletDeletedEvent
             {
                 Address = address,
                 AssetId = assetId,
                 IntegrationLayerId = integrationLayerId
             };
 
-            await _walletRepository.DeleteIfExistsAsync(integrationLayerId, assetId, clientId);
-
-            _cqrsEngine.SendCommand
+            _cqrsEngine.PublishEvent
             (
-                command,
-                BlockchainWalletsBoundedContext.Name,
+                @event,
                 BlockchainWalletsBoundedContext.Name
             );
         }
