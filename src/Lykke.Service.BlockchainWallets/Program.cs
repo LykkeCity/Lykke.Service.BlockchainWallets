@@ -6,11 +6,11 @@ using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Lykke.Service.BlockchainWallets
 {
-    internal sealed class Program
+    internal static class Program
     {
         public static string EnvInfo => Environment.GetEnvironmentVariable("ENV_INFO");
 
-        public static async Task Main(string[] args)
+        public static async Task Main()
         {
             Console.WriteLine($"{PlatformServices.Default.Application.ApplicationName} version {PlatformServices.Default.Application.ApplicationVersion}");
 #if DEBUG

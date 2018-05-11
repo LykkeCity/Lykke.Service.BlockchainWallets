@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Lykke.Service.BlockchainWallets.Core.DTOs
+﻿namespace Lykke.Service.BlockchainWallets.Core.DTOs
 {
     public class AddressParseResultDto
     {

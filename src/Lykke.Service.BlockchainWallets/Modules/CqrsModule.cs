@@ -11,7 +11,6 @@ using Lykke.Service.BlockchainWallets.Contract.Events;
 using Lykke.Service.BlockchainWallets.Core.Settings.ServiceSettings;
 using Lykke.Service.BlockchainWallets.Workflow.CommandHandlers;
 using Lykke.Service.BlockchainWallets.Workflow.Commands;
-using Lykke.Service.BlockchainWallets.Workflow.Events;
 using Lykke.Service.BlockchainWallets.Workflow.Sagas;
 using RabbitMQ.Client;
 
@@ -78,10 +77,10 @@ namespace Lykke.Service.BlockchainWallets.Modules
             // Sagas
 
             builder
-                .RegisterType<WalletCreationSaga>();
+                .RegisterType<WalletSubscriptionSaga>();
 
             builder
-                .RegisterType<WalletDeletionSaga>();
+                .RegisterType<WalletUnsubscriptionSaga>();
 
             // Create engine
             builder.Register(ctx => CreateEngine(ctx, messagingEngine))
@@ -126,55 +125,35 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .With(defaultRoute)
 
                 .PublishingEvents(
-                    typeof(BalanceMonitoringBeganEvent),
-                    typeof(BalanceMonitoringEndedEvent),
-                    typeof(TransactionHistoryMonitoringBeganEvent),
-                    typeof(TransactionHistoryMonitoringEndedEvent),
                     typeof(WalletCreatedEvent),
                     typeof(WalletDeletedEvent))
                 .With(BlockchainWalletsBoundedContext.EventsRoute)
 
                 .ProcessingOptions(defaultRoute).MultiThreaded(8).QueueCapacity(1024),
 
-            Register.Saga<WalletCreationSaga>($"{BlockchainWalletsBoundedContext.Name}.wallet-creation-saga")
-                .ListeningEvents(typeof(WalletCreatedEvent))
+            Register.Saga<WalletSubscriptionSaga>($"{BlockchainWalletsBoundedContext.Name}.wallet-creation-saga")
+                .ListeningEvents(
+                    typeof(WalletCreatedEvent))
                 .From(BlockchainWalletsBoundedContext.Name)
                 .On(defaultRoute)
-                .PublishingCommands(typeof(BeginTransactionHistoryMonitoringCommand))
+                .PublishingCommands(
+                    typeof(BeginBalanceMonitoringCommand),
+                    typeof(BeginTransactionHistoryMonitoringCommand))
                 .To(BlockchainWalletsBoundedContext.Name)
                 .With(defaultPipeline)
-
-                .ListeningEvents(typeof(TransactionHistoryMonitoringBeganEvent))
-                .From(BlockchainWalletsBoundedContext.Name)
-                .On(defaultRoute)
-                .PublishingCommands(typeof(BeginBalanceMonitoringCommand))
-                .To(BlockchainWalletsBoundedContext.Name)
-                .With(defaultPipeline)
-
-                .ListeningEvents(typeof(BalanceMonitoringBeganEvent))
-                .From(BlockchainWalletsBoundedContext.Name)
-                .On(defaultRoute)
 
                 .ProcessingOptions(defaultRoute).MultiThreaded(8).QueueCapacity(1024),
 
-            Register.Saga<WalletDeletionSaga>($"{BlockchainWalletsBoundedContext.Name}.wallet-deletion-saga")
-                .ListeningEvents(typeof(WalletDeletedEvent))
+            Register.Saga<WalletUnsubscriptionSaga>($"{BlockchainWalletsBoundedContext.Name}.wallet-deletion-saga")
+                .ListeningEvents(
+                    typeof(WalletDeletedEvent))
                 .From(BlockchainWalletsBoundedContext.Name)
                 .On(defaultRoute)
-                .PublishingCommands(typeof(EndTransactionHistoryMonitoringCommand))
+                .PublishingCommands(
+                    typeof(EndBalanceMonitoringCommand),
+                    typeof(EndTransactionHistoryMonitoringCommand))
                 .To(BlockchainWalletsBoundedContext.Name)
                 .With(defaultPipeline)
-
-                .ListeningEvents(typeof(TransactionHistoryMonitoringEndedEvent))
-                .From(BlockchainWalletsBoundedContext.Name)
-                .On(defaultRoute)
-                .PublishingCommands(typeof(EndBalanceMonitoringCommand))
-                .To(BlockchainWalletsBoundedContext.Name)
-                .With(defaultPipeline)
-
-                .ListeningEvents(typeof(BalanceMonitoringEndedEvent))
-                .From(BlockchainWalletsBoundedContext.Name)
-                .On(defaultRoute)
 
                 .ProcessingOptions(defaultRoute).MultiThreaded(8).QueueCapacity(1024)
             };

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Lykke.Common.Api.Contract.Responses;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Contract.Models;
@@ -10,6 +11,7 @@ namespace Lykke.Service.BlockchainWallets.Client
 {
     /// <summary>
     /// </summary>
+    [PublicAPI]
     public interface IBlockchainWalletsClient
     {
         /// <summary>
