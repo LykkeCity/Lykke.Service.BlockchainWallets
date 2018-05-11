@@ -45,7 +45,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
                 async (a, b, c) => { await client.CreateWalletAsync(a, b, c); },
                 async (a, b, c) => { await client.DeleteWalletAsync(a, b, c); },
                 async (a, b, c) => { await client.GetAddressAsync(a, b, c); },
-                async (a, b, c) => { await client.TryGetAddressAsync(a, b, c); },
+                async (a, b, c) => { await client.TryGetAddressAsync(a, b, c); }
             };
 
             foreach (var clientAction in clientActions)
@@ -215,7 +215,8 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
         [Fact]
         public async Task GetAddressAsync_Called__Client_Exists__Address_Returned()
         {
-            var address = "0x83f0726180cf3964b69f62ac063c5cb9a66b3be5";
+            const string address = "0x83f0726180cf3964b69f62ac063c5cb9a66b3be5";
+
             var handlerStub = new DelegatingHandlerStub(HttpStatusCode.OK, new AddressResponse
             {
                 Address = address
@@ -278,12 +279,12 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
         public async Task GetClientWalletsAsync_Called__Wallets_Exists__Return_ClientWalletResponse()
         {
             var clientId = Guid.Parse("25c47ff8-e31e-4913-8e02-8c2512f0111e");
-            var handlerStub = new DelegatingHandlerStub(HttpStatusCode.OK, new WalletsResponse()
+            var handlerStub = new DelegatingHandlerStub(HttpStatusCode.OK, new WalletsResponse
             {
                 ContinuationToken = null,
                 Wallets = new[]
                 {
-                    new WalletResponse()
+                    new WalletResponse
                     {
                         Address = "0x00000000...",
                         ClientId = clientId,
@@ -308,12 +309,12 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             
             #region Responses
 
-            var content1 = new WalletsResponse()
+            var content1 = new WalletsResponse
             {
                 ContinuationToken = "1",
                 Wallets = new[]
                 {
-                    new WalletResponse()
+                    new WalletResponse
                     {
                         Address = "0x00000000...",
                         ClientId = clientId,
@@ -323,12 +324,12 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
                 }
             };
 
-            var content2 = new WalletsResponse()
+            var content2 = new WalletsResponse
             {
                 ContinuationToken = null,
                 Wallets = new[]
                 {
-                    new WalletResponse()
+                    new WalletResponse
                     {
                         Address = "0x00000001...",//Does not matter
                         ClientId = clientId,
@@ -360,10 +361,10 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
 
             var client = CreateClient(handlerStub);
 
-            var result = await client.GetAllWalletsAsync(clientId, 1);
+            var result = (await client.GetAllWalletsAsync(clientId, 1)).ToList();
 
-            Assert.True(result?.Count() == 2);
-            Assert.True(result?.FirstOrDefault()?.ClientId == clientId);
+            Assert.True(result.Count == 2);
+            Assert.True(result.FirstOrDefault()?.ClientId == clientId);
         }
 
 
@@ -372,16 +373,6 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             var httpClient = new HttpClient(handlerStub)
             {
                 BaseAddress = new Uri("http://localhost")
-            };
-
-            return new BlockchainWalletsClient(httpClient);
-        }
-
-        private static BlockchainWalletsClient CreateClient()
-        {
-            var httpClient = new HttpClient()
-            {
-                BaseAddress = new Uri("http://localhost:5000")
             };
 
             return new BlockchainWalletsClient(httpClient);

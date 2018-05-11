@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.Services;
 
 namespace Lykke.Service.BlockchainWallets.Services
 {
-    public class AddressParser:IAddressParser
+    [UsedImplicitly]
+    public class AddressParser : IAddressParser
     {
         private readonly ICapabilitiesService _capabilitiesService;
         private readonly IConstantsService _constantsService;

@@ -3,9 +3,10 @@ using System.Threading.Tasks;
 using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Cqrs;
+using Lykke.Service.BlockchainWallets.Core;
+using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Workflow.Commands;
-using Lykke.Service.BlockchainWallets.Workflow.Events;
 
 namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
 {
@@ -13,14 +14,17 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
     public class EndTransactionHistoryMonitoringCommandHandler
     {
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
+        private readonly IMonitoringSubscriptionRepository _monitoringSubscriptionRepository;
         private readonly ILog _log;
 
 
         public EndTransactionHistoryMonitoringCommandHandler(
             IBlockchainIntegrationService blockchainIntegrationService,
+            IMonitoringSubscriptionRepository monitoringSubscriptionRepository,
             ILog log)
         {
             _blockchainIntegrationService = blockchainIntegrationService;
+            _monitoringSubscriptionRepository = monitoringSubscriptionRepository;
             _log = log;
         }
 
@@ -31,23 +35,33 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
 
             try
             {
-                var apiClient = _blockchainIntegrationService.TryGetApiClient(command.BlockchainType);
+                const MonitoringSubscriptionType subscriptionType = MonitoringSubscriptionType.TransactionHistory;
+
+                var address = command.Address;
+                var assetId = command.AssetId;
+                var blockchainType = command.BlockchainType;
+
+                var apiClient = _blockchainIntegrationService.TryGetApiClient(blockchainType);
 
                 if (apiClient != null)
                 {
-                    await apiClient.StopBalanceObservationAsync(command.Address);
-
-                    publisher.PublishEvent(new BalanceMonitoringEndedEvent
+                    if (!await _monitoringSubscriptionRepository.AddressIsSubscribedAsync(blockchainType, address, subscriptionType))
                     {
-                        Address = command.Address,
-                        AssetId = command.AssetId,
-                        BlockchainType = command.BlockchainType
-                    });
+                        await apiClient.StopHistoryObservationOfIncomingTransactionsAsync(address);
+                    }
+                    
+                    await _monitoringSubscriptionRepository.UnregisterWalletSubscriptionAsync
+                    (
+                        blockchainType: blockchainType,
+                        address: address,
+                        assetId: assetId,
+                        subscriptionType: subscriptionType
+                    );
 
                     return CommandHandlingResult.Ok();
                 }
 
-                throw new NotSupportedException($"Blockchain type [{command.BlockchainType}] is not supported");
+                throw new NotSupportedException($"Blockchain type [{blockchainType}] is not supported");
             }
             catch (Exception e)
             {

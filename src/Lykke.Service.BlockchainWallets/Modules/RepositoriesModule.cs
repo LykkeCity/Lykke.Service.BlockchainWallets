@@ -22,14 +22,21 @@ namespace Lykke.Service.BlockchainWallets.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
+            var connectionString = _dbSettings.Nested(x => x.DataConnString);
+
             builder
-                .Register(c => WalletRepository.Create(_dbSettings.Nested(x => x.DataConnString), _log))
+                .Register(c => WalletRepository.Create(connectionString, _log))
                 .As<IWalletRepository>()
                 .SingleInstance();
 
             builder
-                .Register(c => AdditionalWalletRepository.Create(_dbSettings.Nested(x => x.DataConnString), _log))
+                .Register(c => AdditionalWalletRepository.Create(connectionString, _log))
                 .As<IAdditionalWalletRepository>()
+                .SingleInstance();
+
+            builder
+                .Register(c => MonitoringSubscriptionRepository.Create(connectionString, _log))
+                .As<IMonitoringSubscriptionRepository>()
                 .SingleInstance();
         }
     }
