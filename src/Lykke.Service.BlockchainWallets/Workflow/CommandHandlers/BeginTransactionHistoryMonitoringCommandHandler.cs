@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using Common.Log;
 using JetBrains.Annotations;
@@ -54,38 +55,36 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
                         {
                             await apiClient.StartHistoryObservationOfIncomingTransactionsAsync(address);
                         }
-                        catch (ErrorResponseException e) when (e.InnerException is Refit.ApiException)
+                        catch (ErrorResponseException e) when (e.InnerException is Refit.ApiException apiException)
                         {
-                            var apiException = (Refit.ApiException) e.InnerException;
-
-                            if (apiException.StatusCode == HttpStatusCode.NotImplemented)
+                            string warningMessage;
+                            
+                            // ReSharper disable once SwitchStatementMissingSomeCases
+                            switch (apiException.StatusCode)
                             {
-                                _log.WriteWarning
-                                (
-                                    nameof(BeginTransactionHistoryMonitoringCommand),
-                                    command,
-                                    $"Blockchain type [{blockchainType}] does not support transactions history"
-                                );
+                                    case HttpStatusCode.NotImplemented:
+                                        warningMessage = $"Blockchain type [{blockchainType}] does not support transactions history.";
+                                        break;
+                                    case HttpStatusCode.NotFound:
+                                        warningMessage = $"Blockchain type [{blockchainType}] either does not support transactions history, or not respond";
+                                        break;
+                                    default:
+                                        throw;
                             }
-                            else if (apiException.StatusCode == HttpStatusCode.NotFound)
-                            {
-                                _log.WriteWarning
-                                (
-                                    nameof(BeginTransactionHistoryMonitoringCommand),
-                                    command,
-                                    $"Blockchain type [{blockchainType}] either does not support transactions history, or not respond"
-                                );
-                            }
+                            
+                            _log.WriteWarning(nameof(BeginTransactionHistoryMonitoringCommand), command, warningMessage);
+                            
+                            return CommandHandlingResult.Ok();
                         }
+                        
+                        await _monitoringSubscriptionRepository.RegisterWalletSubscriptionAsync
+                        (
+                            blockchainType: blockchainType,
+                            address: address,
+                            assetId: assetId,
+                            subscriptionType: subscriptionType
+                        );
                     }
-                    
-                    await _monitoringSubscriptionRepository.RegisterWalletSubscriptionAsync
-                    (
-                        blockchainType: blockchainType,
-                        address: address,
-                        assetId: assetId,
-                        subscriptionType: subscriptionType
-                    );
                     
                     return CommandHandlingResult.Ok();
                 }

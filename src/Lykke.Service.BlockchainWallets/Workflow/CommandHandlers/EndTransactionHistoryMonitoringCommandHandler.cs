@@ -45,19 +45,19 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
 
                 if (apiClient != null)
                 {
-                    if (!await _monitoringSubscriptionRepository.AddressIsSubscribedAsync(blockchainType, address, subscriptionType))
+                    if (await _monitoringSubscriptionRepository.AddressIsSubscribedAsync(blockchainType, address, subscriptionType))
                     {
                         await apiClient.StopHistoryObservationOfIncomingTransactionsAsync(address);
+                        
+                        await _monitoringSubscriptionRepository.UnregisterWalletSubscriptionAsync
+                        (
+                            blockchainType: blockchainType,
+                            address: address,
+                            assetId: assetId,
+                            subscriptionType: subscriptionType
+                        );
                     }
                     
-                    await _monitoringSubscriptionRepository.UnregisterWalletSubscriptionAsync
-                    (
-                        blockchainType: blockchainType,
-                        address: address,
-                        assetId: assetId,
-                        subscriptionType: subscriptionType
-                    );
-
                     return CommandHandlingResult.Ok();
                 }
 
