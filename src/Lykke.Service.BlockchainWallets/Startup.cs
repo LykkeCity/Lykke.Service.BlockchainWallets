@@ -190,7 +190,7 @@ namespace Lykke.Service.BlockchainWallets
 
             aggregateLogger.AddLog(azureStorageLogger);
 
-            var personalSlackLogger = LykkeLogToSlack.Create(slackService, "BlockChainIntegration");
+            var personalSlackLogger = LykkeLogToSlack.Create(slackService, "BlockChainIntegration", disableAntiSpam: true);
 
             aggregateLogger.AddLog(personalSlackLogger);
 
