@@ -198,7 +198,8 @@ namespace Lykke.Service.BlockchainWallets
                 slackService,
                 "BlockChainIntegration",
                 // ReSharper disable once RedundantArgumentDefaultValue
-                LogLevel.All
+                LogLevel.All,
+                disableAntiSpam: true
             );
 
             aggregateLogger.AddLog(allMessagesSlackLogger);
@@ -207,7 +208,8 @@ namespace Lykke.Service.BlockchainWallets
             (
                 slackService,
                 "BlockChainIntegrationImportantMessages",
-                LogLevel.All ^ LogLevel.Info
+                LogLevel.All ^ LogLevel.Info,
+                disableAntiSpam: true
             );
 
             aggregateLogger.AddLog(importantMessagesSlackLogger);
