@@ -65,7 +65,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
             // Address index
 
-            (var indexPartitionKey, var indexRowKey) = GetAddressIndexKeys(blockchainType, assetId, address);
+            var (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(blockchainType, assetId, address);
             
             await _addressIndexTable.InsertOrReplaceAsync(new AzureIndex(
                 indexPartitionKey,
@@ -95,7 +95,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
             foreach (var wallet in wallets)
             {
-                (var indexPartitionKey, _) = GetAddressIndexKeys(wallet.IntegrationLayerId, wallet.AssetId, wallet.Address);
+                var (indexPartitionKey, _) = GetAddressIndexKeys(wallet.IntegrationLayerId, wallet.AssetId, wallet.Address);
 
                 await _additionalWalletsTable.DeleteIfExistAsync(wallet.PartitionKey, wallet.RowKey);
                 await _addressIndexTable.DeleteIfExistAsync(indexPartitionKey, wallet.Address);

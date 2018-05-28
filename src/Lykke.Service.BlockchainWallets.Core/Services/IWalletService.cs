@@ -11,13 +11,15 @@ namespace Lykke.Service.BlockchainWallets.Core.Services
 
         Task<bool> DefaultWalletExistsAsync(string integrationLayerId, string assetId, Guid clientId);
 
-        Task DeleteWalletsAsync(string integrationLayerId, string assetId, Guid clientId);
+        Task DeleteWalletsAsync(string blockchainType, string assetId, Guid clientId);
 
-        Task<WalletWithAddressExtensionDto> TryGetDefaultAddressAsync(string integrationLayerId, string assetId, Guid clientId);
-
-        Task<Guid?> TryGetClientIdAsync(string integrationLayerId, string assetId, string address);
+        Task<WalletWithAddressExtensionDto> TryGetDefaultAddressAsync(string blockchainType, string assetId, Guid clientId);
         
-        Task<bool> WalletExistsAsync(string integrationLayerId, string assetId, Guid clientId);
+        Task<WalletWithAddressExtensionDto> TryGetFirstGenerationBlockchainAddressAsync(string assetId, Guid clientId);
+
+        Task<Guid?> TryGetClientIdAsync(string blockchainType, string assetId, string address);
+        
+        Task<bool> WalletExistsAsync(string blockchainType, string assetId, Guid clientId);
 
         Task<(IEnumerable<WalletWithAddressExtensionDto>, string continuationToken)> GetClientWalletsAsync(Guid clientId, int take, string continuationToken);
     }
