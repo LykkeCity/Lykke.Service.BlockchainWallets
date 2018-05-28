@@ -6,6 +6,9 @@ namespace Lykke.Service.BlockchainWallets.Core.Settings.ServiceSettings
     public class DbSettings
     {
         [UsedImplicitly(ImplicitUseKindFlags.Assign)]
+        public string BcnCredentialsConnString { get; set; }
+        
+        [UsedImplicitly(ImplicitUseKindFlags.Assign)]
         public string DataConnString { get; set; }
 
         [UsedImplicitly(ImplicitUseKindFlags.Assign)]

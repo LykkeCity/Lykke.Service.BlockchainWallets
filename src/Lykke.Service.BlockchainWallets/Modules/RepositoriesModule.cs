@@ -35,6 +35,11 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .SingleInstance();
 
             builder
+                .Register(c => BcnCredentialsWalletRepository.Create(_dbSettings.Nested(x => x.BcnCredentialsConnString), _log))
+                .As<IBcnCredentialsWalletRepository>()
+                .SingleInstance();
+
+            builder
                 .Register(c => MonitoringSubscriptionRepository.Create(connectionString, _log))
                 .As<IMonitoringSubscriptionRepository>()
                 .SingleInstance();
