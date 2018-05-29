@@ -22,7 +22,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         private readonly IAdditionalWalletRepository _additionalWalletRepository;
         private readonly IBlockchainSignFacadeClient _blockchainSignFacadeClient;
         private readonly IAddressParser _addressParser;
-        private readonly IBcnCredentialsWalletRepository _bcnCredentialsWalletRepository;
+        private readonly IFirstGenerationBlockchainWalletRepository _firstGenerationBlockchainWalletRepository;
 
 
         public WalletService(
@@ -31,14 +31,14 @@ namespace Lykke.Service.BlockchainWallets.Services
             IAdditionalWalletRepository additionalWalletRepository,
             IBlockchainSignFacadeClient blockchainSignFacadeClient,
             IAddressParser addressParser,
-            IBcnCredentialsWalletRepository bcnCredentialsWalletRepository)
+            IFirstGenerationBlockchainWalletRepository firstGenerationBlockchainWalletRepository)
         {
             _cqrsEngine = cqrsEngine;
             _walletRepository = walletRepository;
             _additionalWalletRepository = additionalWalletRepository;
             _blockchainSignFacadeClient = blockchainSignFacadeClient;
             _addressParser = addressParser;
-            _bcnCredentialsWalletRepository = bcnCredentialsWalletRepository;
+            _firstGenerationBlockchainWalletRepository = firstGenerationBlockchainWalletRepository;
         }
 
         private async Task<bool> AdditionalWalletExistsAsync(string integrationLayerId, string assetId, Guid clientId)
@@ -131,7 +131,7 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         public async Task<WalletWithAddressExtensionDto> TryGetFirstGenerationBlockchainAddressAsync(string assetId, Guid clientId)
         {
-            var wallet = await _bcnCredentialsWalletRepository.TryGetAsync(assetId, clientId);
+            var wallet = await _firstGenerationBlockchainWalletRepository.TryGetAsync(assetId, clientId);
 
             if (wallet != null)
             {
