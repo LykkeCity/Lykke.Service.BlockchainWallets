@@ -4,8 +4,8 @@ using Lykke.Service.BlockchainWallets.Core.DTOs;
 
 namespace Lykke.Service.BlockchainWallets.Core.Repositories
 {
-    public interface IBcnCredentialsWalletRepository
+    public interface IFirstGenerationBlockchainWalletRepository
     {
-        Task<BcnCredentialsWalletDto> TryGetAsync(string assetId, Guid clientId);
+        Task<FirstGenerationBlockchainWalletDto> TryGetAsync(string assetId, Guid clientId);
     }
 }

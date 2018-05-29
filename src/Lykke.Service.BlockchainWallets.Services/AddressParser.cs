@@ -11,7 +11,9 @@ namespace Lykke.Service.BlockchainWallets.Services
         private readonly ICapabilitiesService _capabilitiesService;
         private readonly IConstantsService _constantsService;
 
-        public AddressParser(ICapabilitiesService capabilitiesService, IConstantsService constantsService)
+        public AddressParser(
+            ICapabilitiesService capabilitiesService,
+            IConstantsService constantsService)
         {
             _capabilitiesService = capabilitiesService;
             _constantsService = constantsService;
