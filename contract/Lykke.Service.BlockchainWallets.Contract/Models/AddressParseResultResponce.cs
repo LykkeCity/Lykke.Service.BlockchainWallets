@@ -1,4 +1,6 @@
-﻿namespace Lykke.Service.BlockchainWallets.Contract.Models
+﻿using JetBrains.Annotations;
+
+namespace Lykke.Service.BlockchainWallets.Contract.Models
 {
     [PublicAPI]
     public class AddressParseResultResponce
