@@ -74,7 +74,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                 {
                     return new FirstGenerationBlockchainWalletDto
                     {
-                        Address = entity.AssetAddress ?? entity.Address,
+                        Address = entity.AssetAddress,
                         AssetId = entity.AssetId,
                         ClientId = Guid.Parse(entity.ClientId) 
                     };

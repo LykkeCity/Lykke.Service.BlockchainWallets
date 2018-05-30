@@ -4,7 +4,7 @@
     {
         public static string Bitcoin = "BTC";
 
-        public static string Ethereum = "ETC";
+        public static string Ethereum = "ETH";
 
         public static string Solarcoin = "SLR";
     }
