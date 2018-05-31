@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Lykke.Service.BlockchainWallets.Contract.Models
+﻿namespace Lykke.Service.BlockchainWallets.Contract.Models
 {
     public class AddressParseResultResponce
     {

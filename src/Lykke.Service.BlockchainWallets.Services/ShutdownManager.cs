@@ -8,11 +8,9 @@ namespace Lykke.Service.BlockchainWallets.Services
     [UsedImplicitly]
     public class ShutdownManager : IShutdownManager
     {
-        private readonly ILog _log;
-
         public ShutdownManager(ILog log)
         {
-            _log = log;
+            
         }
 
         public async Task StopAsync()

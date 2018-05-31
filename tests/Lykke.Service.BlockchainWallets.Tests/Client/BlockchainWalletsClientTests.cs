@@ -362,8 +362,10 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
 
             var result = await client.GetAllWalletsAsync(clientId, 1);
 
+            // ReSharper disable PossibleMultipleEnumeration
             Assert.True(result?.Count() == 2);
-            Assert.True(result?.FirstOrDefault()?.ClientId == clientId);
+            Assert.True(result.FirstOrDefault()?.ClientId == clientId);
+            // ReSharper restore PossibleMultipleEnumeration
         }
 
 
@@ -372,16 +374,6 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             var httpClient = new HttpClient(handlerStub)
             {
                 BaseAddress = new Uri("http://localhost")
-            };
-
-            return new BlockchainWalletsClient(httpClient);
-        }
-
-        private static BlockchainWalletsClient CreateClient()
-        {
-            var httpClient = new HttpClient()
-            {
-                BaseAddress = new Uri("http://localhost:5000")
             };
 
             return new BlockchainWalletsClient(httpClient);
