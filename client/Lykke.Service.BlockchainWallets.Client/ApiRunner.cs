@@ -15,20 +15,8 @@ namespace Lykke.Service.BlockchainWallets.Client
         {
             _defaultRetriesCount = defaultRetriesCount;
         }
-
-        public async Task RunAsync(Func<Task> method)
-        {
-            try
-            {
-                await method();
-            }
-            catch (ApiException ex)
-            {
-                throw new ErrorResponseException(GetErrorResponse(ex), ex);
-            }
-        }
-
-        public async Task<T> RunAsync<T>(Func<Task<T>> method)
+        
+        public static async Task<T> RunAsync<T>(Func<Task<T>> method)
         {
             try
             {
@@ -123,6 +111,7 @@ namespace Lykke.Service.BlockchainWallets.Client
                 return TimeSpan.FromMilliseconds(500 * retryAttempt);
             }
 
+            // ReSharper disable once ConvertIfStatementToReturnStatement ... for better readibility
             if (retryAttempt < 8)
             {
                 return TimeSpan.FromSeconds(Math.Pow(2, retryAttempt - 2));

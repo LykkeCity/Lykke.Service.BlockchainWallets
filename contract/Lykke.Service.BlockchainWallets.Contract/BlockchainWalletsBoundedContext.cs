@@ -1,9 +1,9 @@
 ﻿namespace Lykke.Service.BlockchainWallets.Contract
 {
-    public class BlockchainWalletsBoundedContext
+    public static class BlockchainWalletsBoundedContext
     {
-        public static string Name = "bcn-integration.wallets";
+        public const string Name = "bcn-integration.wallets";
 
-        public static string EventsRoute = "events";
+        public const string EventsRoute = "events";
     }
 }

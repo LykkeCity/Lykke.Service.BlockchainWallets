@@ -8,18 +8,17 @@ using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Workflow.Commands;
 
-
 namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
 {
     [UsedImplicitly]
-    public class EndBalanceMonitoringCommandHandler
+    public class EndTransactionHistoryMonitoringCommandHandler
     {
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
         private readonly IMonitoringSubscriptionRepository _monitoringSubscriptionRepository;
         private readonly ILog _log;
 
 
-        public EndBalanceMonitoringCommandHandler(
+        public EndTransactionHistoryMonitoringCommandHandler(
             IBlockchainIntegrationService blockchainIntegrationService,
             IMonitoringSubscriptionRepository monitoringSubscriptionRepository,
             ILog log)
@@ -30,13 +29,13 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
         }
 
         [UsedImplicitly]
-        public async Task<CommandHandlingResult> Handle(EndBalanceMonitoringCommand command, IEventPublisher publisher)
+        public async Task<CommandHandlingResult> Handle(EndTransactionHistoryMonitoringCommand command, IEventPublisher publisher)
         {
-            _log.WriteInfo(nameof(EndBalanceMonitoringCommand), command, "");
+            _log.WriteInfo(nameof(EndTransactionHistoryMonitoringCommand), command, "");
 
             try
             {
-                const MonitoringSubscriptionType subscriptionType = MonitoringSubscriptionType.Balance;
+                const MonitoringSubscriptionType subscriptionType = MonitoringSubscriptionType.TransactionHistory;
 
                 var address = command.Address;
                 var assetId = command.AssetId;
@@ -46,19 +45,19 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
 
                 if (apiClient != null)
                 {
-                    if (!await _monitoringSubscriptionRepository.AddressIsSubscribedAsync(blockchainType, address, subscriptionType))
+                    if (await _monitoringSubscriptionRepository.AddressIsSubscribedAsync(blockchainType, address, subscriptionType))
                     {
-                        await apiClient.StopBalanceObservationAsync(address);
+                        await apiClient.StopHistoryObservationOfIncomingTransactionsAsync(address);
+                        
+                        await _monitoringSubscriptionRepository.UnregisterWalletSubscriptionAsync
+                        (
+                            blockchainType: blockchainType,
+                            address: address,
+                            assetId: assetId,
+                            subscriptionType: subscriptionType
+                        );
                     }
-
-                    await _monitoringSubscriptionRepository.UnregisterWalletSubscriptionAsync
-                    (
-                        blockchainType: blockchainType,
-                        address: address,
-                        assetId: assetId,
-                        subscriptionType: subscriptionType
-                    );
-
+                    
                     return CommandHandlingResult.Ok();
                 }
 
@@ -66,7 +65,7 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
             }
             catch (Exception e)
             {
-                _log.WriteError(nameof(EndBalanceMonitoringCommand), command, e);
+                _log.WriteError(nameof(EndTransactionHistoryMonitoringCommand), command, e);
 
                 throw;
             }
