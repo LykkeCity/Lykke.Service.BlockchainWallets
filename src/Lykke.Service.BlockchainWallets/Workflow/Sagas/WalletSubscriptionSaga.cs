@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Cqrs;
@@ -21,7 +20,6 @@ namespace Lykke.Service.BlockchainWallets.Workflow.Sagas
     public class WalletSubscriptionSaga
     {
         private readonly IMonitoringSubscriptionRepository _monitoringSubscriptionRepository;
-        private readonly ILog _log;
 
 
         public WalletSubscriptionSaga(
@@ -29,64 +27,52 @@ namespace Lykke.Service.BlockchainWallets.Workflow.Sagas
             ILog log)
         {
             _monitoringSubscriptionRepository = monitoringSubscriptionRepository;
-            _log = log.CreateComponentScope(nameof(WalletSubscriptionSaga));
         }
 
         [UsedImplicitly]
         private async Task Handle(WalletCreatedEvent evt, ICommandSender sender)
         {
-            _log.WriteInfo(nameof(WalletCreatedEvent), evt, "");
+            var address = evt.Address;
+            var assetId = evt.AssetId;
+            var blockchainType = evt.BlockchainType ?? evt.IntegrationLayerId;
 
-            try
+            Task<bool> WalletIsSubscribedAsync(MonitoringSubscriptionType subscriptionType)
             {
-                var address = evt.Address;
-                var assetId = evt.AssetId;
-                var blockchainType = evt.BlockchainType;
-
-                Task<bool> WalletIsSubscribedAsync(MonitoringSubscriptionType subscriptionType)
-                {
-                    return _monitoringSubscriptionRepository.WalletIsSubscribedAsync
-                    (
-                        blockchainType: blockchainType,
-                        address: address,
-                        assetId: assetId,
-                        subscriptionType: subscriptionType
-                    );
-                }
-
-                if (!await WalletIsSubscribedAsync(MonitoringSubscriptionType.Balance))
-                {
-                    sender.SendCommand
-                    (
-                        new BeginBalanceMonitoringCommand
-                        {
-                            Address = address,
-                            AssetId = assetId,
-                            BlockchainType = blockchainType
-                        },
-                        BlockchainWalletsBoundedContext.Name
-                    );
-                }
-
-                if (!await WalletIsSubscribedAsync(MonitoringSubscriptionType.TransactionHistory))
-                {
-                    sender.SendCommand
-                    (
-                        new BeginTransactionHistoryMonitoringCommand
-                        {
-                            Address = address,
-                            AssetId = assetId,
-                            BlockchainType = blockchainType
-                        },
-                        BlockchainWalletsBoundedContext.Name
-                    );
-                }
+                return _monitoringSubscriptionRepository.WalletIsSubscribedAsync
+                (
+                    blockchainType: blockchainType,
+                    address: address,
+                    assetId: assetId,
+                    subscriptionType: subscriptionType
+                );
             }
-            catch (Exception ex)
-            {
-                _log.WriteError(nameof(WalletCreatedEvent), evt, ex);
 
-                throw;
+            if (!await WalletIsSubscribedAsync(MonitoringSubscriptionType.Balance))
+            {
+                sender.SendCommand
+                (
+                    new BeginBalanceMonitoringCommand
+                    {
+                        Address = address,
+                        AssetId = assetId,
+                        BlockchainType = blockchainType
+                    },
+                    BlockchainWalletsBoundedContext.Name
+                );
+            }
+
+            if (!await WalletIsSubscribedAsync(MonitoringSubscriptionType.TransactionHistory))
+            {
+                sender.SendCommand
+                (
+                    new BeginTransactionHistoryMonitoringCommand
+                    {
+                        Address = address,
+                        AssetId = assetId,
+                        BlockchainType = blockchainType
+                    },
+                    BlockchainWalletsBoundedContext.Name
+                );
             }
         }
     }
