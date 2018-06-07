@@ -364,7 +364,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             var result = (await client.GetAllWalletsAsync(clientId, 1)).ToList();
 
             // ReSharper disable PossibleMultipleEnumeration
-            Assert.True(result?.Count() == 2);
+            Assert.True(result.Count() == 2);
             Assert.True(result.FirstOrDefault()?.ClientId == clientId);
             // ReSharper restore PossibleMultipleEnumeration
         }

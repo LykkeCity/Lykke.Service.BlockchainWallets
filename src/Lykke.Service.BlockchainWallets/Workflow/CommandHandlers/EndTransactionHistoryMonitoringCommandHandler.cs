@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Net;
 using System.Threading.Tasks;
-using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Cqrs;
+using Lykke.Service.BlockchainApi.Client;
 using Lykke.Service.BlockchainWallets.Core;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.Service.BlockchainWallets.Core.Services;
@@ -15,60 +16,56 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
     {
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
         private readonly IMonitoringSubscriptionRepository _monitoringSubscriptionRepository;
-        private readonly ILog _log;
 
 
         public EndTransactionHistoryMonitoringCommandHandler(
             IBlockchainIntegrationService blockchainIntegrationService,
-            IMonitoringSubscriptionRepository monitoringSubscriptionRepository,
-            ILog log)
+            IMonitoringSubscriptionRepository monitoringSubscriptionRepository)
         {
             _blockchainIntegrationService = blockchainIntegrationService;
             _monitoringSubscriptionRepository = monitoringSubscriptionRepository;
-            _log = log;
         }
 
         [UsedImplicitly]
         public async Task<CommandHandlingResult> Handle(EndTransactionHistoryMonitoringCommand command, IEventPublisher publisher)
         {
-            _log.WriteInfo(nameof(EndTransactionHistoryMonitoringCommand), command, "");
+            var apiClient = _blockchainIntegrationService.TryGetApiClient(command.BlockchainType);
 
-            try
+            if (apiClient == null)
             {
-                const MonitoringSubscriptionType subscriptionType = MonitoringSubscriptionType.TransactionHistory;
+                throw new NotSupportedException($"Blockchain type [{command.BlockchainType}] is not supportedю");
+            }
+            
+            
+            const MonitoringSubscriptionType subscriptionType = MonitoringSubscriptionType.TransactionHistory;
 
-                var address = command.Address;
-                var assetId = command.AssetId;
-                var blockchainType = command.BlockchainType;
+            var address = command.Address;
+            var assetId = command.AssetId;
+            var blockchainType = command.BlockchainType;
 
-                var apiClient = _blockchainIntegrationService.TryGetApiClient(blockchainType);
-
-                if (apiClient != null)
+            
+            await _monitoringSubscriptionRepository.UnregisterWalletSubscriptionAsync
+            (
+                blockchainType: blockchainType,
+                address: address,
+                assetId: assetId,
+                subscriptionType: subscriptionType
+            );
+            
+            if (await _monitoringSubscriptionRepository.WalletSubscriptionsCount(blockchainType, address, subscriptionType) == 0)
+            {
+                try
                 {
-                    if (await _monitoringSubscriptionRepository.AddressIsSubscribedAsync(blockchainType, address, subscriptionType))
-                    {
-                        await apiClient.StopHistoryObservationOfIncomingTransactionsAsync(address);
-                        
-                        await _monitoringSubscriptionRepository.UnregisterWalletSubscriptionAsync
-                        (
-                            blockchainType: blockchainType,
-                            address: address,
-                            assetId: assetId,
-                            subscriptionType: subscriptionType
-                        );
-                    }
-                    
-                    return CommandHandlingResult.Ok();
+                    await apiClient.StopHistoryObservationOfIncomingTransactionsAsync(address);
                 }
-
-                throw new NotSupportedException($"Blockchain type [{blockchainType}] is not supported");
+                catch (ErrorResponseException e) when (e.StatusCode == HttpStatusCode.NoContent)
+                {
+                    
+                }
             }
-            catch (Exception e)
-            {
-                _log.WriteError(nameof(EndTransactionHistoryMonitoringCommand), command, e);
+               
+            return CommandHandlingResult.Ok();
 
-                throw;
-            }
         }
     }
 }

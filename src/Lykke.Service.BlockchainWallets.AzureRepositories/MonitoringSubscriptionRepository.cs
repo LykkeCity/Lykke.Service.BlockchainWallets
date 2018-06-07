@@ -44,14 +44,6 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             return assetId;
         }
 
-
-        public async Task<bool> AddressIsSubscribedAsync(string blockchainType, string address, MonitoringSubscriptionType subscriptionType)
-        {
-            var partitionKey = GetPartitionKey(blockchainType, address, subscriptionType);
-
-            return (await _table.GetDataAsync(partitionKey)).Any();
-        }
-
         public async Task RegisterWalletSubscriptionAsync(string blockchainType, string address, string assetId, MonitoringSubscriptionType subscriptionType)
         {
             var entity = new MonitoringSubscriptionEntity
@@ -82,6 +74,13 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             var rowKey = GetRowKey(assetId);
 
             return await _table.GetDataAsync(partitionKey, rowKey) != null;
+        }
+        
+        public async Task<int> WalletSubscriptionsCount(string blockchainType, string address, MonitoringSubscriptionType subscriptionType)
+        {
+            var partitionKey = GetPartitionKey(blockchainType, address, subscriptionType);
+
+            return (await _table.GetDataAsync(partitionKey)).Count();
         }
     }
 }

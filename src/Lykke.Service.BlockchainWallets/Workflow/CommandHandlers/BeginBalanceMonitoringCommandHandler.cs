@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Net;
 using System.Threading.Tasks;
-using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Cqrs;
+using Lykke.Service.BlockchainApi.Client;
 using Lykke.Service.BlockchainWallets.Core;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.Service.BlockchainWallets.Core.Services;
@@ -16,61 +17,55 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
     {
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
         private readonly IMonitoringSubscriptionRepository _monitoringSubscriptionRepository;
-        private readonly ILog _log;
 
 
         public BeginBalanceMonitoringCommandHandler(
             IBlockchainIntegrationService blockchainIntegrationService,
-            IMonitoringSubscriptionRepository monitoringSubscriptionRepository,
-            ILog log)
+            IMonitoringSubscriptionRepository monitoringSubscriptionRepository)
         {
             _blockchainIntegrationService = blockchainIntegrationService;
             _monitoringSubscriptionRepository = monitoringSubscriptionRepository;
-            _log = log;
         }
 
 
         [UsedImplicitly]
         public async Task<CommandHandlingResult> Handle(BeginBalanceMonitoringCommand command, IEventPublisher publisher)
         {
-            _log.WriteInfo(nameof(BeginBalanceMonitoringCommand), command, "");
-
-            try
+            var apiClient = _blockchainIntegrationService.TryGetApiClient(command.BlockchainType);
+            
+            if (apiClient == null)
             {
-                const MonitoringSubscriptionType subscriptionType = MonitoringSubscriptionType.Balance;
+                throw new NotSupportedException($"Blockchain type [{command.BlockchainType}] is not supported.");
+            }
+            
+            const MonitoringSubscriptionType subscriptionType = MonitoringSubscriptionType.Balance;
 
-                var address = command.Address;
-                var assetId = command.AssetId;
-                var blockchainType = command.BlockchainType;
+            var address = command.Address;
+            var assetId = command.AssetId;
+            var blockchainType = command.BlockchainType;
 
-                var apiClient = _blockchainIntegrationService.TryGetApiClient(blockchainType);
-
-                if (apiClient != null)
+            if (await _monitoringSubscriptionRepository.WalletSubscriptionsCount(blockchainType, address, subscriptionType) == 0)
+            {
+                try
                 {
-                    if (!await _monitoringSubscriptionRepository.AddressIsSubscribedAsync(blockchainType, address, subscriptionType))
-                    {
-                        await apiClient.StartBalanceObservationAsync(address);
-                    }
-                    
-                    await _monitoringSubscriptionRepository.RegisterWalletSubscriptionAsync
-                    (
-                        blockchainType: blockchainType,
-                        address: address,
-                        assetId: assetId,
-                        subscriptionType: subscriptionType
-                    );
-                    
-                    return CommandHandlingResult.Ok();
+                    await apiClient.StartBalanceObservationAsync(address);
                 }
-                
-                throw new NotSupportedException($"Blockchain type [{blockchainType}] is not supported");
+                catch (ErrorResponseException e) when (e.StatusCode == HttpStatusCode.Conflict)
+                {
+                    
+                }
             }
-            catch (Exception e)
-            {
-                _log.WriteError(nameof(BeginBalanceMonitoringCommand), command, e);
+                    
+            await _monitoringSubscriptionRepository.RegisterWalletSubscriptionAsync
+            (
+                blockchainType: blockchainType,
+                address: address,
+                assetId: assetId,
+                subscriptionType: subscriptionType
+            );
+                    
+            return CommandHandlingResult.Ok();
 
-                throw;
-            }
         }
     }
 }
