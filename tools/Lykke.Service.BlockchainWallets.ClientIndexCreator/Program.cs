@@ -24,7 +24,7 @@ namespace Lykke.Service.BlockchainWallets.ClientIndexCreator
 
             var arguments = new Dictionary<string, CommandArgument>
             {
-                { SettingsUrl, application.Argument(SettingsUrl, "Url of a BlockchainWallets service settings.") },
+                { SettingsUrl, application.Argument(SettingsUrl, "Url of a BlockchainWallets service settings.") }
             };
             
             application.HelpOption("-? | -h | --help");
@@ -69,7 +69,7 @@ namespace Lykke.Service.BlockchainWallets.ClientIndexCreator
             }
 
             var log = new LogToConsole();
-            var settings = (new SettingsServiceReloadingManager<AppSettings>(settingsUrl)).Nested(x => x.BlockchainWalletsService.Db.DataConnString);
+            var settings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl).Nested(x => x.BlockchainWalletsService.Db.DataConnString);
             
             var defaultWalletsRepository = (WalletRepository) WalletRepository.Create(settings, log);
 

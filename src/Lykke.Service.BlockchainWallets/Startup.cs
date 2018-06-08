@@ -4,12 +4,12 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using AzureStorage.Tables;
 using Common.Log;
+using JetBrains.Annotations;
 using Lykke.AzureQueueIntegration;
 using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.Logs;
 using Lykke.Logs.Slack;
-using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Settings;
 using Lykke.Service.BlockchainWallets.Modules;
 using Lykke.SettingsReader;
@@ -22,6 +22,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace Lykke.Service.BlockchainWallets
 {
+    [UsedImplicitly]
     public class Startup
     {
         public Startup(IHostingEnvironment env)
@@ -29,16 +30,18 @@ namespace Lykke.Service.BlockchainWallets
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddEnvironmentVariables();
-            Configuration = builder.Build();
 
-            Environment = env;
+            Configuration = builder.Build();
         }
 
-        public IContainer ApplicationContainer { get; private set; }
-        public IConfigurationRoot Configuration { get; }
-        public IHostingEnvironment Environment { get; }
-        public ILog Log { get; private set; }
+        private IContainer ApplicationContainer { get; set; }
 
+        private IConfigurationRoot Configuration { get; }
+
+        private ILog Log { get; set; }
+
+
+        [UsedImplicitly]
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
         {
             try
@@ -63,7 +66,6 @@ namespace Lykke.Service.BlockchainWallets
                 app.UseStaticFiles();
 
                 appLifetime.ApplicationStarted.Register(() => StartApplication().GetAwaiter().GetResult());
-                appLifetime.ApplicationStopping.Register(() => StopApplication().GetAwaiter().GetResult());
                 appLifetime.ApplicationStopped.Register(() => CleanUp().GetAwaiter().GetResult());
             }
             catch (Exception ex)
@@ -73,6 +75,7 @@ namespace Lykke.Service.BlockchainWallets
             }
         }
 
+        [UsedImplicitly]
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             try
@@ -216,34 +219,11 @@ namespace Lykke.Service.BlockchainWallets
         {
             try
             {
-                // NOTE: Service not yet recieve and process requests here
-
-                await ApplicationContainer.Resolve<IStartupManager>().StartAsync();
-
                 await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");
             }
             catch (Exception ex)
             {
                 await Log.WriteFatalErrorAsync(nameof(Startup), nameof(StartApplication), "", ex);
-                throw;
-            }
-        }
-
-        private async Task StopApplication()
-        {
-            try
-            {
-                // NOTE: Service still can recieve and process requests here, so take care about it if you add logic here.
-
-                await ApplicationContainer.Resolve<IShutdownManager>().StopAsync();
-            }
-            catch (Exception ex)
-            {
-                if (Log != null)
-                {
-                    await Log.WriteFatalErrorAsync(nameof(Startup), nameof(StopApplication), "", ex);
-                }
-
                 throw;
             }
         }

@@ -65,7 +65,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <inheritdoc cref="IBlockchainWalletsClient.GetIsAliveAsync" />
         public async Task<IsAliveResponse> GetIsAliveAsync()
         {
-            return await _apiRunner.RunAsync(() => _api.GetIsAliveAsync());
+            return await ApiRunner.RunAsync(() => _api.GetIsAliveAsync());
         }
 
         /// <inheritdoc cref="IBlockchainWalletsClient.GetWalletsAsync" />

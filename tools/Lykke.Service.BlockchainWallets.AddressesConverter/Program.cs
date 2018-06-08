@@ -75,7 +75,7 @@ namespace Lykke.Service.BlockchainWallets.AddressesConverter
             }
 
             var log = new LogToConsole();
-            var settings = (new SettingsServiceReloadingManager<AppSettings>(settingsUrl)).Nested(x => x.BlockchainWalletsService.Db.DataConnString);
+            var settings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl).Nested(x => x.BlockchainWalletsService.Db.DataConnString);
             
             var defaultWalletsRepository = (WalletRepository) WalletRepository.Create(settings, log);
             var additionalWalletsRepository = AdditionalWalletRepository.Create(settings, log);

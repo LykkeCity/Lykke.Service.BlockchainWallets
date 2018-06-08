@@ -9,17 +9,16 @@ using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Workflow.Commands;
 
-
 namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
 {
     [UsedImplicitly]
-    public class EndBalanceMonitoringCommandHandler
+    public class EndTransactionHistoryMonitoringCommandHandler
     {
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
         private readonly IMonitoringSubscriptionRepository _monitoringSubscriptionRepository;
 
 
-        public EndBalanceMonitoringCommandHandler(
+        public EndTransactionHistoryMonitoringCommandHandler(
             IBlockchainIntegrationService blockchainIntegrationService,
             IMonitoringSubscriptionRepository monitoringSubscriptionRepository)
         {
@@ -28,17 +27,17 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
         }
 
         [UsedImplicitly]
-        public async Task<CommandHandlingResult> Handle(EndBalanceMonitoringCommand command, IEventPublisher publisher)
+        public async Task<CommandHandlingResult> Handle(EndTransactionHistoryMonitoringCommand command, IEventPublisher publisher)
         {
             var apiClient = _blockchainIntegrationService.TryGetApiClient(command.BlockchainType);
 
             if (apiClient == null)
             {
-                throw new NotSupportedException($"Blockchain type [{command.BlockchainType}] is not supported.");
+                throw new NotSupportedException($"Blockchain type [{command.BlockchainType}] is not supportedю");
             }
             
             
-            const MonitoringSubscriptionType subscriptionType = MonitoringSubscriptionType.Balance;
+            const MonitoringSubscriptionType subscriptionType = MonitoringSubscriptionType.TransactionHistory;
 
             var address = command.Address;
             var assetId = command.AssetId;
@@ -59,16 +58,17 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
             {
                 try
                 {
-                    // Unsubscribe from address balance observation (for all assets)
-                    await apiClient.StopBalanceObservationAsync(address);
+                    // Unsubscribe from address transactions observation (for all assets)
+                    await apiClient.StopHistoryObservationOfIncomingTransactionsAsync(address);
                 }
                 catch (ErrorResponseException e) when (e.StatusCode == HttpStatusCode.NoContent)
                 {
                     
                 }
             }
-
+               
             return CommandHandlingResult.Ok();
+
         }
     }
 }

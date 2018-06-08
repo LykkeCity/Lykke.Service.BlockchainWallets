@@ -18,7 +18,6 @@ namespace Lykke.Service.BlockchainWallets.Modules
 
 
         public ServiceModule(
-
             BlockchainsIntegrationSettings blockchainsIntegrationSettings,
             BlockchainSignFacadeClientSettings blockchainSignFacadeClientSettings,
             BlockchainWalletsSettings blockchainWalletsSettings,
@@ -58,17 +57,7 @@ namespace Lykke.Service.BlockchainWallets.Modules
             builder
                 .RegisterType<WalletService>()
                 .As<IWalletService>();
-
-            builder
-                .RegisterType<StartupManager>()
-                .As<IStartupManager>()
-                .SingleInstance();
-
-            builder
-                .RegisterType<ShutdownManager>()
-                .As<IShutdownManager>()
-                .SingleInstance();
-
+            
             builder
                 .RegisterType<AddressService>()
                 .As<IAddressService>()

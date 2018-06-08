@@ -1,8 +1,10 @@
-﻿using MessagePack;
+﻿using System;
+using JetBrains.Annotations;
+using MessagePack;
 
 namespace Lykke.Service.BlockchainWallets.Contract.Events
 {
-    [MessagePackObject]
+    [MessagePackObject, PublicAPI]
     public class WalletDeletedEvent
     {
         [Key(0)]
@@ -11,7 +13,10 @@ namespace Lykke.Service.BlockchainWallets.Contract.Events
         [Key(1)]
         public string AssetId { get; set; }
 
-        [Key(2)]
+        [Key(2), Obsolete("Use BlockchainType instead.")]
         public string IntegrationLayerId { get; set; }
+
+        [Key(3)]
+        public string BlockchainType { get; set; }
     }
 }
