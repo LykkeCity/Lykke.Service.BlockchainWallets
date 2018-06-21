@@ -98,7 +98,7 @@ namespace Lykke.Service.BlockchainWallets
                 Log = CreateLogWithSlack(services, appSettings);
 
                 builder
-                    .RegisterModule(new CqrsModule(appSettings.CurrentValue.BlockchainWalletsService.Cqrs, Log))
+                    //.RegisterModule(new CqrsModule(appSettings.CurrentValue.BlockchainWalletsService.Cqrs, Log))
                     .RegisterModule(new RepositoriesModule(appSettings.Nested(x => x.BlockchainWalletsService.Db), Log))
                     .RegisterModule(new ServiceModule(
                         appSettings.CurrentValue.BlockchainsIntegration,

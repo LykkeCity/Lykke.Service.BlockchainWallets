@@ -2,6 +2,8 @@
 using System.Net;
 using System.Threading.Tasks;
 using Lykke.Common.Api.Contract.Responses;
+using Lykke.Service.BlockchainWallets.ApiContract;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.System.Runtime;
 using Polly;
 using Refit;
 
@@ -88,20 +90,31 @@ namespace Lykke.Service.BlockchainWallets.Client
             return true;
         }
 
-        private static ErrorResponse GetErrorResponse(ApiException ex)
+        private static BlockchainWalletsErrorResponse GetErrorResponse(ApiException ex)
         {
-            ErrorResponse errorResponse;
+            BlockchainWalletsErrorResponse errorResponse;
 
             try
             {
-                errorResponse = ex.GetContentAs<ErrorResponse>();
+                errorResponse = ex.GetContentAs<BlockchainWalletsErrorResponse>();
             }
             catch (Exception)
             {
-                errorResponse = null;
+                try
+                {
+                    var errorResponseOldV = ex.GetContentAs<ErrorResponse>();
+                    errorResponse = BlockchainWalletsErrorResponse.Create(errorResponseOldV.ErrorMessage,
+                        ErrorCodeType.None);
+                }
+                catch (Exception e)
+                {
+                    errorResponse = null;
+                }
             }
 
-            return errorResponse ?? ErrorResponse.Create("Blockchain API is not specify the error response");
+            return errorResponse ?? 
+                   BlockchainWalletsErrorResponse.Create("Blockchain API is not specify the error response", 
+                       ErrorCodeType.None);
         }
 
         private static TimeSpan GetRetryDelay(int retryAttempt)
