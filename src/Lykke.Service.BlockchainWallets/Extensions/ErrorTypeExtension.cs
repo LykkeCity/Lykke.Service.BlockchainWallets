@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Lykke.Service.BlockchainWallets.ApiContract;
+using Lykke.Service.BlockchainWallets.Contract.Models;
 using Lykke.Service.BlockchainWallets.Core.Exceptions;
 
 namespace Lykke.Service.BlockchainWallets.Extensions

@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Lykke.Common.Api.Contract.Responses;
 
-namespace Lykke.Service.BlockchainWallets.ApiContract
+namespace Lykke.Service.BlockchainWallets.Contract.Models
 {
     public class BlockchainWalletsErrorResponse : ErrorResponse
     {
