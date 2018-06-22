@@ -15,20 +15,11 @@ namespace Lykke.Service.BlockchainWallets.Extensions
                 case ErrorType.BaseAddressShouldNotContainSeparator:
                     return ErrorCodeType.BaseAddressShouldNotContainSeparator;
 
-                case ErrorType.BaseAddressAlreadyIncludesExtension:
-                    return ErrorCodeType.BaseAddressAlreadyIncludesExtension;
-
                 case ErrorType.BaseAddressIsEmpty:
                     return ErrorCodeType.BaseAddressIsEmpty;
 
-                case ErrorType.ExtensionAddressIsEmpty:
-                    return ErrorCodeType.ExtensionAddressIsEmpty;
-
                 case ErrorType.None:
                     return ErrorCodeType.None;
-
-                case ErrorType.RedundantSeparator:
-                    return ErrorCodeType.RedundantSeparator;
 
                 case ErrorType.ExtensionAddressShouldNotContainSeparator:
                     return ErrorCodeType.ExtensionAddressShouldNotContainSeparator;

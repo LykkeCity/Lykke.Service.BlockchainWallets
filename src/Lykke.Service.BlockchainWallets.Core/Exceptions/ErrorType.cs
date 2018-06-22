@@ -8,10 +8,7 @@ namespace Lykke.Service.BlockchainWallets.Core.Exceptions
     {
         None = 0,
         BaseAddressShouldNotContainSeparator = 1,
-        BaseAddressAlreadyIncludesExtension = 2,
-        BaseAddressIsEmpty = 3,
-        ExtensionAddressIsEmpty = 4,
-        RedundantSeparator = 5,
-        ExtensionAddressShouldNotContainSeparator = 6
+        BaseAddressIsEmpty = 2,
+        ExtensionAddressShouldNotContainSeparator = 3
     }
 }
