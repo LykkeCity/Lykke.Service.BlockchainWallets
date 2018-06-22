@@ -402,7 +402,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
         }
 
         [Fact]
-        public async Task MergeAddressAsync_Called__With_Not_Valid_Args__THrow_Exception()
+        public async Task MergeAddressAsync_Called__With_Not_Valid_Args__Throw_Exception()
         {
             #region Responses
 

@@ -41,38 +41,24 @@ namespace Lykke.Service.BlockchainWallets.Services
 
             var constants = await _constantsService.GetAddressExtensionConstantsAsync(blockchainType);
 
-            if (!baseAddress.Contains(constants.Separator.ToString()))
+            if (baseAddress.Contains(constants.Separator))
             {
-                if (string.IsNullOrEmpty(addressExtension))
+                throw new OperationException($"Base address should not contain a separator({constants.Separator})",
+                    ErrorType.BaseAddressShouldNotContainSeparator);
+            }
+
+            if (!string.IsNullOrEmpty(addressExtension))
+            {
+                if (addressExtension.Contains(constants.Separator))
                 {
-                    throw new OperationException("Extension address is empty",
-                        ErrorType.ExtensionAddressIsEmpty);
+                    throw new OperationException($"Extension address should not contain a separator({constants.Separator})",
+                        ErrorType.ExtensionAddressShouldNotContainSeparator);
                 }
 
                 mergedAddress.Append($"{baseAddress}{constants.Separator}{addressExtension}");
             }
             else
             {
-                if (!string.IsNullOrEmpty(addressExtension))
-                {
-                    throw new OperationException("Base address already includes address extension", 
-                        ErrorType.BaseAddressAlreadyIncludesExtension);
-                }
-
-                var addressParts = baseAddress.Split(new char[] { constants.Separator });
-
-                if (addressParts.Length == 1 &&
-                    string.IsNullOrEmpty(addressParts[1]))
-                {
-                    throw new OperationException("Extension address is empty",
-                        ErrorType.ExtensionAddressIsEmpty);
-                } else if (addressParts.Length > 2 &&
-                    !string.IsNullOrEmpty(addressParts[1]))
-                {
-                    throw new OperationException("There is an additional separator symbol in address",
-                        ErrorType.RedundantSeparator);
-                }
-
                 mergedAddress.Append(baseAddress);
             }
 

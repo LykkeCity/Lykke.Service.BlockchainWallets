@@ -9,9 +9,11 @@ namespace Lykke.Service.BlockchainWallets.ApiContract
     public enum ErrorCodeType
     {
         None = 0,
-        BaseAddressAlreadyIncludesExtension = 1,
-        BaseAddressIsEmpty = 2,
-        ExtensionAddressIsEmpty = 3,
-        RedundantSeparator = 4
+        BaseAddressShouldNotContainSeparator = 1,
+        BaseAddressAlreadyIncludesExtension = 2,
+        BaseAddressIsEmpty = 3,
+        ExtensionAddressIsEmpty = 4,
+        RedundantSeparator = 5,
+        ExtensionAddressShouldNotContainSeparator = 6
     }
 }

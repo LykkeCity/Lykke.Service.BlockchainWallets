@@ -12,6 +12,9 @@ namespace Lykke.Service.BlockchainWallets.Extensions
         {
             switch (type)
             {
+                case ErrorType.BaseAddressShouldNotContainSeparator:
+                    return ErrorCodeType.BaseAddressShouldNotContainSeparator;
+
                 case ErrorType.BaseAddressAlreadyIncludesExtension:
                     return ErrorCodeType.BaseAddressAlreadyIncludesExtension;
 
@@ -27,8 +30,11 @@ namespace Lykke.Service.BlockchainWallets.Extensions
                 case ErrorType.RedundantSeparator:
                     return ErrorCodeType.RedundantSeparator;
 
+                case ErrorType.ExtensionAddressShouldNotContainSeparator:
+                    return ErrorCodeType.ExtensionAddressShouldNotContainSeparator;
+
                 default:
-                    throw new NotImplementedException();
+                    throw new ArgumentOutOfRangeException($"There is no mapping for {type} to ErrorCodeType enum");
             }
         }
     }

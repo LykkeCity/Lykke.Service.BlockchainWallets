@@ -158,20 +158,6 @@ namespace Lykke.Service.BlockchainWallets.Client
         Task<string> MergeAddressAsync(string blockchainType, string baseAddress, string addressExtension);
 
         /// <summary>
-        ///    Creates address from base address and ensures it has valid extension.
-        /// </summary>
-        /// <param name="blockchainType">
-        ///    Blockchain type.
-        /// </param>
-        /// <param name="baseAddress">
-        ///    Base address.
-        /// </param>
-        /// <returns>
-        ///    Merged address.
-        /// </returns>
-        Task<string> MergeAddressAsync(string blockchainType, string baseAddress);
-
-        /// <summary>
         ///     Returns blockchain address by Lykke client id.
         /// </summary>
         /// <param name="blockchainType">

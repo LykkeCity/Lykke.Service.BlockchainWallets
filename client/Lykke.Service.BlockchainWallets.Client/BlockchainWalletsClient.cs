@@ -91,22 +91,11 @@ namespace Lykke.Service.BlockchainWallets.Client
                 throw new ArgumentException(nameof(baseAddress));
             }
 
-            var response = await _apiRunner.RunWithRetriesAsync(() => _api.MergeAddressAsync(blockchainType, baseAddress, addressExtension));
+            Func<Task<MergedAddressResponse>> @delegate = !string.IsNullOrEmpty(addressExtension) ? 
+                (Func<Task<MergedAddressResponse>>)(() => _api.MergeAddressAsync(blockchainType, baseAddress, addressExtension)) :
+                (Func<Task<MergedAddressResponse>>)(() => _api.MergeAddressAsync(blockchainType, baseAddress));
 
-            return response.Address;
-        }
-
-        /// <inheritdoc cref="IBlockchainWalletsClient.MergeAddressAsync" />
-        public async Task<string> MergeAddressAsync(string blockchainType, string baseAddress)
-        {
-            ValidateInputParameters(blockchainType);
-
-            if (string.IsNullOrEmpty(baseAddress))
-            {
-                throw new ArgumentException(nameof(baseAddress));
-            }
-
-            var response = await _apiRunner.RunWithRetriesAsync(() => _api.MergeAddressAsync(blockchainType, baseAddress));
+            var response = await _apiRunner.RunWithRetriesAsync(() => @delegate());
 
             return response.Address;
         }
