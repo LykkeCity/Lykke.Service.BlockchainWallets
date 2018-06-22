@@ -1,7 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Lykke.Common.Api.Contract.Responses;
+using Lykke.Service.BlockchainWallets.ApiContract;
 using Lykke.Service.BlockchainWallets.Contract.Models;
+using Lykke.Service.BlockchainWallets.Core.Exceptions;
 using Lykke.Service.BlockchainWallets.Core.Services;
+using Lykke.Service.BlockchainWallets.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lykke.Service.BlockchainWallets.Controllers
@@ -17,7 +21,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         public AddressController(
             IAddressService addressService,
             IBlockchainIntegrationService blockchainIntegrationService,
-            ICapabilitiesService capabilitiesService, 
+            ICapabilitiesService capabilitiesService,
             IAddressParser addressParser)
         {
             _addressService = addressService;
@@ -26,37 +30,19 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             _addressParser = addressParser;
         }
 
+        [HttpGet("/api/{blockchainType}/address/merged/{baseAddress}")]
+        public async Task<IActionResult> MergeAsync(string blockchainType, string baseAddress)
+        {
+            return await MergeAddressAsync(blockchainType, baseAddress, null);
+        }
         /// <summary>
         ///    Merges base address with address extension, according to specified blockchain type settings
         /// </summary>
+
         [HttpGet("/api/{blockchainType}/address/merged/{baseAddress}/{addressExtension}")]
         public async Task<IActionResult> MergeAsync(string blockchainType, string baseAddress, string addressExtension)
         {
-            if (!_blockchainIntegrationService.BlockchainIsSupported(blockchainType))
-            {
-                return BadRequest
-                (
-                    ErrorResponse.Create($"Blockchain type [{blockchainType}] is not supported.")
-                );
-            }
-
-            if (!await _capabilitiesService.IsPublicAddressExtensionRequiredAsync(blockchainType))
-            {
-                return BadRequest
-                (
-                    ErrorResponse.Create($"Address extension is not supported for specified blockchain type [{blockchainType}].")
-                );
-            }
-            
-            return Ok(new MergedAddressResponse
-            {
-                Address = await _addressService.MergeAsync
-                (
-                    blockchainType: blockchainType,
-                    baseAddress: baseAddress,
-                    addressExtension: addressExtension
-                )
-            });
+            return await MergeAddressAsync(blockchainType, baseAddress, addressExtension);
         }
 
         /// <summary>
@@ -69,7 +55,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             {
                 return BadRequest
                 (
-                    ErrorResponse.Create($"{nameof(blockchainType)} should not be null or empty.")
+                    BlockchainWalletsErrorResponse.Create($"{nameof(blockchainType)} should not be null or empty.")
                 );
             }
 
@@ -77,7 +63,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             {
                 return BadRequest
                 (
-                    ErrorResponse.Create($"Blockchain type [{blockchainType}] is not supported.")
+                    BlockchainWalletsErrorResponse.Create($"Blockchain type [{blockchainType}] is not supported.")
                 );
             }
 
@@ -85,7 +71,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             {
                 return BadRequest
                 (
-                    ErrorResponse.Create($"{nameof(address)} should not be null or empty.")
+                    BlockchainWalletsErrorResponse.Create($"{nameof(address)} should not be null or empty.")
                 );
             }
 
@@ -97,6 +83,54 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 AddressExtension = parseResult.AddressExtension,
                 BaseAddress = parseResult.BaseAddress
             });
+        }
+
+        private async Task<IActionResult> MergeAddressAsync(string blockchainType, string baseAddress, string addressExtension)
+        {
+            if (!_blockchainIntegrationService.BlockchainIsSupported(blockchainType))
+            {
+                return BadRequest
+                (
+                    BlockchainWalletsErrorResponse.Create($"Blockchain type [{blockchainType}] is not supported.")
+                );
+            }
+
+            if (!await _capabilitiesService.IsPublicAddressExtensionRequiredAsync(blockchainType))
+            {
+                return BadRequest
+                (
+                    BlockchainWalletsErrorResponse.Create(
+                        $"Address extension is not supported for specified blockchain type [{blockchainType}].")
+                );
+            }
+
+            try
+            {
+                var address = await _addressService.MergeAsync
+                (
+                    blockchainType: blockchainType,
+                    baseAddress: baseAddress,
+                    addressExtension: addressExtension
+                );
+
+                return Ok(new MergedAddressResponse
+                {
+                    Address = address
+                });
+            }
+            catch (OperationException e)
+            {
+                return BadRequest
+                (
+                    BlockchainWalletsErrorResponse.Create(
+                        e.Message,
+                        e.ErrorCode.ToErrorCodeType())
+                );
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
         }
     }
 }

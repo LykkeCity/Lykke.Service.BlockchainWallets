@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\contract\Lykke.Service.BlockchainWallets.Contract\Lykke.Service.BlockchainWallets.Contract.csproj" />
+    <ProjectReference Include="..\Lykke.Service.BlockchainWallets.ApiContract\Lykke.Service.BlockchainWallets.ApiContract.csproj" />
     <ProjectReference Include="..\Lykke.Service.BlockchainWallets.AzureRepositories\Lykke.Service.BlockchainWallets.AzureRepositories.csproj" />
     <ProjectReference Include="..\Lykke.Service.BlockchainWallets.Core\Lykke.Service.BlockchainWallets.Core.csproj" />
     <ProjectReference Include="..\Lykke.Service.BlockchainWallets.Services\Lykke.Service.BlockchainWallets.Services.csproj" />

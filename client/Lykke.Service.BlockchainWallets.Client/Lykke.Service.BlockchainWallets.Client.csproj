@@ -33,6 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\contract\Lykke.Service.BlockchainWallets.Contract\Lykke.Service.BlockchainWallets.Contract.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\..\src\Lykke.Service.BlockchainWallets.ApiContract\Lykke.Service.BlockchainWallets.ApiContract.csproj" />
   </ItemGroup>
   <ItemGroup Label="dotnet pack instructions">
     <Content Include="$(OutputPath)Lykke.Service.BlockchainWallets.Contract.dll">

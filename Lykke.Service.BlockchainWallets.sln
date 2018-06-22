@@ -31,6 +31,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.ClientIndexCreator", "tools\Lykke.Service.BlockchainWallets.ClientIndexCreator\Lykke.Service.BlockchainWallets.ClientIndexCreator.csproj", "{B1EB0F1D-0F4B-4883-9697-78796960CF05}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Service.BlockchainWallets.ApiContract", "src\Lykke.Service.BlockchainWallets.ApiContract\Lykke.Service.BlockchainWallets.ApiContract.csproj", "{1A90BC26-A656-41FA-BF72-764F652F7ACE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,6 +75,10 @@ Global
 		{B1EB0F1D-0F4B-4883-9697-78796960CF05}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1EB0F1D-0F4B-4883-9697-78796960CF05}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1EB0F1D-0F4B-4883-9697-78796960CF05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A90BC26-A656-41FA-BF72-764F652F7ACE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A90BC26-A656-41FA-BF72-764F652F7ACE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A90BC26-A656-41FA-BF72-764F652F7ACE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A90BC26-A656-41FA-BF72-764F652F7ACE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -87,6 +93,7 @@ Global
 		{57F25327-F0BB-4751-93F0-C3A62ECA50B0} = {498AADC5-2423-4ED2-9F06-5762EBC8BE5D}
 		{1F03C3AF-2246-4B51-A355-F0FC041881A8} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
 		{B1EB0F1D-0F4B-4883-9697-78796960CF05} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
+		{1A90BC26-A656-41FA-BF72-764F652F7ACE} = {209B4491-E6D2-4439-ACE5-C895A44E768A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C8DE961A-1EFD-437E-B6AC-65490D9ADBE4}

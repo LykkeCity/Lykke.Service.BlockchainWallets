@@ -53,10 +53,13 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
                 subscriptionType: subscriptionType
             );
             
+            // TODO: Fix potential issue with subscription/unsubscription race conditions
+            // If we have no subscriptions for address-asset pairs for specified address...
             if (await _monitoringSubscriptionRepository.WalletSubscriptionsCount(blockchainType, address, subscriptionType) == 0)
             {
                 try
                 {
+                    // Unsubscribe from address balance observation (for all assets)
                     await apiClient.StopBalanceObservationAsync(address);
                 }
                 catch (ErrorResponseException e) when (e.StatusCode == HttpStatusCode.NoContent)
