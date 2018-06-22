@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 using Lykke.Common.Api.Contract.Responses;
-using Lykke.Service.BlockchainWallets.ApiContract;
+using Lykke.Service.BlockchainWallets.Contract.Models;
 using Refit;
 
 namespace Lykke.Service.BlockchainWallets.Client

@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Lykke.Common.Api.Contract.Responses;
-using Lykke.Service.BlockchainWallets.ApiContract;
 using Lykke.Service.BlockchainWallets.Client;
 using Lykke.Service.BlockchainWallets.Contract.Models;
 using Newtonsoft.Json;

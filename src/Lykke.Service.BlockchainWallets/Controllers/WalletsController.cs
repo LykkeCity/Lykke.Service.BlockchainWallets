@@ -1,14 +1,12 @@
-﻿using System;
+﻿using Lykke.Service.BlockchainWallets.Contract;
+using Lykke.Service.BlockchainWallets.Contract.Models;
+using Lykke.Service.BlockchainWallets.Core.Services;
+using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Lykke.Common.Api.Contract.Responses;
-using Lykke.Service.BlockchainWallets.ApiContract;
-using Lykke.Service.BlockchainWallets.Contract;
-using Lykke.Service.BlockchainWallets.Contract.Models;
-using Lykke.Service.BlockchainWallets.Core.Services;
-using Microsoft.AspNetCore.Mvc;
 
 
 namespace Lykke.Service.BlockchainWallets.Controllers

@@ -2,7 +2,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using Lykke.Common.Api.Contract.Responses;
-using Lykke.Service.BlockchainWallets.ApiContract;
+using Lykke.Service.BlockchainWallets.Contract.Models;
 using Polly;
 using Refit;
 

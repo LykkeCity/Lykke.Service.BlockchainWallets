@@ -1,9 +1,7 @@
-﻿using System;
-using Lykke.Common.Api.Contract.Responses;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Lykke.Service.BlockchainWallets.ApiContract
+namespace Lykke.Service.BlockchainWallets.Contract.Models
 {
     [JsonConverter(typeof(StringEnumConverter))]
     public enum ErrorCodeType
