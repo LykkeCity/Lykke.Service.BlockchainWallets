@@ -5,7 +5,7 @@ namespace Lykke.Service.BlockchainWallets.Contract.Models
 {
     public class BlockchainWalletsErrorResponse : ErrorResponse
     {
-        public ErrorCodeType CodeType { get; protected set; }
+        public ErrorCodeType CodeType { get; set; }
 
         public static BlockchainWalletsErrorResponse Create(string message, ErrorCodeType errorCodeType = ErrorCodeType.None)
         {
