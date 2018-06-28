@@ -26,19 +26,22 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         public async Task<string> MergeAsync(string blockchainType, string baseAddress, string addressExtension)
         {
-            StringBuilder mergedAddress = new StringBuilder();
-
-            if (!await _capabilitiesService.IsPublicAddressExtensionRequiredAsync(blockchainType))
-            {
-                throw new NotSupportedException($"Blockchain type [{blockchainType}] is not supported.");
-            }
-
             if (string.IsNullOrEmpty(baseAddress))
             {
                 throw new OperationException("Base address is empty",
                     ErrorType.BaseAddressIsEmpty);
             }
 
+            if (string.IsNullOrEmpty(addressExtension))
+            {
+                return baseAddress;
+            }
+
+            if (!await _capabilitiesService.IsPublicAddressExtensionRequiredAsync(blockchainType))
+            {
+                throw new NotSupportedException($"Blockchain type [{blockchainType}] is not supported.");
+            }
+            
             var constants = await _constantsService.GetAddressExtensionConstantsAsync(blockchainType);
 
             if (baseAddress.Contains(constants.Separator))
@@ -47,22 +50,13 @@ namespace Lykke.Service.BlockchainWallets.Services
                     ErrorType.BaseAddressShouldNotContainSeparator);
             }
 
-            if (!string.IsNullOrEmpty(addressExtension))
+            if (addressExtension.Contains(constants.Separator))
             {
-                if (addressExtension.Contains(constants.Separator))
-                {
-                    throw new OperationException($"Extension address should not contain a separator({constants.Separator})",
-                        ErrorType.ExtensionAddressShouldNotContainSeparator);
-                }
-
-                mergedAddress.Append($"{baseAddress}{constants.Separator}{addressExtension}");
-            }
-            else
-            {
-                mergedAddress.Append(baseAddress);
+                throw new OperationException($"Extension address should not contain a separator({constants.Separator})",
+                    ErrorType.ExtensionAddressShouldNotContainSeparator);
             }
 
-            return mergedAddress.ToString();
+            return $"{baseAddress}{constants.Separator}{addressExtension}";
         }
     }
 }
