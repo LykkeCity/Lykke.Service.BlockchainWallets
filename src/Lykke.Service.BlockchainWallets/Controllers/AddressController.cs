@@ -93,15 +93,6 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 );
             }
 
-            if (!await _capabilitiesService.IsPublicAddressExtensionRequiredAsync(blockchainType))
-            {
-                return BadRequest
-                (
-                    BlockchainWalletsErrorResponse.Create(
-                        $"Address extension is not supported for specified blockchain type [{blockchainType}].")
-                );
-            }
-
             try
             {
                 var address = await _addressService.MergeAsync
