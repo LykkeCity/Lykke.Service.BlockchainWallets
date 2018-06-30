@@ -103,7 +103,7 @@ namespace Lykke.Service.BlockchainWallets.Client
                 {
                     var errorResponseOldV = ex.GetContentAs<ErrorResponse>();
                     errorResponse = BlockchainWalletsErrorResponse.Create(errorResponseOldV.ErrorMessage,
-                        ErrorCodeType.None);
+                        ErrorType.None);
                 }
                 catch (Exception e)
                 {
@@ -113,7 +113,7 @@ namespace Lykke.Service.BlockchainWallets.Client
 
             return errorResponse ?? 
                    BlockchainWalletsErrorResponse.Create("Blockchain API is not specify the error response", 
-                       ErrorCodeType.None);
+                       ErrorType.None);
         }
 
         private static TimeSpan GetRetryDelay(int retryAttempt)
