@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Lykke.Service.BlockchainWallets.Core.Exceptions
 {
-    public enum ErrorType
+    public enum OperationErrorCode
     {
         None = 0,
         BaseAddressShouldNotContainSeparator = 1,

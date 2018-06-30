@@ -29,7 +29,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             if (string.IsNullOrEmpty(baseAddress))
             {
                 throw new OperationException("Base address is empty",
-                    ErrorType.BaseAddressIsEmpty);
+                    OperationErrorCode.BaseAddressIsEmpty);
             }
 
             if (string.IsNullOrEmpty(addressExtension))
@@ -47,13 +47,13 @@ namespace Lykke.Service.BlockchainWallets.Services
             if (baseAddress.Contains(constants.Separator))
             {
                 throw new OperationException($"Base address should not contain a separator({constants.Separator})",
-                    ErrorType.BaseAddressShouldNotContainSeparator);
+                    OperationErrorCode.BaseAddressShouldNotContainSeparator);
             }
 
             if (addressExtension.Contains(constants.Separator))
             {
                 throw new OperationException($"Extension address should not contain a separator({constants.Separator})",
-                    ErrorType.ExtensionAddressShouldNotContainSeparator);
+                    OperationErrorCode.ExtensionAddressShouldNotContainSeparator);
             }
 
             return $"{baseAddress}{constants.Separator}{addressExtension}";

@@ -407,7 +407,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
 
             var content1 = BlockchainWalletsErrorResponse.Create(
                 $"Address extension is not supported for specified blockchain type ",
-                ErrorCodeType.None);
+                ErrorType.None);
 
             #endregion
 
