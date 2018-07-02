@@ -70,6 +70,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                         };
                     }
 
+                    result.SeparatorExists = result.Separator != default(char);
                     _cache.TryAdd(blockchainType, result);
                 }
             }

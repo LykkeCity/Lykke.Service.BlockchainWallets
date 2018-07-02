@@ -13,5 +13,7 @@ namespace Lykke.Service.BlockchainWallets.Core.DTOs
         public AddressExtensionTypeForDeposit TypeForDeposit { get; set; }
 
         public AddressExtensionTypeForWithdrawal TypeForWithdrawal { get; set; }
+
+        public bool SeparatorExists { get; set; }
     }
 }
