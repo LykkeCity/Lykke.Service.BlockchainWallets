@@ -137,7 +137,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
         [Fact]
         public async Task GetIsAliveAsync_Called__ServiceIsUnhealthy_Exception_Thrown()
         {
-            var handlerStub = new DelegatingHandlerStub(HttpStatusCode.InternalServerError, ErrorResponse.Create(""));
+            var handlerStub = new DelegatingHandlerStub(HttpStatusCode.InternalServerError, BlockchainWalletsErrorResponse.Create(""));
             var client = CreateClient(handlerStub);
 
             try
@@ -153,7 +153,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
         [Fact]
         public async Task CreateWalletAsync_Called__Asset_Is_Not_Supported__Exception_Thrown()
         {
-            var handlerStub = new DelegatingHandlerStub(HttpStatusCode.BadRequest, new ErrorResponse());
+            var handlerStub = new DelegatingHandlerStub(HttpStatusCode.BadRequest, new BlockchainWalletsErrorResponse());
             var client = CreateClient(handlerStub);
 
             try
@@ -169,7 +169,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
         [Fact]
         public async Task CreateWalletAsync_Called__Wallet_Exists__Null_Returned()
         {
-            var handlerStub = new DelegatingHandlerStub(HttpStatusCode.Conflict, new ErrorResponse());
+            var handlerStub = new DelegatingHandlerStub(HttpStatusCode.Conflict, new BlockchainWalletsErrorResponse());
             var client = CreateClient(handlerStub);
             var response = await client.CreateWalletAsync("EthereumClassic", "ETC", Guid.NewGuid());
 
@@ -179,7 +179,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
         [Fact]
         public async Task DeleteWalletAsync_Called__Asset_Is_Not_Supported__Exception_Thrown()
         {
-            var handlerStub = new DelegatingHandlerStub(HttpStatusCode.BadRequest, new ErrorResponse());
+            var handlerStub = new DelegatingHandlerStub(HttpStatusCode.BadRequest, new BlockchainWalletsErrorResponse());
             var client = CreateClient(handlerStub);
 
             try
@@ -205,7 +205,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
         [Fact]
         public async Task DeleteWalletAsync_Called__Wallet_Exists__False_Returned()
         {
-            var handlerStub = new DelegatingHandlerStub(HttpStatusCode.NotFound, new ErrorResponse());
+            var handlerStub = new DelegatingHandlerStub(HttpStatusCode.NotFound, new BlockchainWalletsErrorResponse());
             var client = CreateClient(handlerStub);
             var response = await client.DeleteWalletAsync("EthereumClassic", "ETC", Guid.NewGuid());
 
@@ -369,6 +369,66 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             // ReSharper restore PossibleMultipleEnumeration
         }
 
+        [Fact]
+        public async Task MergeAddressAsync_Called__Wallets_Exists__Return_MergedAddress()
+        {
+            #region Responses
+
+            var content1 = new MergedAddressResponse
+            {
+                Address = "address$memo"
+            };
+
+            #endregion
+
+            var handlerStub = new DelegatingHandlerStub((request, cancellationToken) =>
+            {
+                var content = content1;
+
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(content))
+                };
+
+                return Task.FromResult(response);
+            });
+
+            var client = CreateClient(handlerStub);
+
+            var result = await client.MergeAddressAsync("Stellar", "address", "memo");
+
+            Assert.True(result == content1.Address);
+        }
+
+        [Fact]
+        public async Task MergeAddressAsync_Called__With_Not_Valid_Args__Throw_Exception()
+        {
+            #region Responses
+
+            var content1 = BlockchainWalletsErrorResponse.Create(
+                $"Address extension is not supported for specified blockchain type ",
+                ErrorType.None);
+
+            #endregion
+
+            var handlerStub = new DelegatingHandlerStub((request, cancellationToken) =>
+            {
+                var content = content1;
+
+                var response = new HttpResponseMessage(HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(content))
+                };
+
+                return Task.FromResult(response);
+            });
+
+            var client = CreateClient(handlerStub);
+            await Assert.ThrowsAsync<ErrorResponseException>(async () =>
+            {
+                var result = await client.MergeAddressAsync("Stellar", "address", "memo");
+            });
+        }
 
         private static BlockchainWalletsClient CreateClient(HttpMessageHandler handlerStub)
         {

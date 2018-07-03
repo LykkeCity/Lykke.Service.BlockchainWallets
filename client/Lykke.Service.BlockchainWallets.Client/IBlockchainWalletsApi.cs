@@ -33,6 +33,9 @@ namespace Lykke.Service.BlockchainWallets.Client
         [Get("/api/{blockchainType}/address/merged/{baseAddress}/{addressExtension}")]
         Task<MergedAddressResponse> MergeAddressAsync(string blockchainType, string baseAddress, string addressExtension);
 
+        [Get("/api/{blockchainType}/address/merged/{baseAddress}")]
+        Task<MergedAddressResponse> MergeAddressAsync(string blockchainType, string baseAddress);
+
         [Get("/api/capabilities/{blockchainType}")]
         Task<CapabilititesResponce> GetCapabilititesAsync(string blockchainType);
 
