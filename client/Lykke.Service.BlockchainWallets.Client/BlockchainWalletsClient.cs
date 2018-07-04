@@ -118,7 +118,7 @@ namespace Lykke.Service.BlockchainWallets.Client
             }
             catch (ErrorResponseException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
             {
-                return null;
+                throw new DuplicationWalletException();
             }
         }
 
