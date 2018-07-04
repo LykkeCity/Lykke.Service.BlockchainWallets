@@ -167,13 +167,12 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
         }
 
         [Fact]
-        public async Task CreateWalletAsync_Called__Wallet_Exists__Null_Returned()
+        public async Task CreateWalletAsync_Called__Wallet_Exists__Throws_Duplicate_Exception()
         {
             var handlerStub = new DelegatingHandlerStub(HttpStatusCode.Conflict, new BlockchainWalletsErrorResponse());
             var client = CreateClient(handlerStub);
-            var response = await client.CreateWalletAsync("EthereumClassic", "ETC", Guid.NewGuid());
 
-            Assert.Null(response);
+            await Assert.ThrowsAsync<DuplicationWalletException>(() => client.CreateWalletAsync("EthereumClassic", "ETC", Guid.NewGuid()));
         }
 
         [Fact]
