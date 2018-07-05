@@ -113,13 +113,11 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         public async Task<IActionResult> GetAddress([FromRoute] string blockchainType, [FromRoute] string assetId, [FromRoute] Guid clientId)
         {
             if (!ValidateRequest(blockchainType, assetId, clientId, out var badRequest))
-            {
                 return badRequest;
-            }
 
-            var address = blockchainType != SpecialBlockchainTypes.FirstGenerationBlockchain
-                        ? await _walletService.TryGetDefaultAddressAsync(blockchainType, assetId, clientId)
-                        : await _walletService.TryGetFirstGenerationBlockchainAddressAsync(assetId, clientId);
+            var address = blockchainType == SpecialBlockchainTypes.FirstGenerationBlockchain
+                ? await _walletService.TryGetFirstGenerationBlockchainAddressAsync(assetId, clientId)
+                : await _walletService.TryGetDefaultAddressAsync(blockchainType, assetId, clientId);
 
             if (address != null)
             {
