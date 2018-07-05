@@ -27,7 +27,6 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
             _monitoringSubscriptionRepository = monitoringSubscriptionRepository;
         }
 
-
         [UsedImplicitly]
         public async Task<CommandHandlingResult> Handle(BeginBalanceMonitoringCommand command, IEventPublisher publisher)
         {
