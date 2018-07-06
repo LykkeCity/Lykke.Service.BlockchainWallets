@@ -26,22 +26,14 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         public async Task<string> MergeAsync(string blockchainType, string baseAddress, string addressExtension)
         {
+            string mergedAddress = null;
+
             if (string.IsNullOrEmpty(baseAddress))
             {
                 throw new OperationException("Base address is empty",
                     OperationErrorCode.BaseAddressIsEmpty);
             }
 
-            if (string.IsNullOrEmpty(addressExtension))
-            {
-                return baseAddress;
-            }
-
-            if (!await _capabilitiesService.IsPublicAddressExtensionRequiredAsync(blockchainType))
-            {
-                throw new NotSupportedException($"Blockchain type [{blockchainType}] is not supported.");
-            }
-            
             var constants = await _constantsService.GetAddressExtensionConstantsAsync(blockchainType);
 
             if (baseAddress.Contains(constants.Separator))
@@ -50,13 +42,27 @@ namespace Lykke.Service.BlockchainWallets.Services
                     OperationErrorCode.BaseAddressShouldNotContainSeparator);
             }
 
-            if (addressExtension.Contains(constants.Separator))
+            if (!string.IsNullOrEmpty(addressExtension))
             {
-                throw new OperationException($"Extension address should not contain a separator({constants.Separator})",
-                    OperationErrorCode.ExtensionAddressShouldNotContainSeparator);
+                if (!await _capabilitiesService.IsPublicAddressExtensionRequiredAsync(blockchainType))
+                {
+                    throw new NotSupportedException($"Blockchain type [{blockchainType}] is not supported.");
+                }
+
+                if (addressExtension.Contains(constants.Separator))
+                {
+                    throw new OperationException($"Extension address should not contain a separator({constants.Separator})",
+                        OperationErrorCode.ExtensionAddressShouldNotContainSeparator);
+                }
+
+                mergedAddress = $"{baseAddress}{constants.Separator}{addressExtension}";
+            }
+            else
+            {
+                mergedAddress = baseAddress;
             }
 
-            return $"{baseAddress}{constants.Separator}{addressExtension}";
+            return mergedAddress;
         }
     }
 }
