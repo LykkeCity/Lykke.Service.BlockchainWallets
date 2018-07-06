@@ -104,6 +104,7 @@ namespace Lykke.Service.BlockchainWallets
                         appSettings.CurrentValue.BlockchainsIntegration,
                         appSettings.CurrentValue.BlockchainSignFacadeClient,
                         appSettings.CurrentValue.BlockchainWalletsService,
+                        appSettings.CurrentValue.AssetsServiceClient,
                         Log));
 
                 builder

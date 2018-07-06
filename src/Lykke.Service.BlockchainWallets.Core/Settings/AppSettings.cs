@@ -20,5 +20,8 @@ namespace Lykke.Service.BlockchainWallets.Core.Settings
 
         [UsedImplicitly(ImplicitUseKindFlags.Assign)]
         public SlackNotificationsSettings SlackNotifications { get; set; }
+        
+        [UsedImplicitly(ImplicitUseKindFlags.Assign)]
+        public AssetServiceClientSettings AssetsServiceClient { get; set; }
     }
 }

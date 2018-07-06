@@ -52,7 +52,6 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             );
         }
 
-
         private static (string PartitionKey, string RowKey) GetBcnClientCredentialsWalletKeys(string assetId, Guid clientId)
         {
             return (clientId.ToString(), assetId);
@@ -63,40 +62,61 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             return ("Wallet", clientId.ToString());
         }
         
-        public async Task<FirstGenerationBlockchainWalletDto> TryGetAsync(string assetId, Guid clientId)
+        public async Task<FirstGenerationBlockchainWalletDto> TryGetAsync(string assetId, Guid clientId, bool isErc20, bool isEtherium)
         {
-            if (assetId == SpecialAssetIds.Bitcoin || assetId == SpecialAssetIds.Ethereum)
-            {
-                var (partitionKey, rowKey) = GetBcnClientCredentialsWalletKeys(assetId, clientId);
-                var entity = await _bcnClientCredentialsWalletTable.GetDataAsync(partitionKey, rowKey);
+            string bcnRowKey = isErc20 ? SpecialAssetIds.BcnKeyForErc223 : assetId;
+            var bcnKeys = GetBcnClientCredentialsWalletKeys(bcnRowKey, clientId);
 
-                if (entity != null)
-                {
-                    return new FirstGenerationBlockchainWalletDto
-                    {
-                        Address = entity.AssetAddress,
-                        AssetId = entity.AssetId,
-                        ClientId = Guid.Parse(entity.ClientId) 
-                    };
-                }                
-            }
-            else if (assetId == SpecialAssetIds.Solarcoin)
-            {
-                var (partitionKey, rowKey) = GetWalletCredentialsWalletKeys(clientId);
-                var entity = await _walletCredentialsWalletTable.GetDataAsync(partitionKey, rowKey);
+            var bcnEntity = await _bcnClientCredentialsWalletTable.GetDataAsync(bcnKeys.PartitionKey, bcnKeys.RowKey);
 
-                if (!string.IsNullOrEmpty(entity?.SolarCoinWalletAddress))
+            if (bcnEntity != null)
+            {
+                return new FirstGenerationBlockchainWalletDto
                 {
-                    return new FirstGenerationBlockchainWalletDto
-                    {
-                        Address = entity.SolarCoinWalletAddress,
-                        AssetId = assetId,
-                        ClientId = Guid.Parse(entity.ClientId)
-                    };
-                }
+                    Address = bcnEntity.AssetAddress,
+                    AssetId = bcnEntity.AssetId,
+                    ClientId = Guid.Parse(bcnEntity.ClientId) 
+                };
             }
+
+            if (isEtherium)
+                return null;
             
-            return null;
+            var (partitionKey, rowKey) = GetWalletCredentialsWalletKeys(clientId);
+            var walletCredentials = await _walletCredentialsWalletTable.GetDataAsync(partitionKey, rowKey);
+
+            if (walletCredentials == null)
+                return null;
+
+            string address;
+            
+            switch (assetId)
+            {
+                case SpecialAssetIds.BitcoinAssetId:
+                    address = walletCredentials.MultiSig;
+                    break;
+                case SpecialAssetIds.SolarAssetId:
+                    address = walletCredentials.SolarCoinWalletAddress;
+                    break;
+                case SpecialAssetIds.ChronoBankAssetId:
+                    address = walletCredentials.ChronoBankContract;
+                    break;
+                case SpecialAssetIds.QuantaAssetId:
+                    address = walletCredentials.QuantaContract;
+                    break;
+                default:
+                    address = walletCredentials.ColoredMultiSig;
+                    break;
+            }
+
+            return address == null
+                ? null
+                : new FirstGenerationBlockchainWalletDto
+                {
+                    Address = address,
+                    AssetId = assetId,
+                    ClientId = clientId
+                };
         }
     }
 }
