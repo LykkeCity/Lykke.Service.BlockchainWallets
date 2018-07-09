@@ -64,11 +64,21 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         
         public async Task<FirstGenerationBlockchainWalletDto> TryGetAsync(string assetId, Guid clientId, bool isErc20, bool isEtherium)
         {
-            string bcnRowKey = isErc20 ? SpecialAssetIds.BcnKeyForErc223 : assetId;
-            var bcnKeys = GetBcnClientCredentialsWalletKeys(bcnRowKey, clientId);
-
-            var bcnEntity = await _bcnClientCredentialsWalletTable.GetDataAsync(bcnKeys.PartitionKey, bcnKeys.RowKey);
-
+            FirstGenerationBlockchainWalletEntity.FromBcnClientCredentials bcnEntity = null;
+            
+            if (isErc20)
+            {
+                var bcn223Keys = GetBcnClientCredentialsWalletKeys(SpecialAssetIds.BcnKeyForErc223, clientId);
+                var bcn20Keys = GetBcnClientCredentialsWalletKeys(SpecialAssetIds.BcnKeyForErc20, clientId);
+                bcnEntity = await _bcnClientCredentialsWalletTable.GetDataAsync(bcn223Keys.PartitionKey, bcn223Keys.RowKey) ??
+                                await _bcnClientCredentialsWalletTable.GetDataAsync(bcn20Keys.PartitionKey, bcn20Keys.RowKey);
+            }
+            else
+            {
+                var bcnKeys = GetBcnClientCredentialsWalletKeys(assetId, clientId);
+                bcnEntity = await _bcnClientCredentialsWalletTable.GetDataAsync(bcnKeys.PartitionKey, bcnKeys.RowKey);
+            }
+            
             if (bcnEntity != null)
             {
                 return new FirstGenerationBlockchainWalletDto

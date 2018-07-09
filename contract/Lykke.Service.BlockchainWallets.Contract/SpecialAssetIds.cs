@@ -7,5 +7,6 @@
         public const string ChronoBankAssetId = "TIME";
         public const string QuantaAssetId = "QNT";
         public const string BcnKeyForErc223 = "ERC223";
+        public const string BcnKeyForErc20 = "ERC20";
     }
 }
