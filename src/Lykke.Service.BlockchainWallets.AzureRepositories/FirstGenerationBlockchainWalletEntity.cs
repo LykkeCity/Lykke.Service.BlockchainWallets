@@ -27,6 +27,18 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         
             [UsedImplicitly(ImplicitUseKindFlags.Assign)]
             public string SolarCoinWalletAddress { get; set; }
+            
+            [UsedImplicitly(ImplicitUseKindFlags.Assign)]
+            public string MultiSig { get; set; }
+            
+            [UsedImplicitly(ImplicitUseKindFlags.Assign)]
+            public string ChronoBankContract { get; set; }
+            
+            [UsedImplicitly(ImplicitUseKindFlags.Assign)]
+            public string QuantaContract { get; set; }
+            
+            [UsedImplicitly(ImplicitUseKindFlags.Assign)]
+            public string ColoredMultiSig { get; set; }
         }
     }
 }
