@@ -93,6 +93,36 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             }
         }
 
+        public async Task SetChronoBankContract(Guid clientId, string contract)
+        {
+            var walletCredentials = await GetAsync(clientId);
+
+            if (string.IsNullOrEmpty(walletCredentials.ChronoBankContract))
+            {
+                var changedRecord = WalletCredentials.Create(walletCredentials);
+                changedRecord.ChronoBankContract = contract;
+                await MergeAsync(changedRecord);
+            }
+        }
+
+        public async Task<FirstGenerationBlockchainWalletDto> GetBcnCredsAsync(string assetId, Guid clientId)
+        {
+            var bcnKeys = GetBcnClientCredentialsWalletKeys(assetId, clientId);
+            var bcnEntity = await _bcnClientCredentialsWalletTable.GetDataAsync(bcnKeys.PartitionKey, bcnKeys.RowKey);
+
+            if (bcnEntity != null)
+            {
+                return new FirstGenerationBlockchainWalletDto
+                {
+                    Address = bcnEntity.AssetAddress,
+                    AssetId = bcnEntity.AssetId,
+                    ClientId = Guid.Parse(bcnEntity.ClientId)
+                };
+            }
+
+            return null;
+        }
+
         public async Task<FirstGenerationBlockchainWalletDto> TryGetAsync(string assetId, Guid clientId, bool isErc20,
             bool isEtherium)
         {
@@ -161,6 +191,27 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                     AssetId = assetId,
                     ClientId = clientId
                 };
+        }
+
+        public async Task SetQuantaContract(Guid clientId, string contract)
+        {
+            var walletCredentials = await GetAsync(clientId);
+
+            if (string.IsNullOrEmpty(walletCredentials.QuantaContract))
+            {
+                var changedRecord = WalletCredentials.Create(walletCredentials);
+                changedRecord.QuantaContract = contract;
+                await MergeAsync(changedRecord);
+            }
+        }
+
+        public async Task SaveAsync(IBcnCredentialsRecord credsRecord)
+        {
+            var byClientEntity = FirstGenerationBlockchainWalletEntity.FromBcnClientCredentials.ByClientId.Create(credsRecord);
+            var byAssetAddressEntity = FirstGenerationBlockchainWalletEntity.FromBcnClientCredentials.ByAssetAddress.Create(credsRecord);
+
+            await _bcnClientCredentialsWalletTable.TryInsertAsync(byClientEntity);
+            await _bcnClientCredentialsWalletTable.TryInsertAsync(byAssetAddressEntity);
         }
 
         /// <summary>

@@ -11,6 +11,14 @@ namespace Lykke.Service.BlockchainWallets.Core.Repositories
 
         Task SetSolarCoinWallet(Guid clientId, string address);
 
+        Task SetChronoBankContract(Guid clientId, string contract);
+
+        Task SetQuantaContract(Guid clientId, string contract);
+
         Task<IWalletCredentials> GetAsync(Guid clientId);
+
+        Task<FirstGenerationBlockchainWalletDto> GetBcnCredsAsync(string assetId, Guid clientId);
+
+        Task SaveAsync(IBcnCredentialsRecord credsRecord);
     }
 }
