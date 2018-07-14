@@ -103,7 +103,7 @@ namespace Lykke.Service.BlockchainWallets
                     .RegisterModule(new ServiceModule(
                         appSettings.CurrentValue.BlockchainsIntegration,
                         appSettings.CurrentValue.BlockchainSignFacadeClient,
-                        appSettings.CurrentValue.BlockchainWalletsService,
+                        appSettings.CurrentValue,
                         appSettings.CurrentValue.AssetsServiceClient,
                         Log));
 

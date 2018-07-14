@@ -5,6 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AzureStorage.Tables;
+using Common.Log;
+using Lykke.SettingsReader;
 
 namespace Lykke.Service.BlockchainWallets.AzureRepositories.FirstGeneration
 {
@@ -17,10 +20,16 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories.FirstGeneration
             _tableStorage = tableStorage;
         }
 
-        //container.RegisterInstance<IWalletCredentialsHistoryRepository>(
-        //new WalletCredentialsHistoryRepository(
-        //    AzureTableStorage<WalletCredentialsHistoryRecord>.Create(_dbSettings.ConnectionString(x => x.ClientPersonalInfoConnString),
-        //"WalletCredentialsHistory", _log)));
+        public static IWalletCredentialsHistoryRepository Create(
+            IReloadingManager<string> clientPersonalInfoConnectionString,
+            ILog log)
+        {
+            var walletCredentialsHistoryRepository = new WalletCredentialsHistoryRepository(
+                AzureTableStorage<WalletCredentialsHistoryRecord>.Create(clientPersonalInfoConnectionString,
+            "WalletCredentialsHistory", log));
+
+            return walletCredentialsHistoryRepository;
+        }
 
         public async Task InsertHistoryRecord(IWalletCredentials oldWalletCredentials)
         {

@@ -33,28 +33,16 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
             new Regex("^0x[0-9A-F]{40}$", RegexOptions.Compiled);
 
         private readonly IEthereumCoreAPI _ethereumApi;
-        private readonly IAssetsService _assetsService;
         private readonly AddressUtil _addressUtil;
         private readonly IAssetsServiceWithCache _assetsServiceWithCache;
 
         public SrvEthereumHelper(
             IEthereumCoreAPI ethereumApi,
-            IAssetsService assetsService,
             IAssetsServiceWithCache assetsServiceWithCache)
         {
             _addressUtil = new AddressUtil();
             _ethereumApi = ethereumApi;
-            _assetsService = assetsService;
             _assetsServiceWithCache = assetsServiceWithCache;
-        }
-
-        public async Task<string> GetTokenAddressByAssetIdAsync(string assetId)
-        {
-            var erc20Token = await _assetsService.Erc20TokenGetBySpecificationAsync(
-                new Lykke.Service.Assets.Client.Models.Erc20TokenSpecification(new List<string>() {assetId}));
-            string erc20TokenAddress = erc20Token.Items.FirstOrDefault()?.Address;
-
-            return erc20TokenAddress;
         }
 
         public bool IsValidAddress(string address)
