@@ -214,6 +214,51 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             await _bcnClientCredentialsWalletTable.TryInsertAsync(byAssetAddressEntity);
         }
 
+        public Task SaveAsync(IWalletCredentials walletCredentials)
+        {
+            var newByClientEntity = WalletCredentialsEntity.ByClientId.CreateNew(walletCredentials);
+            var newByMultisigEntity = WalletCredentialsEntity.ByMultisig.CreateNew(walletCredentials);
+            var newByColoredEntity = WalletCredentialsEntity.ByColoredMultisig.CreateNew(walletCredentials);
+
+            var insertByEthTask = Task.CompletedTask;
+            if (!string.IsNullOrEmpty(walletCredentials.EthConversionWalletAddress))
+            {
+                var newByEthWalletEntity = WalletCredentialsEntity.ByEthContract.CreateNew(walletCredentials);
+                insertByEthTask = _walletCredentialsWalletTable.InsertAsync(newByEthWalletEntity);
+            }
+
+            var insertBySolarTask = Task.CompletedTask;
+            if (!string.IsNullOrEmpty(walletCredentials.SolarCoinWalletAddress))
+            {
+                var newBySolarWalletEntity = WalletCredentialsEntity.BySolarCoinWallet.CreateNew(walletCredentials);
+                insertBySolarTask = _walletCredentialsWalletTable.InsertAsync(newBySolarWalletEntity);
+            }
+
+            var insertByChronoBankTask = Task.CompletedTask;
+            if (!string.IsNullOrEmpty(walletCredentials.ChronoBankContract))
+            {
+                var newByChronoContractEntity = WalletCredentialsEntity.ByChronoBankContract.CreateNew(walletCredentials);
+                insertByChronoBankTask = _walletCredentialsWalletTable.InsertAsync(newByChronoContractEntity);
+            }
+
+            var insertByQuantaTask = Task.CompletedTask;
+            if (!string.IsNullOrEmpty(walletCredentials.QuantaContract))
+            {
+                var newByQuantaContractEntity = WalletCredentialsEntity.ByQuantaContract.CreateNew(walletCredentials);
+                insertByQuantaTask = _walletCredentialsWalletTable.InsertAsync(newByQuantaContractEntity);
+            }
+
+            return Task.WhenAll(
+                _walletCredentialsWalletTable.InsertAsync(newByClientEntity),
+                _walletCredentialsWalletTable.InsertAsync(newByMultisigEntity),
+                _walletCredentialsWalletTable.InsertAsync(newByColoredEntity),
+                insertByEthTask,
+                insertBySolarTask,
+                insertByChronoBankTask,
+                insertByQuantaTask
+                );
+        }
+
         /// <summary>
         /// Tokens to support:
         ///
@@ -241,7 +286,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             #endregion
         }
 
-        private Task MergeAsync(IWalletCredentials walletCredentials)
+        public Task MergeAsync(IWalletCredentials walletCredentials)
         {
             var newByClientEntity = WalletCredentialsEntity.ByClientId.CreateNew(walletCredentials);
             var newByMultisigEntity = WalletCredentialsEntity.ByMultisig.CreateNew(walletCredentials);

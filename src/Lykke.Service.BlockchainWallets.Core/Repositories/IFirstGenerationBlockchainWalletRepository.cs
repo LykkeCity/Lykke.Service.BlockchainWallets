@@ -20,5 +20,9 @@ namespace Lykke.Service.BlockchainWallets.Core.Repositories
         Task<FirstGenerationBlockchainWalletDto> GetBcnCredsAsync(string assetId, Guid clientId);
 
         Task SaveAsync(IBcnCredentialsRecord credsRecord);
+
+        Task SaveAsync(IWalletCredentials credsRecord);
+
+        Task MergeAsync(IWalletCredentials walletCredentials);
     }
 }
