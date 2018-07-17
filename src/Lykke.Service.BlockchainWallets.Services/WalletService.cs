@@ -12,6 +12,7 @@ using Lykke.Service.BlockchainWallets.Contract.Events;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.Service.BlockchainWallets.Core.Services;
+using Lykke.Service.BlockchainWallets.Core.Services.FirstGeneration;
 
 
 namespace Lykke.Service.BlockchainWallets.Services
@@ -26,7 +27,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         private readonly IAddressParser _addressParser;
         private readonly IFirstGenerationBlockchainWalletRepository _firstGenerationBlockchainWalletRepository;
         private readonly IAssetsServiceWithCache _assetsServiceWithCache;
-
+        private readonly ILegacyWalletService _legacyWalletService;
 
         public WalletService(
             ICqrsEngine cqrsEngine,
@@ -35,7 +36,8 @@ namespace Lykke.Service.BlockchainWallets.Services
             IBlockchainSignFacadeClient blockchainSignFacadeClient,
             IAddressParser addressParser,
             IFirstGenerationBlockchainWalletRepository firstGenerationBlockchainWalletRepository,
-            IAssetsServiceWithCache assetsServiceWithCache)
+            IAssetsServiceWithCache assetsServiceWithCache,
+            ILegacyWalletService legacyWalletService)
         {
             _cqrsEngine = cqrsEngine;
             _walletRepository = walletRepository;
@@ -44,6 +46,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             _addressParser = addressParser;
             _firstGenerationBlockchainWalletRepository = firstGenerationBlockchainWalletRepository;
             _assetsServiceWithCache = assetsServiceWithCache;
+            _legacyWalletService = legacyWalletService;
         }
 
         private async Task<bool> AdditionalWalletExistsAsync(string integrationLayerId, string assetId, Guid clientId)
@@ -51,13 +54,20 @@ namespace Lykke.Service.BlockchainWallets.Services
             return await _additionalWalletRepository.ExistsAsync(integrationLayerId, assetId, clientId);
         }
 
-
         public async Task<WalletWithAddressExtensionDto> CreateWalletAsync(string blockchainType, string assetId, Guid clientId)
         {
-            var wallet = await _blockchainSignFacadeClient.CreateWalletAsync(blockchainType);
-            var address = wallet.PublicAddress;
-            
-            await _walletRepository.AddAsync(blockchainType, assetId, clientId, address);
+            string address = null;
+
+            if (blockchainType != SpecialBlockchainTypes.FirstGenerationBlockchain)
+            {
+                var wallet = await _blockchainSignFacadeClient.CreateWalletAsync(blockchainType);
+                address = wallet.PublicAddress;
+                await _walletRepository.AddAsync(blockchainType, assetId, clientId, address);
+            }
+            else
+            {
+                address = await _legacyWalletService.CreateWalletAsync(clientId, assetId);
+            }
 
             var @event = new WalletCreatedEvent
             {

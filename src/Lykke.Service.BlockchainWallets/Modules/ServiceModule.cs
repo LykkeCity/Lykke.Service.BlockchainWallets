@@ -122,10 +122,13 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .RegisterType<SrvSolarCoinHelper>()
                 .As<ISrvSolarCoinHelper>();
 
+            builder.RegisterInstance<BitcoinCoreSettings>(_appSettings.BitcoinCoreSettings);
             builder.RegisterInstance<IBitcoinApiClient>(new BitcoinApiClient(_appSettings.BitcoinCoreSettings.BitcoinCoreApiUrl));
             builder.RegisterLykkeServiceClient(_appSettings.ClientAccountServiceClient.ServiceUrl);
             builder.RegisterInstance<IEthereumCoreAPI>(new EthereumCoreAPI(new Uri(_appSettings.EthereumServiceClient.ServiceUrl), new HttpClient()));
-            builder.RegisterInstance<SolarCoinServiceClientSettings>(_appSettings.SolarCoinServiceClientSettings);
+            builder.RegisterInstance<SolarCoinServiceClientSettings>(_appSettings.SolarCoinServiceClient);
+            builder.RegisterInstance<QuantaServiceClientSettings>(_appSettings.QuantaServiceClient);
+            builder.RegisterInstance<ChronoBankServiceClientSettings>(_appSettings.ChronoBankServiceClient);
 
             #endregion
 

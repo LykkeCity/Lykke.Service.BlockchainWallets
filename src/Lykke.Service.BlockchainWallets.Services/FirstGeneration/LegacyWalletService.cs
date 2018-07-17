@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Common;
+﻿using Common;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.FirstGeneration;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.Service.BlockchainWallets.Core.Services.FirstGeneration;
+using System;
+using System.Threading.Tasks;
+using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 
 namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
 {
@@ -20,6 +19,7 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
         private readonly ISrvEthereumHelper _srvEthereumHelper;
         private readonly IChronoBankService _chronoBankService;
         private readonly IQuantaService _quantaService;
+        private readonly ISrvBlockchainHelper _srvBlockchainHelper;
 
         public LegacyWalletService(
             IFirstGenerationBlockchainWalletRepository firstGenerationBlockchainWalletRepository,
@@ -27,7 +27,8 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
             IAssetsServiceWithCache assetsServiceWithCache,
             ISrvEthereumHelper srvEthereumHelper,
             IChronoBankService chronoBankService,
-            IQuantaService quantaService)
+            IQuantaService quantaService,
+            ISrvBlockchainHelper srvBlockchainHelper)
         {
             _firstGenerationBlockchainWalletRepository = firstGenerationBlockchainWalletRepository;
             _srvSolarCoinHelper = srvSolarCoinHelper;
@@ -35,50 +36,40 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
             _srvEthereumHelper = srvEthereumHelper;
             _chronoBankService = chronoBankService;
             _quantaService = quantaService;
+            _srvBlockchainHelper = srvBlockchainHelper;
         }
 
-        public async Task CreateWalletAsync(Guid clientId, string assetId, string pubKey, string privateKey)
+        public async Task<string> CreateWalletAsync(Guid clientId, string assetId)
         {
-            switch (assetId)
+            var asset = await _assetsServiceWithCache.TryGetAssetAsync(assetId);
+
+            #region BTC & ColoredCoins LKK, LKK1y, CHF|USD|EUR|GBP
+
+            if (assetId == SpecialAssetIds.BitcoinAssetId ||
+                (!string.IsNullOrEmpty(asset.BlockChainAssetId)) &&
+                asset.Blockchain == Blockchain.Bitcoin)
             {
-                #region BTC & ColoredCoins LKK, LKK1y, CHF|USD|EUR|GBP
+                var bcncreds = await _srvBlockchainHelper.GenerateWallets(clientId);
 
-                #endregion
-
-                #region ETH & ERC20/223
-
-                #endregion
-
-                #region Tree & Time & SLR
-
-                case SpecialAssetIds.SolarAssetId:
-                    {
-                        var walletCredentials = await _firstGenerationBlockchainWalletRepository.GetAsync(clientId);
-
-                        if (walletCredentials != null)
-                        {
-                            if (String.IsNullOrEmpty(walletCredentials.SolarCoinWalletAddress))
-                            {
-                                await _srvSolarCoinHelper.SetNewSolarCoinAddress(walletCredentials);
-                            }
-                        }
-                    }
-
-                    break;
-
-                #endregion
-
-                default:
-                    break;
+                return bcncreds.AssetAddress;
             }
+
+            #endregion
+
+            #region ETH & ERC20/223 & Tree & Time & SLR
+
+            var address = await GenerateWallet(clientId, assetId);
+            return address;
+
+            #endregion
         }
 
-        public async Task GenerateWallet(Guid clientId, SubmitKeysModel request)
+        public async Task<string> GenerateWallet(Guid clientId, string assetId)
         {
-            var asset = await _assetsServiceWithCache.TryGetAssetAsync(request.AssetId);
+            var asset = await _assetsServiceWithCache.TryGetAssetAsync(assetId);
             if (asset == null)
             {
-                throw new InvalidOperationException($"Unknown asset {request.AssetId}");
+                throw new InvalidOperationException($"Unknown asset {assetId}");
             }
 
             var (isErc20, bcnRowKey) = await GetAssetInfoAsync(asset);
@@ -87,34 +78,39 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
             if (current != null)
             {
                 throw new InvalidOperationException(
-                    $"There is already an entry in bcnCreds for: {request.AssetId}, BcnRowKey: {bcnRowKey}, ClientId: {clientId}");
+                    $"There is already an entry in bcnCreds for: {assetId}, BcnRowKey: {bcnRowKey}, ClientId: {clientId}");
             }
 
-            string address;
+            string address = null;
 
             if (string.IsNullOrEmpty(asset.BlockchainIntegrationLayerId))
             {
-                if (request.BcnWallet == null)
-                {
-                    var walletCreds = await _firstGenerationBlockchainWalletRepository.GetAsync(clientId);
-                    address = asset.Blockchain != Lykke.Service.Assets.Client.Models.Blockchain.Ethereum
-                        ? (walletCreds.GetDepositAddressForAsset(asset.Id) ??
-                          await ObsoleteGenerateAddress(request.AssetId, walletCreds))
-                        : null;
-                }
-                else
+                var walletCreds = await _firstGenerationBlockchainWalletRepository.GetAsync(clientId);
+                address = asset.Blockchain != Lykke.Service.Assets.Client.Models.Blockchain.Ethereum
+                    ? (walletCreds.GetDepositAddressForAsset(asset.Id) ??
+                      await ObsoleteGenerateAddress(assetId, walletCreds))
+                    : null;
+                if (address == null)
                 {
                     EthereumResponse<GetContractModel> assetAddress;
 
+                    #region Generate ETH key for erc223 deposit address
+
+                    var key = Nethereum.Signer.EthECKey.GenerateKey();
+                    var publicAddress = key.GetPublicAddress().ToLower();
+
+                    #endregion
+
                     if (!isErc20)
                     {
-                        assetAddress = await _srvEthereumHelper.GetContractAsync(asset.Id,
-                            request.BcnWallet.Address);
+                        throw new NotImplementedException("Can't create ETH deposit yet");
+                        //assetAddress = await _srvEthereumHelper.GetContractAsync(asset.Id,
+                        //    request.BcnWallet.Address);
                     }
                     else
                     {
                         //Get erc20 deposit address here!
-                        assetAddress = await _srvEthereumHelper.GetErc20DepositContractAsync(request.BcnWallet.Address);
+                        assetAddress = await _srvEthereumHelper.GetErc20DepositContractAsync(publicAddress);
                     }
 
                     if (assetAddress.HasError)
@@ -122,17 +118,20 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
 
                     address = assetAddress.Result.Contract;
 
+                    string spoiler = "Created from Lykke.Service.BlockchainWallets";
                     await _firstGenerationBlockchainWalletRepository.SaveAsync(new BcnCredentialsRecord
                     {
-                        Address = request.BcnWallet.Address,
+                        Address = publicAddress,
                         AssetAddress = address?.ToLower(),
                         ClientId = clientId.ToString(),
-                        EncodedKey = request.BcnWallet.EncodedKey,
-                        PublicKey = request.BcnWallet.PublicKey,
+                        EncodedKey = spoiler,//request.BcnWallet.EncodedKey,
+                        PublicKey = spoiler,//request.BcnWallet.PublicKey,
                         AssetId = bcnRowKey //Or Asset or Erc20 const
                     });
                 }
             }
+
+            return address;
         }
 
         private async Task<string> ObsoleteGenerateAddress(string assetId, IWalletCredentials walletCreds)

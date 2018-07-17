@@ -105,22 +105,12 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             }
         }
 
-        public async Task<FirstGenerationBlockchainWalletDto> GetBcnCredsAsync(string assetId, Guid clientId)
+        public async Task<IBcnCredentialsRecord> GetBcnCredsAsync(string assetId, Guid clientId)
         {
             var bcnKeys = GetBcnClientCredentialsWalletKeys(assetId, clientId);
             var bcnEntity = await _bcnClientCredentialsWalletTable.GetDataAsync(bcnKeys.PartitionKey, bcnKeys.RowKey);
 
-            if (bcnEntity != null)
-            {
-                return new FirstGenerationBlockchainWalletDto
-                {
-                    Address = bcnEntity.AssetAddress,
-                    AssetId = bcnEntity.AssetId,
-                    ClientId = Guid.Parse(bcnEntity.ClientId)
-                };
-            }
-
-            return null;
+            return bcnEntity;
         }
 
         public async Task<FirstGenerationBlockchainWalletDto> TryGetAsync(string assetId, Guid clientId, bool isErc20,

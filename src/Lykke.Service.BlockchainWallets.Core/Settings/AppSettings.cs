@@ -26,16 +26,16 @@ namespace Lykke.Service.BlockchainWallets.Core.Settings
         public AssetServiceClientSettings AssetsServiceClient { get; set; }
 
         [UsedImplicitly(ImplicitUseKindFlags.Assign)]
-        public ChronoBankServiceClientSettings ChronoBankServiceClientSettings { get; set; }
+        public ChronoBankServiceClientSettings ChronoBankServiceClient { get; set; }
 
         [UsedImplicitly(ImplicitUseKindFlags.Assign)]
-        public QuantaServiceClientSettings QuantaServiceClientSettings { get; set; }
+        public QuantaServiceClientSettings QuantaServiceClient { get; set; }
 
         [UsedImplicitly(ImplicitUseKindFlags.Assign)]
-        public SolarCoinServiceClientSettings SolarCoinServiceClientSettings { get; set; }
+        public SolarCoinServiceClientSettings SolarCoinServiceClient { get; set; }
 
         [UsedImplicitly(ImplicitUseKindFlags.Assign)]
-        public BtcSettings BitcoinCoreSettings { get; set; }
+        public BitcoinCoreSettings BitcoinCoreSettings { get; set; }
 
         [UsedImplicitly(ImplicitUseKindFlags.Assign)]
         public ClientAccountServiceClientSettings ClientAccountServiceClient { get; set; }

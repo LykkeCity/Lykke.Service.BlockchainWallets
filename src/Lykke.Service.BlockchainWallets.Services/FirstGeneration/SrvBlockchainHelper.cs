@@ -20,32 +20,30 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
         private readonly IWalletCredentialsHistoryRepository _walletCredentialsHistoryRepository;
         private readonly IClientAccountClient _clientAccountService;
         private readonly IBitcoinApiClient _bitcoinApiClient;
+        private readonly BitcoinCoreSettings _btcSettings;
 
         public SrvBlockchainHelper(IFirstGenerationBlockchainWalletRepository walletCredentialsRepository,
             ILog log,
             IWalletCredentialsHistoryRepository walletCredentialsHistoryRepository,
             IClientAccountClient clientAccountService,
-            IBitcoinApiClient bitcoinApiClient)
+            IBitcoinApiClient bitcoinApiClient,
+            BitcoinCoreSettings btcSettings)
         {
             _walletCredentialsRepository = walletCredentialsRepository;
             _log = log;
             _walletCredentialsHistoryRepository = walletCredentialsHistoryRepository;
             _clientAccountService = clientAccountService;
             _bitcoinApiClient = bitcoinApiClient;
+            _btcSettings = btcSettings;
         }
 
-        public async Task<IWalletCredentials> GenerateWallets(string clientId, string clientPubKeyHex, string encodedPrivateKey, NetworkType networkType)
+        public async Task<IBcnCredentialsRecord> GenerateWallets(Guid clientId)
         {
-            var network = networkType == NetworkType.Main ? Network.Main : Network.TestNet;
+            var network = _btcSettings.NetworkType == NetworkType.Main ? Network.Main : Network.TestNet;
 
-            PubKey clientPubKey = new PubKey(clientPubKeyHex);
-            var clientAddress = clientPubKey.GetAddress(network);
-            var clientAddressWif = clientAddress.ToWif();
-            var coloredAddressWif = clientAddress.ToColoredAddress().ToWif();
-
-            var wallets = await GetWalletsForPubKey(clientPubKeyHex);
-
-            var currentWalletCreds = await _walletCredentialsRepository.GetAsync(Guid.Parse(clientId));
+            var wallets = await GetWalletsForPubKey();
+            IBcnCredentialsRecord bcnCreds = null;
+            var currentWalletCreds = await _walletCredentialsRepository.GetAsync(clientId);
 
             IWalletCredentials walletCreds;
             if (currentWalletCreds == null)
@@ -53,39 +51,60 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
                 var btcConvertionWallet = GetNewAddressAndPrivateKey(network);
 
                 walletCreds = WalletCredentials.Create(
-                    clientId, clientAddressWif, null, wallets.MultiSigAddress,
+                    clientId.ToString(), 
+                    null, 
+                    null, 
+                    null,
                     wallets.ColoredMultiSigAddress,
-                    btcConvertionWallet.PrivateKey, btcConvertionWallet.Address, encodedPk: encodedPrivateKey,
-                    pubKey: clientPubKeyHex);
+                    btcConvertionWallet.PrivateKey, 
+                    btcConvertionWallet.Address, 
+                    encodedPk: "",
+                    pubKey: "");
+
+                bcnCreds = BcnCredentialsRecord.Create(SpecialAssetIds.BitcoinAssetId,
+                    clientId.ToString(),
+                    null,
+                    wallets.SegwitAddress,
+                    "");
 
                 await Task.WhenAll(
                     _walletCredentialsRepository.SaveAsync(walletCreds),
-                    _walletCredentialsRepository.SaveAsync(BcnCredentialsRecord.Create(SpecialAssetIds.BitcoinAssetId, 
-                        clientId, 
-                        null, 
-                        wallets.SegwitAddress, 
-                        clientPubKeyHex))
+                    _walletCredentialsRepository.SaveAsync(bcnCreds)
                 );
             }
             else
             {
                 walletCreds = WalletCredentials.Create(
-                    clientId, clientAddressWif, null, wallets.MultiSigAddress,
-                    wallets.ColoredMultiSigAddress, null, null, encodedPk: encodedPrivateKey,
-                    pubKey: clientPubKeyHex);
+                    clientId.ToString(), 
+                    null, 
+                    null, 
+                    null,
+                    wallets.ColoredMultiSigAddress, 
+                    null, 
+                    null, 
+                    encodedPk: "",
+                    pubKey: "");
 
-                if (await _walletCredentialsRepository.GetBcnCredsAsync(SpecialAssetIds.BitcoinAssetId, Guid.Parse(clientId)) == null)
-                    await _walletCredentialsRepository.SaveAsync(BcnCredentialsRecord.Create(
-                        SpecialAssetIds.BitcoinAssetId, clientId, null, wallets.SegwitAddress,
-                        clientPubKeyHex));
+                bcnCreds = await _walletCredentialsRepository.GetBcnCredsAsync(SpecialAssetIds.BitcoinAssetId,
+                    clientId);
+                if (bcnCreds == null)
+                {
+                    bcnCreds = BcnCredentialsRecord.Create(
+                        SpecialAssetIds.BitcoinAssetId,
+                        clientId.ToString(),
+                        null,
+                        wallets.SegwitAddress,
+                        ""
+                    );
+
+                    await _walletCredentialsRepository.SaveAsync(bcnCreds);
+                }
 
                 await _walletCredentialsHistoryRepository.InsertHistoryRecord(currentWalletCreds);
                 await _walletCredentialsRepository.MergeAsync(walletCreds);
             }
 
-            await SetDefaultRefundAddress(clientId, coloredAddressWif);
-
-            return walletCreds;
+            return bcnCreds;
         }
 
         private async Task SetDefaultRefundAddress(string clientId, string coloredAddressWif)
@@ -99,27 +118,24 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
 
         #region Tools
 
-        private async Task<GetWalletResponse> GetWalletsForPubKey(string pubKeyHex)
+        private async Task<GetWalletResponse> GetWalletsForPubKey()
         {
             try
             {
-                var response = await _bitcoinApiClient.GetWallet(pubKeyHex);
+                var segwitResponse = await _bitcoinApiClient.GetSegwitWallet();
 
-                var segwitResponse = await _bitcoinApiClient.GetSegwitWallet(pubKeyHex);
-
-                if (response.HasError || segwitResponse.HasError)
-                    throw new Exception($"Bad response from Bitcoin, error: {response.Error.ToJson()}");
+                if (segwitResponse.HasError)
+                    throw new Exception($"Bad response from Bitcoin, error: {segwitResponse.Error.ToJson()}");
 
                 return new GetWalletResponse
                 {
-                    ColoredMultiSigAddress = response.ColoredMultisig,
-                    MultiSigAddress = response.Multisig,
+                    ColoredMultiSigAddress = segwitResponse.ColoredAddress,
                     SegwitAddress = segwitResponse.Address
                 };
             }
             catch (Exception ex)
             {
-                await _log.WriteErrorAsync("SrvBlockchainHelper", "GenerateTransferTransaction", pubKeyHex, ex);
+                await _log.WriteErrorAsync("SrvBlockchainHelper", "GetWalletsForPubKey", "", ex);
                 throw;
             }
         }
@@ -151,7 +167,6 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
 
         internal class GetWalletResponse
         {
-            public string MultiSigAddress { get; set; }
             public string ColoredMultiSigAddress { get; set; }
             public string SegwitAddress { get; set; }
         }

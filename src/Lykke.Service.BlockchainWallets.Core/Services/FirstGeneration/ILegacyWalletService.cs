@@ -7,6 +7,6 @@ namespace Lykke.Service.BlockchainWallets.Core.Services.FirstGeneration
 {
     public interface ILegacyWalletService
     {
-        Task CreateWalletAsync(Guid clientId, string assetId, string pubKey, string privateKey);
+        Task<string> CreateWalletAsync(Guid clientId, string assetId);
     }
 }
