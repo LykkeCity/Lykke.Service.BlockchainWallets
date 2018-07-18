@@ -32,10 +32,10 @@
     <PackageReference Include="Lykke.SettingsReader" Version="2.4.0" />
     <PackageReference Include="Lykke.SlackNotification.AzureQueue" Version="2.0.4" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="1.2.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.2" />
   </ItemGroup>
