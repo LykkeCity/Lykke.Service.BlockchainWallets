@@ -1,9 +1,10 @@
-﻿using System.Linq;
-using System.Net;
-using Lykke.Common.Api.Contract.Responses;
+﻿using Lykke.Common.Api.Contract.Responses;
+using Lykke.Service.BlockchainWallets.Contract.Models;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.PlatformAbstractions;
+using System.Linq;
+using System.Net;
 
 
 namespace Lykke.Service.BlockchainWallets.Controllers
@@ -29,7 +30,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             {
                 return StatusCode(
                     (int) HttpStatusCode.InternalServerError,
-                    ErrorResponse.Create($"Service is unhealthy: {healthViloationMessage}"));
+                    BlockchainWalletsErrorResponse.Create($"Service is unhealthy: {healthViloationMessage}"));
             }
 
             // NOTE: Feel free to extend IsAliveResponse, to display job-specific indicators

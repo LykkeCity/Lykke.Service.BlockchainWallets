@@ -141,7 +141,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         Task<WalletsResponse> GetWalletsAsync(Guid clientId, int take, string continuationToken);
 
         /// <summary>
-        ///    Creates address from base address and address extension.
+        ///    Creates address from base address and address extension ensures it has valid extension.
         /// </summary>
         /// <param name="blockchainType">
         ///    Blockchain type.

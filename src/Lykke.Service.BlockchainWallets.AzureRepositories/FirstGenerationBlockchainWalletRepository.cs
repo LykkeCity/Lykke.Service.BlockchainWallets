@@ -52,7 +52,6 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             );
         }
 
-
         private static (string PartitionKey, string RowKey) GetBcnClientCredentialsWalletKeys(string assetId, Guid clientId)
         {
             return (clientId.ToString(), assetId);
@@ -63,40 +62,71 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             return ("Wallet", clientId.ToString());
         }
         
-        public async Task<FirstGenerationBlockchainWalletDto> TryGetAsync(string assetId, Guid clientId)
+        public async Task<FirstGenerationBlockchainWalletDto> TryGetAsync(string assetId, Guid clientId, bool isErc20, bool isEtherium)
         {
-            if (assetId == SpecialAssetIds.Bitcoin || assetId == SpecialAssetIds.Ethereum)
+            FirstGenerationBlockchainWalletEntity.FromBcnClientCredentials bcnEntity = null;
+            
+            if (isErc20)
             {
-                var (partitionKey, rowKey) = GetBcnClientCredentialsWalletKeys(assetId, clientId);
-                var entity = await _bcnClientCredentialsWalletTable.GetDataAsync(partitionKey, rowKey);
-
-                if (entity != null)
-                {
-                    return new FirstGenerationBlockchainWalletDto
-                    {
-                        Address = entity.AssetAddress,
-                        AssetId = entity.AssetId,
-                        ClientId = Guid.Parse(entity.ClientId) 
-                    };
-                }                
+                var bcn223Keys = GetBcnClientCredentialsWalletKeys(SpecialAssetIds.BcnKeyForErc223, clientId);
+                var bcn20Keys = GetBcnClientCredentialsWalletKeys(SpecialAssetIds.BcnKeyForErc20, clientId);
+                bcnEntity = await _bcnClientCredentialsWalletTable.GetDataAsync(bcn223Keys.PartitionKey, bcn223Keys.RowKey) ??
+                                await _bcnClientCredentialsWalletTable.GetDataAsync(bcn20Keys.PartitionKey, bcn20Keys.RowKey);
             }
-            else if (assetId == SpecialAssetIds.Solarcoin)
+            else
             {
-                var (partitionKey, rowKey) = GetWalletCredentialsWalletKeys(clientId);
-                var entity = await _walletCredentialsWalletTable.GetDataAsync(partitionKey, rowKey);
-
-                if (!string.IsNullOrEmpty(entity?.SolarCoinWalletAddress))
-                {
-                    return new FirstGenerationBlockchainWalletDto
-                    {
-                        Address = entity.SolarCoinWalletAddress,
-                        AssetId = assetId,
-                        ClientId = Guid.Parse(entity.ClientId)
-                    };
-                }
+                var bcnKeys = GetBcnClientCredentialsWalletKeys(assetId, clientId);
+                bcnEntity = await _bcnClientCredentialsWalletTable.GetDataAsync(bcnKeys.PartitionKey, bcnKeys.RowKey);
             }
             
-            return null;
+            if (bcnEntity != null)
+            {
+                return new FirstGenerationBlockchainWalletDto
+                {
+                    Address = bcnEntity.AssetAddress,
+                    AssetId = bcnEntity.AssetId,
+                    ClientId = Guid.Parse(bcnEntity.ClientId) 
+                };
+            }
+
+            if (isEtherium)
+                return null;
+            
+            var (partitionKey, rowKey) = GetWalletCredentialsWalletKeys(clientId);
+            var walletCredentials = await _walletCredentialsWalletTable.GetDataAsync(partitionKey, rowKey);
+
+            if (walletCredentials == null)
+                return null;
+
+            string address;
+            
+            switch (assetId)
+            {
+                case SpecialAssetIds.BitcoinAssetId:
+                    address = walletCredentials.MultiSig;
+                    break;
+                case SpecialAssetIds.SolarAssetId:
+                    address = walletCredentials.SolarCoinWalletAddress;
+                    break;
+                case SpecialAssetIds.ChronoBankAssetId:
+                    address = walletCredentials.ChronoBankContract;
+                    break;
+                case SpecialAssetIds.QuantaAssetId:
+                    address = walletCredentials.QuantaContract;
+                    break;
+                default:
+                    address = walletCredentials.ColoredMultiSig;
+                    break;
+            }
+
+            return address == null
+                ? null
+                : new FirstGenerationBlockchainWalletDto
+                {
+                    Address = address,
+                    AssetId = assetId,
+                    ClientId = clientId
+                };
         }
     }
 }

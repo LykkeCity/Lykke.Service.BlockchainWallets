@@ -1,11 +1,16 @@
-﻿using Autofac;
+﻿using System;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Common.Log;
+using Lykke.Service.Assets.Client;
 using Lykke.Service.BlockchainSignFacade.Client;
 using Lykke.Service.BlockchainWallets.Core.Services;
+using Lykke.Service.BlockchainWallets.Core.Settings;
 using Lykke.Service.BlockchainWallets.Core.Settings.BlockchainIntegrationSettings;
 using Lykke.Service.BlockchainWallets.Core.Settings.BlockchainSignFacadeClient;
 using Lykke.Service.BlockchainWallets.Core.Settings.ServiceSettings;
 using Lykke.Service.BlockchainWallets.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Lykke.Service.BlockchainWallets.Modules
 {
@@ -14,19 +19,23 @@ namespace Lykke.Service.BlockchainWallets.Modules
         private readonly BlockchainsIntegrationSettings _blockchainsIntegrationSettings;
         private readonly BlockchainSignFacadeClientSettings _blockchainSignFacadeClientSettings;
         private readonly BlockchainWalletsSettings _blockchainWalletsSettings;
+        private readonly AssetServiceClientSettings _assetServiceSettings;
         private readonly ILog _log;
-
+        private readonly IServiceCollection _services;
 
         public ServiceModule(
             BlockchainsIntegrationSettings blockchainsIntegrationSettings,
             BlockchainSignFacadeClientSettings blockchainSignFacadeClientSettings,
             BlockchainWalletsSettings blockchainWalletsSettings,
+            AssetServiceClientSettings assetServiceSettings,
             ILog log)
         {
             _blockchainsIntegrationSettings = blockchainsIntegrationSettings;
             _blockchainSignFacadeClientSettings = blockchainSignFacadeClientSettings;
             _blockchainWalletsSettings = blockchainWalletsSettings;
+            _assetServiceSettings = assetServiceSettings;
             _log = log;
+            _services = new ServiceCollection();
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -76,6 +85,12 @@ namespace Lykke.Service.BlockchainWallets.Modules
             builder
                 .RegisterType<AddressParser>()
                 .As<IAddressParser>();
+            
+            _services.RegisterAssetsClient(AssetServiceSettings.Create(
+                new Uri(_assetServiceSettings.ServiceUrl),
+                _assetServiceSettings.ExpirationPeriod), _log);
+            
+            builder.Populate(_services);
         }
 
         private IBlockchainSignFacadeClient CreateBlockchainSignFacadeClient()

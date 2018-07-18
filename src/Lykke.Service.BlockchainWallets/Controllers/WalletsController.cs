@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Lykke.Service.BlockchainWallets.Contract;
+using Lykke.Service.BlockchainWallets.Contract.Models;
+using Lykke.Service.BlockchainWallets.Core.Services;
+using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Lykke.Common.Api.Contract.Responses;
-using Lykke.Service.BlockchainWallets.Contract;
-using Lykke.Service.BlockchainWallets.Contract.Models;
-using Lykke.Service.BlockchainWallets.Core.Services;
-using Microsoft.AspNetCore.Mvc;
 
 
 namespace Lykke.Service.BlockchainWallets.Controllers
@@ -47,7 +46,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             {
                 return BadRequest
                 (
-                    ErrorResponse.Create($"Asset [{assetId}] or/and blockchain type [{blockchainType}] is not supported.")
+                    BlockchainWalletsErrorResponse.Create($"Asset [{assetId}] or/and blockchain type [{blockchainType}] is not supported.")
                 );
             }
 
@@ -56,7 +55,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 return StatusCode
                 (
                     (int)HttpStatusCode.Conflict,
-                    ErrorResponse.Create($"Wallet for specified client [{clientId}] has already been created.")
+                    BlockchainWalletsErrorResponse.Create($"Wallet for specified client [{clientId}] has already been created.")
                 );
             }
 
@@ -89,7 +88,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             {
                 return BadRequest
                 (
-                    ErrorResponse.Create($"Asset [{assetId}] or/and blockchain type [{blockchainType}] is not supported.")
+                    BlockchainWalletsErrorResponse.Create($"Asset [{assetId}] or/and blockchain type [{blockchainType}] is not supported.")
                 );
             }
 
@@ -97,7 +96,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             {
                 return NotFound
                 (
-                    ErrorResponse.Create($"Wallet for specified client [{clientId}] does not exist.")
+                    BlockchainWalletsErrorResponse.Create($"Wallet for specified client [{clientId}] does not exist.")
                 );
             }
 
@@ -113,13 +112,11 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         public async Task<IActionResult> GetAddress([FromRoute] string blockchainType, [FromRoute] string assetId, [FromRoute] Guid clientId)
         {
             if (!ValidateRequest(blockchainType, assetId, clientId, out var badRequest))
-            {
                 return badRequest;
-            }
 
-            var address = blockchainType != SpecialBlockchainTypes.FirstGenerationBlockchain
-                        ? await _walletService.TryGetDefaultAddressAsync(blockchainType, assetId, clientId)
-                        : await _walletService.TryGetFirstGenerationBlockchainAddressAsync(assetId, clientId);
+            var address = blockchainType == SpecialBlockchainTypes.FirstGenerationBlockchain
+                ? await _walletService.TryGetFirstGenerationBlockchainAddressAsync(assetId, clientId)
+                : await _walletService.TryGetDefaultAddressAsync(blockchainType, assetId, clientId);
 
             if (address != null)
             {
@@ -170,7 +167,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         {
             if (take <= 0)
             {
-                return BadRequest(ErrorResponse.Create($"{nameof(take)} should be greater then 0."));
+                return BadRequest(BlockchainWalletsErrorResponse.Create($"{nameof(take)} should be greater then 0."));
             }
 
             if (!ValidateRequest(clientId, out var badRequest))
@@ -234,7 +231,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
             badRequest = BadRequest
             (
-                ErrorResponse.Create($"One or more input parameters [{string.Join(", ", invalidInputParams)}] are invalid.")
+                BlockchainWalletsErrorResponse.Create($"One or more input parameters [{string.Join(", ", invalidInputParams)}] are invalid.")
             );
 
             return false;
@@ -268,7 +265,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
             badRequest = BadRequest
             (
-                ErrorResponse.Create($"One or more input parameters [{string.Join(", ", invalidInputParams)}] are invalid.")
+                BlockchainWalletsErrorResponse.Create($"One or more input parameters [{string.Join(", ", invalidInputParams)}] are invalid.")
             );
 
             return false;
@@ -292,7 +289,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
             badRequest = BadRequest
             (
-                ErrorResponse.Create($"One or more input parameters [{string.Join(", ", invalidInputParams)}] are invalid.")
+                BlockchainWalletsErrorResponse.Create($"One or more input parameters [{string.Join(", ", invalidInputParams)}] are invalid.")
             );
 
             return false;

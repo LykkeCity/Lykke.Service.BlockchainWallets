@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Lykke.Cqrs;
+using Lykke.Service.Assets.Client;
+using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.BlockchainSignFacade.Client;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Contract.Events;
@@ -23,6 +25,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         private readonly IBlockchainSignFacadeClient _blockchainSignFacadeClient;
         private readonly IAddressParser _addressParser;
         private readonly IFirstGenerationBlockchainWalletRepository _firstGenerationBlockchainWalletRepository;
+        private readonly IAssetsServiceWithCache _assetsServiceWithCache;
 
 
         public WalletService(
@@ -31,7 +34,8 @@ namespace Lykke.Service.BlockchainWallets.Services
             IAdditionalWalletRepository additionalWalletRepository,
             IBlockchainSignFacadeClient blockchainSignFacadeClient,
             IAddressParser addressParser,
-            IFirstGenerationBlockchainWalletRepository firstGenerationBlockchainWalletRepository)
+            IFirstGenerationBlockchainWalletRepository firstGenerationBlockchainWalletRepository,
+            IAssetsServiceWithCache assetsServiceWithCache)
         {
             _cqrsEngine = cqrsEngine;
             _walletRepository = walletRepository;
@@ -39,6 +43,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             _blockchainSignFacadeClient = blockchainSignFacadeClient;
             _addressParser = addressParser;
             _firstGenerationBlockchainWalletRepository = firstGenerationBlockchainWalletRepository;
+            _assetsServiceWithCache = assetsServiceWithCache;
         }
 
         private async Task<bool> AdditionalWalletExistsAsync(string integrationLayerId, string assetId, Guid clientId)
@@ -133,7 +138,15 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         public async Task<WalletWithAddressExtensionDto> TryGetFirstGenerationBlockchainAddressAsync(string assetId, Guid clientId)
         {
-            var wallet = await _firstGenerationBlockchainWalletRepository.TryGetAsync(assetId, clientId);
+            var asset = await _assetsServiceWithCache.TryGetAssetAsync(assetId);
+
+            if (asset == null)
+                return null;
+            
+            bool isErc20 = asset.Type == AssetType.Erc20Token;
+            bool isEtherium = asset.Blockchain == Blockchain.Ethereum;
+            
+            var wallet = await _firstGenerationBlockchainWalletRepository.TryGetAsync(assetId, clientId, isErc20, isEtherium);
 
             if (wallet != null)
             {
