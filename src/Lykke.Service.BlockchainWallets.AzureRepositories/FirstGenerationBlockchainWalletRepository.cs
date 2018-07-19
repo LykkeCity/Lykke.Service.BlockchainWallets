@@ -84,13 +84,15 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
         public async Task SetSolarCoinWallet(Guid clientId, string address)
         {
-            var walletCredentials = await GetAsync(clientId);
+            //var walletCredentials = await GetAsync(clientId);
 
-            if (string.IsNullOrEmpty(walletCredentials.SolarCoinWalletAddress))
-            {
-                walletCredentials.SolarCoinWalletAddress = address;
-                await MergeAsync(walletCredentials);
-            }
+            //if (string.IsNullOrEmpty(walletCredentials.SolarCoinWalletAddress))
+            //{
+            //    walletCredentials.SolarCoinWalletAddress = address;
+            //    await MergeAsync(walletCredentials);
+            //}
+
+            await SaveAsync(BcnCredentialsRecord.Create(SpecialAssetIds.SolarAssetId, clientId.ToString(), null, address, null));
         }
 
         public async Task SetChronoBankContract(Guid clientId, string contract)
@@ -122,10 +124,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             {
                 var bcn223Keys = GetBcnClientCredentialsWalletKeys(SpecialAssetIds.BcnKeyForErc223, clientId);
                 var bcn20Keys = GetBcnClientCredentialsWalletKeys(SpecialAssetIds.BcnKeyForErc20, clientId);
-                bcnEntity = await _bcnClientCredentialsWalletTable.GetDataAsync(bcn223Keys.PartitionKey,
-                                bcn223Keys.RowKey) ??
-                            await _bcnClientCredentialsWalletTable.GetDataAsync(bcn20Keys.PartitionKey,
-                                bcn20Keys.RowKey);
+                bcnEntity = await _bcnClientCredentialsWalletTable.GetDataAsync(bcn223Keys.PartitionKey, bcn223Keys.RowKey); 
             }
             else
             {
@@ -162,14 +161,8 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                 case SpecialAssetIds.SolarAssetId:
                     address = walletCredentials.SolarCoinWalletAddress;
                     break;
-                case SpecialAssetIds.ChronoBankAssetId:
-                    address = walletCredentials.ChronoBankContract;
-                    break;
-                case SpecialAssetIds.QuantaAssetId:
-                    address = walletCredentials.QuantaContract;
-                    break;
                 default:
-                    address = walletCredentials.ColoredMultiSig;
+                    address = null;
                     break;
             }
 
@@ -238,9 +231,12 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                 insertByQuantaTask = _walletCredentialsWalletTable.InsertAsync(newByQuantaContractEntity);
             }
 
+            var insertMultisigTask = newByMultisigEntity.MultiSig != null ? 
+                _walletCredentialsWalletTable.InsertAsync(newByMultisigEntity) : Task.CompletedTask;
+
             return Task.WhenAll(
                 _walletCredentialsWalletTable.InsertAsync(newByClientEntity),
-                _walletCredentialsWalletTable.InsertAsync(newByMultisigEntity),
+                insertMultisigTask,
                 _walletCredentialsWalletTable.InsertAsync(newByColoredEntity),
                 insertByEthTask,
                 insertBySolarTask,
@@ -310,9 +306,12 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                 insertByQuantaTask = _walletCredentialsWalletTable.InsertOrMergeAsync(newByQuantaEntity);
             }
 
+            var insertMultisigTask = newByMultisigEntity.MultiSig != null ?
+                _walletCredentialsWalletTable.InsertOrMergeAsync(newByMultisigEntity) : Task.CompletedTask;
+
             return Task.WhenAll(
                 _walletCredentialsWalletTable.InsertOrMergeAsync(newByClientEntity),
-                _walletCredentialsWalletTable.InsertOrMergeAsync(newByMultisigEntity),
+                insertMultisigTask,
                 _walletCredentialsWalletTable.InsertOrMergeAsync(newByColoredEntity),
                 insertByEthTask,
                 insertBySolarTask,

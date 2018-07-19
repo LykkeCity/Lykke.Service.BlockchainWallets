@@ -63,36 +63,42 @@ namespace Lykke.Service.BlockchainWallets.Services
                 var wallet = await _blockchainSignFacadeClient.CreateWalletAsync(blockchainType);
                 address = wallet.PublicAddress;
                 await _walletRepository.AddAsync(blockchainType, assetId, clientId, address);
-            }
-            else
-            {
-                address = await _legacyWalletService.CreateWalletAsync(clientId, assetId);
-            }
-
-            var @event = new WalletCreatedEvent
-            {
-                Address = address,
-                AssetId = assetId,
-                BlockchainType = blockchainType,
-                IntegrationLayerId = blockchainType
-            };
-
-            _cqrsEngine.PublishEvent
-            (
-                @event,
-                BlockchainWalletsBoundedContext.Name
-            );
-            
-            return await ConvertWalletToWalletWithAddressExtensionAsync
-            (
-                new WalletDto
+                var @event = new WalletCreatedEvent
                 {
                     Address = address,
                     AssetId = assetId,
                     BlockchainType = blockchainType,
-                    ClientId = clientId
-                }
-            );
+                    IntegrationLayerId = blockchainType
+                };
+
+                _cqrsEngine.PublishEvent
+                (
+                    @event,
+                    BlockchainWalletsBoundedContext.Name
+                );
+
+                return await ConvertWalletToWalletWithAddressExtensionAsync
+                (
+                    new WalletDto
+                    {
+                        Address = address,
+                        AssetId = assetId,
+                        BlockchainType = blockchainType,
+                        ClientId = clientId
+                    }
+                );
+            }
+
+            address = await _legacyWalletService.CreateWalletAsync(clientId, assetId);
+
+            return new WalletWithAddressExtensionDto()
+            {
+                Address = address,
+                AssetId = assetId,
+                BlockchainType = blockchainType,
+                ClientId = clientId,
+                BaseAddress = address
+            };
         }
 
         public async Task<bool> DefaultWalletExistsAsync(string integrationLayerId, string assetId, Guid clientId)
@@ -115,7 +121,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         private async Task DeleteDefaultWalletAsync(string integrationLayerId, string assetId, Guid clientId)
         {
             var wallet = await _walletRepository.TryGetAsync(integrationLayerId, assetId, clientId);
-            
+
             await _walletRepository.DeleteIfExistsAsync(integrationLayerId, assetId, clientId);
 
             var address = wallet.Address;
@@ -152,10 +158,10 @@ namespace Lykke.Service.BlockchainWallets.Services
 
             if (asset == null)
                 return null;
-            
+
             bool isErc20 = asset.Type == AssetType.Erc20Token;
             bool isEtherium = asset.Blockchain == Blockchain.Ethereum;
-            
+
             var wallet = await _firstGenerationBlockchainWalletRepository.TryGetAsync(assetId, clientId, isErc20, isEtherium);
 
             if (wallet != null)
@@ -189,14 +195,14 @@ namespace Lykke.Service.BlockchainWallets.Services
         public async Task<(IEnumerable<WalletWithAddressExtensionDto>, string continuationToken)> GetClientWalletsAsync(Guid clientId, int take, string continuationToken)
         {
             var (wallets, token) = await _walletRepository.GetAllAsync(clientId, take, continuationToken);
-            
-            return 
+
+            return
             (
                 await Task.WhenAll(wallets.Select(ConvertWalletToWalletWithAddressExtensionAsync)),
                 token
             );
         }
-        
+
         private async Task<WalletWithAddressExtensionDto> ConvertWalletToWalletWithAddressExtensionAsync(WalletDto walletDto)
         {
             var parseAddressResult = await _addressParser.ExtractAddressParts(walletDto.BlockchainType, walletDto.Address);

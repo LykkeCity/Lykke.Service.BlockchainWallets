@@ -25,14 +25,14 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
             _walletCredentialsRepository = walletCredentialsRepository;
         }
 
-        public async Task<string> SetNewSolarCoinAddress(IWalletCredentials walletCredentials)
+        public async Task<string> SetNewSolarCoinAddress(Guid clientId)
         {
             try
             {
                 var rawResponse = await _httpClient.GetAsync(_solarCoinSettings.ServiceUrl);
                 var address = (await rawResponse.Content.ReadAsStringAsync()).DeserializeJson<GetAddressModel>().Address;
 
-                await _walletCredentialsRepository.SetSolarCoinWallet(Guid.Parse(walletCredentials.ClientId), address);
+                await _walletCredentialsRepository.SetSolarCoinWallet(clientId, address);
 
                 return address;
             }

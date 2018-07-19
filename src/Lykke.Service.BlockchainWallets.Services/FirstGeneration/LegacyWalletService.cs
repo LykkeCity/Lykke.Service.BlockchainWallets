@@ -45,9 +45,10 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
 
             #region BTC & ColoredCoins LKK, LKK1y, CHF|USD|EUR|GBP
 
-            if (assetId == SpecialAssetIds.BitcoinAssetId ||
+            if (assetId != SpecialAssetIds.SolarAssetId &&
+                (assetId == SpecialAssetIds.BitcoinAssetId ||
                 (!string.IsNullOrEmpty(asset.BlockChainAssetId)) &&
-                asset.Blockchain == Blockchain.Bitcoin)
+                asset.Blockchain == Blockchain.Bitcoin))
             {
                 var bcncreds = await _srvBlockchainHelper.GenerateWallets(clientId);
 
@@ -56,7 +57,7 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
 
             #endregion
 
-            #region ETH & ERC20/223 & Tree & Time & SLR
+            #region ETH(In future) & ERC20/223 & Tree & Time & SLR
 
             var address = await GenerateWallet(clientId, assetId);
             return address;
@@ -87,8 +88,8 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
             {
                 var walletCreds = await _firstGenerationBlockchainWalletRepository.GetAsync(clientId);
                 address = asset.Blockchain != Lykke.Service.Assets.Client.Models.Blockchain.Ethereum
-                    ? (walletCreds.GetDepositAddressForAsset(asset.Id) ??
-                      await ObsoleteGenerateAddress(assetId, walletCreds))
+                    ? (walletCreds?.GetDepositAddressForAsset(asset.Id) ??
+                      await ObsoleteGenerateAddress(assetId, clientId))
                     : null;
                 if (address == null)
                 {
@@ -124,8 +125,8 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
                         Address = publicAddress,
                         AssetAddress = address?.ToLower(),
                         ClientId = clientId.ToString(),
-                        EncodedKey = spoiler,//request.BcnWallet.EncodedKey,
-                        PublicKey = spoiler,//request.BcnWallet.PublicKey,
+                        EncodedKey = "",//request.BcnWallet.EncodedKey,
+                        PublicKey = "",//request.BcnWallet.PublicKey,
                         AssetId = bcnRowKey //Or Asset or Erc20 const
                     });
                 }
@@ -134,20 +135,21 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
             return address;
         }
 
-        private async Task<string> ObsoleteGenerateAddress(string assetId, IWalletCredentials walletCreds)
+        private async Task<string> ObsoleteGenerateAddress(string assetId, Guid clientId)
         {
             string address = null;
             switch (assetId)
             {
                 case SpecialAssetIds.SolarAssetId:
-                    address = await _srvSolarCoinHelper.SetNewSolarCoinAddress(walletCreds);
+                    address = await _srvSolarCoinHelper.SetNewSolarCoinAddress(clientId);
                     break;
-                case SpecialAssetIds.ChronoBankAssetId:
-                    address = await _chronoBankService.SetNewChronoBankContract(walletCreds);
-                    break;
-                case SpecialAssetIds.QuantaAssetId:
-                    address = await _quantaService.SetNewQuantaContract(walletCreds);
-                    break;
+                // Assets below are no longer supported on production
+                //case SpecialAssetIds.ChronoBankAssetId:
+                //    address = await _chronoBankService.SetNewChronoBankContract(walletCreds);
+                //    break;
+                //case SpecialAssetIds.QuantaAssetId:
+                //    address = await _quantaService.SetNewQuantaContract(walletCreds);
+                //    break;
             }
 
             return address;

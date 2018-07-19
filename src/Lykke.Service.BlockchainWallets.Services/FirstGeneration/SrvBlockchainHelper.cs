@@ -74,16 +74,16 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
             }
             else
             {
-                walletCreds = WalletCredentials.Create(
-                    clientId.ToString(), 
-                    null, 
-                    null, 
-                    null,
-                    wallets.ColoredMultiSigAddress, 
-                    null, 
-                    null, 
-                    encodedPk: "",
-                    pubKey: "");
+                //walletCreds = WalletCredentials.Create(
+                //    clientId.ToString(), 
+                //    null, 
+                //    null, 
+                //    null,
+                //    wallets.ColoredMultiSigAddress, 
+                //    null, 
+                //    null, 
+                //    encodedPk: "",
+                //    pubKey: "");
 
                 bcnCreds = await _walletCredentialsRepository.GetBcnCredsAsync(SpecialAssetIds.BitcoinAssetId,
                     clientId);
@@ -100,8 +100,8 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
                     await _walletCredentialsRepository.SaveAsync(bcnCreds);
                 }
 
-                await _walletCredentialsHistoryRepository.InsertHistoryRecord(currentWalletCreds);
-                await _walletCredentialsRepository.MergeAsync(walletCreds);
+                //await _walletCredentialsHistoryRepository.InsertHistoryRecord(currentWalletCreds);
+                //await _walletCredentialsRepository.MergeAsync(walletCreds);
             }
 
             return bcnCreds;
