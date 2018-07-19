@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Cqrs;
 using Lykke.Service.Assets.Client;
@@ -19,6 +20,7 @@ namespace Lykke.Service.BlockchainWallets.Services
     [UsedImplicitly]
     public class WalletService : IWalletService
     {
+        private readonly ILog _log;
         private readonly ICqrsEngine _cqrsEngine;
         private readonly IWalletRepository _walletRepository;
         private readonly IAdditionalWalletRepository _additionalWalletRepository;
@@ -30,6 +32,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         private readonly IAddressService _addressService;
 
         public WalletService(
+            ILog log,
             ICqrsEngine cqrsEngine,
             IWalletRepository walletRepository,
             IAdditionalWalletRepository additionalWalletRepository,
@@ -40,6 +43,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             ICapabilitiesService capabilitiesService,
             IAddressService addressService)
         {
+            _log = log;
             _cqrsEngine = cqrsEngine;
             _walletRepository = walletRepository;
             _additionalWalletRepository = additionalWalletRepository;
@@ -204,7 +208,13 @@ namespace Lykke.Service.BlockchainWallets.Services
                 if (await _capabilitiesService.IsAddressMappingRequiredAsync(wallet.BlockchainType))
                 {
                     var underlyingAddress = await _addressService.GetUnderlyingAddressAsync(wallet.BlockchainType, wallet.Address);
-                    if (underlyingAddress != null)
+                    if (underlyingAddress == null)
+                    {
+                        _log.WriteError(nameof(GetClientWalletsAsync),
+                            new { wallet.BlockchainType, wallet.Address },
+                            new Exception("Failed to get underlyingAddress address"));
+                    }
+                    else
                     {
                         wallet.Address = underlyingAddress;
 
