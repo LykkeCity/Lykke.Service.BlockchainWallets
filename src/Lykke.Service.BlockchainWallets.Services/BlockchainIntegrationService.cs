@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Common.Log;
 using JetBrains.Annotations;
@@ -61,6 +62,22 @@ namespace Lykke.Service.BlockchainWallets.Services
             return _apiClients.TryGetValue(blockchainType, out var client)
                 ? client
                 : null;
+        }
+
+        public IBlockchainApiClient GetApiClient(string blockchainType)
+        {
+            if (string.IsNullOrEmpty(blockchainType))
+            {
+                throw new ArgumentException("Should not be null or empty", nameof(blockchainType));
+            }
+
+            var apiClient = TryGetApiClient(blockchainType);
+            if (apiClient == null)
+            {
+                throw new NotSupportedException($"Blockchain type [{blockchainType}] is not supported.");
+            }
+
+            return apiClient;
         }
     }
 }

@@ -5,5 +5,6 @@ namespace Lykke.Service.BlockchainWallets.Core.Services
     public interface ICapabilitiesService
     {
         Task<bool> IsPublicAddressExtensionRequiredAsync(string blockchainType);
+        Task<bool> IsAddressMappingRequiredAsync(string blockchainType);
     }
 }
