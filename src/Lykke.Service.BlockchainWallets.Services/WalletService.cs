@@ -161,8 +161,15 @@ namespace Lykke.Service.BlockchainWallets.Services
 
             bool isErc20 = asset.Type == AssetType.Erc20Token;
             bool isEtherium = asset.Blockchain == Blockchain.Ethereum;
+            bool isColoredCoin = assetId != SpecialAssetIds.SolarAssetId &&
+                                 !string.IsNullOrEmpty(asset.BlockChainAssetId) &&
+                                 asset.Blockchain == Blockchain.Bitcoin;
 
-            var wallet = await _firstGenerationBlockchainWalletRepository.TryGetAsync(assetId, clientId, isErc20, isEtherium);
+            var wallet = await _firstGenerationBlockchainWalletRepository.TryGetAsync(assetId, 
+                clientId,
+                isErc20, 
+                isEtherium,
+                isColoredCoin);
 
             if (wallet != null)
             {
@@ -171,7 +178,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                     Address = wallet.Address,
                     AddressExtension = string.Empty,
                     AssetId = wallet.AssetId,
-                    BaseAddress = string.Empty,
+                    BaseAddress = wallet.Address,
                     BlockchainType = SpecialBlockchainTypes.FirstGenerationBlockchain,
                     ClientId = wallet.ClientId
                 };

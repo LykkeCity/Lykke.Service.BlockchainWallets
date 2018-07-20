@@ -99,16 +99,8 @@ namespace Lykke.Service.BlockchainWallets.Modules
             #region FirstGenerationServices
 
             builder
-                .RegisterType<ChronoBankService>()
-                .As<IChronoBankService>();
-
-            builder
                 .RegisterType<LegacyWalletService>()
                 .As<ILegacyWalletService>();
-
-            builder
-                .RegisterType<QuantaService>()
-                .As<IQuantaService>();
 
             builder
                 .RegisterType<SrvBlockchainHelper>()

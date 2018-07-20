@@ -116,7 +116,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         }
 
         public async Task<FirstGenerationBlockchainWalletDto> TryGetAsync(string assetId, Guid clientId, bool isErc20,
-            bool isEtherium)
+            bool isEtherium, bool isColored)
         {
             FirstGenerationBlockchainWalletEntity.FromBcnClientCredentials bcnEntity = null;
 
@@ -128,7 +128,13 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             }
             else
             {
-                var bcnKeys = GetBcnClientCredentialsWalletKeys(assetId, clientId);
+                string id = assetId;
+                if (isColored)
+                {
+                    id = SpecialAssetIds.BitcoinAssetId;
+                }
+
+                var bcnKeys = GetBcnClientCredentialsWalletKeys(id, clientId);
                 bcnEntity = await _bcnClientCredentialsWalletTable.GetDataAsync(bcnKeys.PartitionKey, bcnKeys.RowKey);
             }
 
@@ -147,6 +153,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
             var (partitionKey, rowKey) = GetWalletCredentialsWalletKeys(clientId);
             var walletCredentials = await _walletCredentialsWalletTable.GetDataAsync(partitionKey, rowKey);
+
 
             if (walletCredentials == null)
                 return null;

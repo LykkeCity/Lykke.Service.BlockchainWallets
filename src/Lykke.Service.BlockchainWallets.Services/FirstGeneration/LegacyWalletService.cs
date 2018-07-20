@@ -17,8 +17,6 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
         private readonly ISrvSolarCoinHelper _srvSolarCoinHelper;
         private readonly IAssetsServiceWithCache _assetsServiceWithCache;
         private readonly ISrvEthereumHelper _srvEthereumHelper;
-        private readonly IChronoBankService _chronoBankService;
-        private readonly IQuantaService _quantaService;
         private readonly ISrvBlockchainHelper _srvBlockchainHelper;
 
         public LegacyWalletService(
@@ -26,16 +24,12 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
             ISrvSolarCoinHelper srvSolarCoinHelper,
             IAssetsServiceWithCache assetsServiceWithCache,
             ISrvEthereumHelper srvEthereumHelper,
-            IChronoBankService chronoBankService,
-            IQuantaService quantaService,
             ISrvBlockchainHelper srvBlockchainHelper)
         {
             _firstGenerationBlockchainWalletRepository = firstGenerationBlockchainWalletRepository;
             _srvSolarCoinHelper = srvSolarCoinHelper;
             _assetsServiceWithCache = assetsServiceWithCache;
             _srvEthereumHelper = srvEthereumHelper;
-            _chronoBankService = chronoBankService;
-            _quantaService = quantaService;
             _srvBlockchainHelper = srvBlockchainHelper;
         }
 

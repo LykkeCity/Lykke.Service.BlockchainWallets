@@ -29,8 +29,8 @@ namespace Lykke.Service.BlockchainWallets.TestLegacy
 
             var arguments = new Dictionary<string, CommandArgument>
             {
-                { SettingsUrl, application.Argument(SettingsUrl, "Url of a BlockchainWallets service settings.") },
-                { ClientId, application.Argument(ClientId, "Id of a user to retrieve all legacy deposits.") }
+                {SettingsUrl, application.Argument(SettingsUrl, "Url of a BlockchainWallets service settings.")},
+                {ClientId, application.Argument(ClientId, "Id of a user to retrieve all legacy deposits.")}
             };
 
             application.HelpOption("-? | -h | --help");
@@ -93,19 +93,19 @@ namespace Lykke.Service.BlockchainWallets.TestLegacy
             var resolver = builder.Build();
 
             var assetsServiceWithCache = resolver.Resolve<IAssetsServiceWithCache>();
-            var walletService =  resolver.Resolve<IWalletService>();
+            var walletService = resolver.Resolve<IWalletService>();
 
             var allAssets = await assetsServiceWithCache.GetAllAssetsAsync(false);
             var coloredAsset = allAssets.FirstOrDefault(x => x.Blockchain == Blockchain.Bitcoin
-                                          && !string.IsNullOrEmpty(x.BlockChainAssetId));
+                                                             && !string.IsNullOrEmpty(x.BlockChainAssetId));
 
             //DEV assets
             var assetListToTest = new List<string>()
             {
                 SpecialAssetIds.BitcoinAssetId,
                 SpecialAssetIds.SolarAssetId,
-                "a61a3cad-bd63-422a-82a6-3464234856b0",//erc20
-                coloredAsset?.Id//ColoredCoin
+                "a61a3cad-bd63-422a-82a6-3464234856b0", //erc20
+                coloredAsset?.Id //ColoredCoin
 
             };
 
@@ -113,11 +113,14 @@ namespace Lykke.Service.BlockchainWallets.TestLegacy
 
             foreach (var id in assetListToTest)
             {
-                var deposit = await walletService.CreateWalletAsync(SpecialBlockchainTypes.FirstGenerationBlockchain,
-                    id, 
-                    Guid.Parse(clientId));
+                //var deposit = await walletService.CreateWalletAsync(SpecialBlockchainTypes.FirstGenerationBlockchain,
+                //    id, 
+                //    Guid.Parse(clientId));
+                //
+                //depositsList.Add(deposit.BaseAddress);
 
-                depositsList.Add(deposit.BaseAddress);
+                var result = await walletService.TryGetFirstGenerationBlockchainAddressAsync(id,
+                    Guid.Parse(clientId));
             }
         }
     }

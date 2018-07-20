@@ -7,7 +7,7 @@ namespace Lykke.Service.BlockchainWallets.Core.Repositories
 {
     public interface IFirstGenerationBlockchainWalletRepository
     {
-        Task<FirstGenerationBlockchainWalletDto> TryGetAsync(string assetId, Guid clientId, bool isErc20, bool isEtherium);
+        Task<FirstGenerationBlockchainWalletDto> TryGetAsync(string assetId, Guid clientId, bool isErc20, bool isEtherium, bool isColoredCoin);
 
         Task SetSolarCoinWallet(Guid clientId, string address);
 
