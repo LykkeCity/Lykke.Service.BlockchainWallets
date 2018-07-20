@@ -51,7 +51,7 @@ namespace Lykke.Service.BlockchainWallets
                     app.UseDeveloperExceptionPage();
                 }
 
-                app.UseLykkeMiddleware("BlockchainWallets", ex => new {Message = "Technical problem"});
+                app.UseLykkeMiddleware("BlockchainWallets", ex => new { Message = "Technical problem" });
 
                 app.UseMvc();
                 app.UseSwagger(c =>
@@ -98,14 +98,14 @@ namespace Lykke.Service.BlockchainWallets
                 Log = CreateLogWithSlack(services, appSettings);
 
                 builder
-                    .RegisterModule(new CqrsModule(appSettings.CurrentValue.BlockchainWalletsService.Cqrs, Log))
-                    .RegisterModule(new RepositoriesModule(appSettings.Nested(x => x.BlockchainWalletsService.Db), Log))
-                    .RegisterModule(new ServiceModule(
-                        appSettings.CurrentValue.BlockchainsIntegration,
-                        appSettings.CurrentValue.BlockchainSignFacadeClient,
-                        appSettings.CurrentValue.BlockchainWalletsService,
-                        appSettings.CurrentValue.AssetsServiceClient,
-                        Log));
+                .RegisterModule(new CqrsModule(appSettings.CurrentValue.BlockchainWalletsService.Cqrs, Log))
+                .RegisterModule(new RepositoriesModule(appSettings.Nested(x => x.BlockchainWalletsService.Db), Log))
+                .RegisterModule(new ServiceModule(
+                    appSettings.CurrentValue.BlockchainsIntegration,
+                    appSettings.CurrentValue.BlockchainSignFacadeClient,
+                    appSettings.CurrentValue,
+                    appSettings.CurrentValue.AssetsServiceClient,
+                    Log));
 
                 builder
                     .Populate(services);

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Service.BlockchainApi.Client;
+using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Settings.BlockchainIntegrationSettings;
 
@@ -38,6 +39,9 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         public async Task<bool> AssetIsSupportedAsync(string blockchainType, string assetId)
         {
+            if (blockchainType == SpecialBlockchainTypes.FirstGenerationBlockchain)
+                return true;
+
             var apiClient = TryGetApiClient(blockchainType);
 
             if (apiClient != null)

@@ -1,7 +1,9 @@
 ﻿using Autofac;
 using Common.Log;
 using Lykke.Service.BlockchainWallets.AzureRepositories;
+using Lykke.Service.BlockchainWallets.AzureRepositories.FirstGeneration;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
+using Lykke.Service.BlockchainWallets.Core.Repositories.FirstGeneration;
 using Lykke.Service.BlockchainWallets.Core.Settings.ServiceSettings;
 using Lykke.SettingsReader;
 
@@ -42,6 +44,11 @@ namespace Lykke.Service.BlockchainWallets.Modules
             builder
                 .Register(c => MonitoringSubscriptionRepository.Create(connectionString, _log))
                 .As<IMonitoringSubscriptionRepository>()
+                .SingleInstance();
+
+            builder
+                .Register(c => WalletCredentialsHistoryRepository.Create(_dbSettings.Nested(x => x.ClientPersonalInfoConnString), _log))
+                .As<IWalletCredentialsHistoryRepository>()
                 .SingleInstance();
         }
     }
