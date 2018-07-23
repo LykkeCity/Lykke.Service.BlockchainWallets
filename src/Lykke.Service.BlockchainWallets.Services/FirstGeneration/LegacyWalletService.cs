@@ -72,8 +72,7 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
 
             if (current != null)
             {
-                throw new InvalidOperationException(
-                    $"There is already an entry in bcnCreds for: {assetId}, BcnRowKey: {bcnRowKey}, ClientId: {clientId}");
+                return current.AssetAddress;
             }
 
             string address = null;
@@ -113,7 +112,6 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
 
                     address = assetAddress.Result.Contract;
 
-                    string spoiler = "Created from Lykke.Service.BlockchainWallets";
                     await _firstGenerationBlockchainWalletRepository.SaveAsync(new BcnCredentialsRecord
                     {
                         Address = publicAddress,
