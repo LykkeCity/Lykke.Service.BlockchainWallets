@@ -54,6 +54,13 @@ namespace Lykke.Service.BlockchainWallets.Services
             return await _additionalWalletRepository.ExistsAsync(integrationLayerId, assetId, clientId);
         }
 
+        public async Task<bool> DoesAssetExistAsync(string assetId)
+        {
+            var asset = await _assetsServiceWithCache.TryGetAssetAsync(assetId);
+
+            return asset != null;
+        }
+
         public async Task<WalletWithAddressExtensionDto> CreateWalletAsync(string blockchainType, string assetId, Guid clientId)
         {
             string address = null;
