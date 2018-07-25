@@ -43,19 +43,19 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 return badRequest;
             }
 
-            if (!await _walletService.DoesAssetExistAsync(assetId))
-            {
-                return BadRequest
-                (
-                    BlockchainWalletsErrorResponse.Create($"Asset [{assetId}] does not exist.")
-                );
-            }
-
             if (!await _blockchainIntegrationService.AssetIsSupportedAsync(blockchainType, assetId))
             {
                 return BadRequest
                 (
                     BlockchainWalletsErrorResponse.Create($"Asset [{assetId}] or/and blockchain type [{blockchainType}] is not supported.")
+                );
+            }
+
+            if (blockchainType == SpecialBlockchainTypes.FirstGenerationBlockchain && !await _walletService.DoesAssetExistAsync(assetId))
+            {
+                return BadRequest
+                (
+                    BlockchainWalletsErrorResponse.Create($"Asset [{assetId}] does not exist.")
                 );
             }
 
