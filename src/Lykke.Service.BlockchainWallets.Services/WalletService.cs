@@ -12,6 +12,7 @@ using Lykke.Service.BlockchainWallets.Contract.Events;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.Service.BlockchainWallets.Core.Services;
+using Lykke.Service.BlockchainWallets.Core.Services.FirstGeneration;
 
 
 namespace Lykke.Service.BlockchainWallets.Services
@@ -26,7 +27,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         private readonly IAddressParser _addressParser;
         private readonly IFirstGenerationBlockchainWalletRepository _firstGenerationBlockchainWalletRepository;
         private readonly IAssetsServiceWithCache _assetsServiceWithCache;
-
+        private readonly ILegacyWalletService _legacyWalletService;
 
         public WalletService(
             ICqrsEngine cqrsEngine,
@@ -35,7 +36,8 @@ namespace Lykke.Service.BlockchainWallets.Services
             IBlockchainSignFacadeClient blockchainSignFacadeClient,
             IAddressParser addressParser,
             IFirstGenerationBlockchainWalletRepository firstGenerationBlockchainWalletRepository,
-            IAssetsServiceWithCache assetsServiceWithCache)
+            IAssetsServiceWithCache assetsServiceWithCache,
+            ILegacyWalletService legacyWalletService)
         {
             _cqrsEngine = cqrsEngine;
             _walletRepository = walletRepository;
@@ -44,6 +46,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             _addressParser = addressParser;
             _firstGenerationBlockchainWalletRepository = firstGenerationBlockchainWalletRepository;
             _assetsServiceWithCache = assetsServiceWithCache;
+            _legacyWalletService = legacyWalletService;
         }
 
         private async Task<bool> AdditionalWalletExistsAsync(string integrationLayerId, string assetId, Guid clientId)
@@ -51,38 +54,58 @@ namespace Lykke.Service.BlockchainWallets.Services
             return await _additionalWalletRepository.ExistsAsync(integrationLayerId, assetId, clientId);
         }
 
+        public async Task<bool> DoesAssetExistAsync(string assetId)
+        {
+            var asset = await _assetsServiceWithCache.TryGetAssetAsync(assetId);
+
+            return asset != null;
+        }
 
         public async Task<WalletWithAddressExtensionDto> CreateWalletAsync(string blockchainType, string assetId, Guid clientId)
         {
-            var wallet = await _blockchainSignFacadeClient.CreateWalletAsync(blockchainType);
-            var address = wallet.PublicAddress;
-            
-            await _walletRepository.AddAsync(blockchainType, assetId, clientId, address);
+            string address = null;
 
-            var @event = new WalletCreatedEvent
+            if (blockchainType != SpecialBlockchainTypes.FirstGenerationBlockchain)
             {
-                Address = address,
-                AssetId = assetId,
-                BlockchainType = blockchainType,
-                IntegrationLayerId = blockchainType
-            };
-
-            _cqrsEngine.PublishEvent
-            (
-                @event,
-                BlockchainWalletsBoundedContext.Name
-            );
-            
-            return await ConvertWalletToWalletWithAddressExtensionAsync
-            (
-                new WalletDto
+                var wallet = await _blockchainSignFacadeClient.CreateWalletAsync(blockchainType);
+                address = wallet.PublicAddress;
+                await _walletRepository.AddAsync(blockchainType, assetId, clientId, address);
+                var @event = new WalletCreatedEvent
                 {
                     Address = address,
                     AssetId = assetId,
                     BlockchainType = blockchainType,
-                    ClientId = clientId
-                }
-            );
+                    IntegrationLayerId = blockchainType
+                };
+
+                _cqrsEngine.PublishEvent
+                (
+                    @event,
+                    BlockchainWalletsBoundedContext.Name
+                );
+
+                return await ConvertWalletToWalletWithAddressExtensionAsync
+                (
+                    new WalletDto
+                    {
+                        Address = address,
+                        AssetId = assetId,
+                        BlockchainType = blockchainType,
+                        ClientId = clientId
+                    }
+                );
+            }
+
+            address = await _legacyWalletService.CreateWalletAsync(clientId, assetId);
+
+            return new WalletWithAddressExtensionDto()
+            {
+                Address = address,
+                AssetId = assetId,
+                BlockchainType = blockchainType,
+                ClientId = clientId,
+                BaseAddress = address
+            };
         }
 
         public async Task<bool> DefaultWalletExistsAsync(string integrationLayerId, string assetId, Guid clientId)
@@ -105,7 +128,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         private async Task DeleteDefaultWalletAsync(string integrationLayerId, string assetId, Guid clientId)
         {
             var wallet = await _walletRepository.TryGetAsync(integrationLayerId, assetId, clientId);
-            
+
             await _walletRepository.DeleteIfExistsAsync(integrationLayerId, assetId, clientId);
 
             var address = wallet.Address;
@@ -142,11 +165,18 @@ namespace Lykke.Service.BlockchainWallets.Services
 
             if (asset == null)
                 return null;
-            
+
             bool isErc20 = asset.Type == AssetType.Erc20Token;
             bool isEtherium = asset.Blockchain == Blockchain.Ethereum;
-            
-            var wallet = await _firstGenerationBlockchainWalletRepository.TryGetAsync(assetId, clientId, isErc20, isEtherium);
+            bool isColoredCoin = assetId != SpecialAssetIds.SolarAssetId &&
+                                 !string.IsNullOrEmpty(asset.BlockChainAssetId) &&
+                                 asset.Blockchain == Blockchain.Bitcoin;
+
+            var wallet = await _firstGenerationBlockchainWalletRepository.TryGetAsync(assetId, 
+                clientId,
+                isErc20, 
+                isEtherium,
+                isColoredCoin);
 
             if (wallet != null)
             {
@@ -155,7 +185,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                     Address = wallet.Address,
                     AddressExtension = string.Empty,
                     AssetId = wallet.AssetId,
-                    BaseAddress = string.Empty,
+                    BaseAddress = wallet.Address,
                     BlockchainType = SpecialBlockchainTypes.FirstGenerationBlockchain,
                     ClientId = wallet.ClientId
                 };
@@ -179,14 +209,14 @@ namespace Lykke.Service.BlockchainWallets.Services
         public async Task<(IEnumerable<WalletWithAddressExtensionDto>, string continuationToken)> GetClientWalletsAsync(Guid clientId, int take, string continuationToken)
         {
             var (wallets, token) = await _walletRepository.GetAllAsync(clientId, take, continuationToken);
-            
-            return 
+
+            return
             (
                 await Task.WhenAll(wallets.Select(ConvertWalletToWalletWithAddressExtensionAsync)),
                 token
             );
         }
-        
+
         private async Task<WalletWithAddressExtensionDto> ConvertWalletToWalletWithAddressExtensionAsync(WalletDto walletDto)
         {
             var parseAddressResult = await _addressParser.ExtractAddressParts(walletDto.BlockchainType, walletDto.Address);

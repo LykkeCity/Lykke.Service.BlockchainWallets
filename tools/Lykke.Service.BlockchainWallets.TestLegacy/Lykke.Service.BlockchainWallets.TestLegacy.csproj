@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Lykke.Service.BlockchainWallets.AzureRepositories\Lykke.Service.BlockchainWallets.AzureRepositories.csproj" />
+    <ProjectReference Include="..\..\src\Lykke.Service.BlockchainWallets.Core\Lykke.Service.BlockchainWallets.Core.csproj" />
+    <ProjectReference Include="..\..\src\Lykke.Service.BlockchainWallets\Lykke.Service.BlockchainWallets.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Lykke.Common">
+      <HintPath>C:\Users\Aleks\.nuget\packages\lykke.common\7.0.1\lib\netstandard2.0\Lykke.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Lykke.SettingsReader">
+      <HintPath>C:\Users\Aleks\.nuget\packages\lykke.settingsreader\1.0.43\lib\netstandard2.0\Lykke.SettingsReader.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
