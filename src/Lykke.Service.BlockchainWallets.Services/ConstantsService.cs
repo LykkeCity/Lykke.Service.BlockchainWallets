@@ -13,13 +13,17 @@ namespace Lykke.Service.BlockchainWallets.Services
     public class ConstantsService : IConstantsService
     {
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
+        private readonly ICapabilitiesService _capabilitiesService;
         private readonly ConcurrentDictionary<string, AddressExtensionConstantsDto> _cache;
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks;
-
+        
         public ConstantsService(
-            IBlockchainIntegrationService blockchainIntegrationService)
+            IBlockchainIntegrationService blockchainIntegrationService,
+            ICapabilitiesService capabilitiesServoce)
         {
             _blockchainIntegrationService = blockchainIntegrationService;
+            _capabilitiesService = capabilitiesServoce;
+
             _cache = new ConcurrentDictionary<string, AddressExtensionConstantsDto>();
             _locks = new ConcurrentDictionary<string, SemaphoreSlim>();
         }
@@ -48,7 +52,11 @@ namespace Lykke.Service.BlockchainWallets.Services
             {
                 if (!_cache.TryGetValue(blockchainType, out result))
                 {
-                    var constants = await apiClient.GetConstantsAsync();
+                    var isAddressExtensionRequired = await _capabilitiesService.IsPublicAddressExtensionRequiredAsync(blockchainType);
+                    
+                    var constants = isAddressExtensionRequired 
+                        ? await apiClient.GetConstantsAsync()
+                        : null;
 
                     if (constants?.PublicAddressExtension != null)
                     {
