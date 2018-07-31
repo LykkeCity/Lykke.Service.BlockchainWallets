@@ -204,6 +204,15 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             await _bcnClientCredentialsWalletTable.TryInsertAsync(byAssetAddressEntity);
         }
 
+        public async Task InsertOrReplaceAsync(IBcnCredentialsRecord credsRecord)
+        {
+            var byClientEntity = FirstGenerationBlockchainWalletEntity.FromBcnClientCredentials.ByClientId.Create(credsRecord);
+            var byAssetAddressEntity = FirstGenerationBlockchainWalletEntity.FromBcnClientCredentials.ByAssetAddress.Create(credsRecord);
+
+            await _bcnClientCredentialsWalletTable.InsertOrReplaceAsync(byClientEntity);
+            await _bcnClientCredentialsWalletTable.InsertOrReplaceAsync(byAssetAddressEntity);
+        }
+
         public Task SaveAsync(IWalletCredentials walletCredentials)
         {
             var newByClientEntity = WalletCredentialsEntity.ByClientId.CreateNew(walletCredentials);

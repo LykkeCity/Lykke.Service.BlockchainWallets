@@ -24,5 +24,7 @@ namespace Lykke.Service.BlockchainWallets.Core.Repositories
         Task SaveAsync(IWalletCredentials credsRecord);
 
         Task MergeAsync(IWalletCredentials walletCredentials);
+
+        Task InsertOrReplaceAsync(IBcnCredentialsRecord credsRecord);
     }
 }

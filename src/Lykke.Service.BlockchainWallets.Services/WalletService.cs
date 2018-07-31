@@ -11,6 +11,7 @@ using Lykke.Service.BlockchainSignFacade.Client;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Contract.Events;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
+using Lykke.Service.BlockchainWallets.Core.FirstGeneration;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Services.FirstGeneration;
@@ -96,12 +97,21 @@ namespace Lykke.Service.BlockchainWallets.Services
                     IntegrationLayerId = blockchainType
                 };
 
-               
-            _cqrsEngine.PublishEvent
-            (
-                @event,
-                BlockchainWalletsBoundedContext.Name
-            );
+                await _firstGenerationBlockchainWalletRepository.InsertOrReplaceAsync(new BcnCredentialsRecord
+                {
+                    Address = string.Empty,
+                    AssetAddress = address,
+                    ClientId = clientId.ToString(),
+                    EncodedKey = string.Empty,
+                    PublicKey = string.Empty,
+                    AssetId = $"{blockchainType} ({assetId})"
+                });
+
+                _cqrsEngine.PublishEvent
+                (
+                    @event,
+                    BlockchainWalletsBoundedContext.Name
+                );
 
             return await ConvertWalletToWalletWithAddressExtensionAsync(new WalletDto
             {
