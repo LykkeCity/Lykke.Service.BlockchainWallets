@@ -117,7 +117,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                 (
                     new WalletDto
                     {
-                        Address = address,
+                        Address = isAddressMappingRequired ? underlyingAddress : address,
                         AssetId = assetId,
                         BlockchainType = blockchainType,
                         ClientId = clientId
