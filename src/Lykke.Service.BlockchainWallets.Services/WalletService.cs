@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Cqrs;
 using Lykke.Service.Assets.Client;
@@ -31,6 +31,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         private readonly ICapabilitiesService _capabilitiesService;
         private readonly IAddressService _addressService;
         private readonly ILegacyWalletService _legacyWalletService;
+        private readonly ILog _log;
 
         public WalletService(
             ICqrsEngine cqrsEngine,
@@ -42,7 +43,8 @@ namespace Lykke.Service.BlockchainWallets.Services
             IAssetsServiceWithCache assetsServiceWithCache,
             ICapabilitiesService capabilitiesService,
             IAddressService addressService,
-            ILegacyWalletService legacyWalletService)
+            ILegacyWalletService legacyWalletService,
+            ILog log)
         {
             _cqrsEngine = cqrsEngine;
             _walletRepository = walletRepository;
@@ -54,6 +56,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             _capabilitiesService = capabilitiesService;
             _addressService = addressService;
             _legacyWalletService = legacyWalletService;
+            _log = log;
         }
 
         private async Task<bool> AdditionalWalletExistsAsync(string integrationLayerId, string assetId, Guid clientId)
@@ -247,11 +250,31 @@ namespace Lykke.Service.BlockchainWallets.Services
             var finalWallets = new List<WalletWithAddressExtensionDto>();
             var (wallets, token) = await _walletRepository.GetAllAsync(clientId, take, continuationToken);
             
-            return 
-            (
-                await Task.WhenAll(wallets.Select(ConvertWalletToWalletWithAddressExtensionAsync)),
-                token
-            );
+            foreach (var wallet in wallets)
+            {
+                if (await _capabilitiesService.IsAddressMappingRequiredAsync(wallet.BlockchainType))
+                {
+                    var underlyingAddress = await _addressService.GetUnderlyingAddressAsync(wallet.BlockchainType, wallet.Address);
+                    if (underlyingAddress == null)
+                    {
+                        _log.WriteError(nameof(GetClientWalletsAsync),
+                            new { wallet.BlockchainType, wallet.Address },
+                            new Exception("Failed to get underlyingAddress address"));
+                    }
+                    else
+                    {
+                        wallet.Address = underlyingAddress;
+
+                        finalWallets.Add(await ConvertWalletToWalletWithAddressExtensionAsync(wallet));
+                    }
+                }
+                else
+                {
+                    finalWallets.Add(await ConvertWalletToWalletWithAddressExtensionAsync(wallet));
+                }
+            }
+
+            return (finalWallets, token);
         }
 
         private async Task<WalletWithAddressExtensionDto> ConvertWalletToWalletWithAddressExtensionAsync(WalletDto walletDto)
