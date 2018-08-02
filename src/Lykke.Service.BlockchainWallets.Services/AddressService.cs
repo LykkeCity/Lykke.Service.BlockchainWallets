@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Lykke.Service.BlockchainWallets.Core.Exceptions;
@@ -13,16 +11,17 @@ namespace Lykke.Service.BlockchainWallets.Services
     {
         private readonly ICapabilitiesService _capabilitiesService;
         private readonly IConstantsService _constantsService;
-
+        private readonly IBlockchainIntegrationService _blockchainIntegrationService;
 
         public AddressService(
             ICapabilitiesService capabilitiesService,
-            IConstantsService constantsService)
+            IConstantsService constantsService,
+            IBlockchainIntegrationService blockchainIntegrationService)
         {
             _capabilitiesService = capabilitiesService;
             _constantsService = constantsService;
+            _blockchainIntegrationService = blockchainIntegrationService;
         }
-
 
         public async Task<string> MergeAsync(string blockchainType, string baseAddress, string addressExtension)
         {
@@ -63,6 +62,38 @@ namespace Lykke.Service.BlockchainWallets.Services
             }
 
             return mergedAddress;
+        }
+
+        public async Task<string> GetUnderlyingAddressAsync(string blockchainType, string address)
+        {
+            if (await _capabilitiesService.IsAddressMappingRequiredAsync(blockchainType))
+            {
+                var apiClient = _blockchainIntegrationService.GetApiClient(blockchainType);
+
+                var underlyingAddress = await apiClient.GetUnderlyingAddressAsync(address);
+                if (!string.IsNullOrWhiteSpace(underlyingAddress))
+                {
+                    return underlyingAddress;
+                }
+            }
+
+            return null;
+        }
+
+        public async Task<string> GetVirtualAddressAsync(string blockchainType, string address)
+        {
+            if (await _capabilitiesService.IsAddressMappingRequiredAsync(blockchainType))
+            {
+                var apiClient = _blockchainIntegrationService.GetApiClient(blockchainType);
+
+                var virtualAddress = await apiClient.GetVirtualAddressAsync(address);
+                if (!string.IsNullOrWhiteSpace(virtualAddress))
+                {
+                    return virtualAddress;
+                }
+            }
+
+            return null;
         }
     }
 }
