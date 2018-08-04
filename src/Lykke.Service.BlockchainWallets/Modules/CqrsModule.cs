@@ -101,7 +101,7 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 Register.DefaultEndpointResolver(new RabbitMqConventionEndpointResolver
                 (
                     "RabbitMq",
-                    "messagepack",
+                    Messaging.Serialization.SerializationFormat.MessagePack,
                     environment: "lykke"
                 )),
 
