@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Lykke.Common.Log;
 
 
 namespace Lykke.Service.BlockchainWallets.Client
@@ -22,13 +23,34 @@ namespace Lykke.Service.BlockchainWallets.Client
         private readonly ApiRunner _apiRunner;
         private readonly HttpClient _httpClient;
 
-
+        [Obsolete("Please, use the overload which consumes ILogFactory instead.")]
         public BlockchainWalletsClient(string hostUrl, ILog log, int retriesCount = 5)
         {
             HostUrl = hostUrl ?? throw new ArgumentNullException(nameof(hostUrl));
 
 
             _httpClient = new HttpClient(new HttpErrorLoggingHandler(log))
+            {
+                BaseAddress = new Uri(hostUrl),
+                DefaultRequestHeaders =
+                {
+                    {
+                        "User-Agent",
+                        $"{PlatformServices.Default.Application.ApplicationName}/{PlatformServices.Default.Application.ApplicationVersion}"
+                    }
+                }
+            };
+
+            _api = RestService.For<IBlockchainWalletsApi>(_httpClient);
+            _apiRunner = new ApiRunner(retriesCount);
+        }
+
+        public BlockchainWalletsClient(string hostUrl, ILogFactory logFactory, int retriesCount = 5)
+        {
+            HostUrl = hostUrl ?? throw new ArgumentNullException(nameof(hostUrl));
+
+
+            _httpClient = new HttpClient(new HttpErrorLoggingHandler(logFactory.CreateLog(nameof(BlockchainWalletsClient))))
             {
                 BaseAddress = new Uri(hostUrl),
                 DefaultRequestHeaders =
