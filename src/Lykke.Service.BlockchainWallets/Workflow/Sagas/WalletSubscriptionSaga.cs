@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Cqrs;
 using Lykke.Service.BlockchainWallets.Contract;
@@ -21,10 +20,7 @@ namespace Lykke.Service.BlockchainWallets.Workflow.Sagas
     {
         private readonly IMonitoringSubscriptionRepository _monitoringSubscriptionRepository;
 
-
-        public WalletSubscriptionSaga(
-            IMonitoringSubscriptionRepository monitoringSubscriptionRepository,
-            ILog log)
+        public WalletSubscriptionSaga(IMonitoringSubscriptionRepository monitoringSubscriptionRepository)
         {
             _monitoringSubscriptionRepository = monitoringSubscriptionRepository;
         }

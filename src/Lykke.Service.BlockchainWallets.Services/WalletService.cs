@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common.Log;
 using JetBrains.Annotations;
+using Lykke.Common.Log;
 using Lykke.Cqrs;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.Assets.Client.Models;
@@ -34,7 +35,6 @@ namespace Lykke.Service.BlockchainWallets.Services
         private readonly ILegacyWalletService _legacyWalletService;
 
         public WalletService(
-            ILog log,
             ICqrsEngine cqrsEngine,
             IWalletRepository walletRepository,
             IAdditionalWalletRepository additionalWalletRepository,
@@ -44,19 +44,23 @@ namespace Lykke.Service.BlockchainWallets.Services
             IAssetsServiceWithCache assetsServiceWithCache,
             ICapabilitiesService capabilitiesService,
             IAddressService addressService,
-            ILegacyWalletService legacyWalletService)
+            ILegacyWalletService legacyWalletService,
+            ILogFactory logFactory)
         {
-            _log = log;
-            _cqrsEngine = cqrsEngine;
-            _walletRepository = walletRepository;
-            _additionalWalletRepository = additionalWalletRepository;
-            _blockchainSignFacadeClient = blockchainSignFacadeClient;
-            _addressParser = addressParser;
-            _firstGenerationBlockchainWalletRepository = firstGenerationBlockchainWalletRepository;
-            _assetsServiceWithCache = assetsServiceWithCache;
-            _capabilitiesService = capabilitiesService;
-            _addressService = addressService;
-            _legacyWalletService = legacyWalletService;
+            _cqrsEngine = cqrsEngine ?? throw new ArgumentNullException(nameof(cqrsEngine));
+            _walletRepository = walletRepository ?? throw new ArgumentNullException(nameof(walletRepository));
+            _additionalWalletRepository = additionalWalletRepository ?? throw new ArgumentNullException(nameof(additionalWalletRepository));
+            _blockchainSignFacadeClient = blockchainSignFacadeClient ?? throw new ArgumentNullException(nameof(blockchainSignFacadeClient));
+            _addressParser = addressParser ?? throw new ArgumentNullException(nameof(addressParser));
+            _firstGenerationBlockchainWalletRepository = firstGenerationBlockchainWalletRepository ?? throw new ArgumentNullException(nameof(firstGenerationBlockchainWalletRepository));
+            _assetsServiceWithCache = assetsServiceWithCache ?? throw new ArgumentNullException(nameof(assetsServiceWithCache));
+            _capabilitiesService = capabilitiesService ?? throw new ArgumentNullException(nameof(capabilitiesService));
+            _addressService = addressService ?? throw new ArgumentNullException(nameof(addressService));
+            _legacyWalletService = legacyWalletService ?? throw new ArgumentNullException(nameof(legacyWalletService));
+
+            if (logFactory == null)
+                throw new ArgumentNullException(nameof(logFactory));
+            _log = logFactory.CreateLog(nameof(WalletService));
         }
 
         private async Task<bool> AdditionalWalletExistsAsync(string integrationLayerId, string assetId, Guid clientId)
@@ -73,7 +77,7 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         public async Task<WalletWithAddressExtensionDto> CreateWalletAsync(string blockchainType, string assetId, Guid clientId)
         {
-            string address = null;
+            string address;
 
             if (blockchainType != SpecialBlockchainTypes.FirstGenerationBlockchain)
             {
@@ -182,7 +186,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                 {
                     var underlyingAddress = await _addressService.GetUnderlyingAddressAsync(blockchainType, wallet.Address);
 
-                    wallet.Address = underlyingAddress ?? throw new ArgumentException($"Failed to get UnderlyingAddress for " +
+                    wallet.Address = underlyingAddress ?? throw new ArgumentException("Failed to get UnderlyingAddress for " +
                         $"blockchainType={blockchainType} and address={wallet.Address}");
                 }
 
@@ -199,9 +203,9 @@ namespace Lykke.Service.BlockchainWallets.Services
             if (asset == null)
                 return null;
 
-            bool isErc20 = asset.Type == AssetType.Erc20Token;
-            bool isEtherium = asset.Blockchain == Blockchain.Ethereum;
-            bool isColoredCoin = assetId != SpecialAssetIds.SolarAssetId &&
+            var isErc20 = asset.Type == AssetType.Erc20Token;
+            var isEtherium = asset.Blockchain == Blockchain.Ethereum;
+            var isColoredCoin = assetId != SpecialAssetIds.SolarAssetId &&
                                  !string.IsNullOrEmpty(asset.BlockChainAssetId) &&
                                  asset.Blockchain == Blockchain.Bitcoin;
 
@@ -253,9 +257,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                     var underlyingAddress = await _addressService.GetUnderlyingAddressAsync(wallet.BlockchainType, wallet.Address);
                     if (underlyingAddress == null)
                     {
-                        _log.WriteError(nameof(GetClientWalletsAsync),
-                            new { wallet.BlockchainType, wallet.Address },
-                            new Exception("Failed to get underlyingAddress address"));
+                        _log.Error(message: "Failed to get underlyingAddress address", context: new { wallet.BlockchainType, wallet.Address });
                     }
                     else
                     {

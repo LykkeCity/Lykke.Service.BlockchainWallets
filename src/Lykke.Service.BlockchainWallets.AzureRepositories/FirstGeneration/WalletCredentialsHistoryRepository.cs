@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AzureStorage.Tables;
-using Common.Log;
+using Lykke.Common.Log;
 using Lykke.SettingsReader;
 
 namespace Lykke.Service.BlockchainWallets.AzureRepositories.FirstGeneration
@@ -22,11 +22,11 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories.FirstGeneration
 
         public static IWalletCredentialsHistoryRepository Create(
             IReloadingManager<string> clientPersonalInfoConnectionString,
-            ILog log)
+            ILogFactory logFactory)
         {
             var walletCredentialsHistoryRepository = new WalletCredentialsHistoryRepository(
                 AzureTableStorage<WalletCredentialsHistoryRecord>.Create(clientPersonalInfoConnectionString,
-            "WalletCredentialsHistory", log));
+            "WalletCredentialsHistory", logFactory));
 
             return walletCredentialsHistoryRepository;
         }

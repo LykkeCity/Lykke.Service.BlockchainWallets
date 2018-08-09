@@ -5,7 +5,7 @@ using AzureStorage;
 using AzureStorage.Tables;
 using AzureStorage.Tables.Templates.Index;
 using Common;
-using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.SettingsReader;
@@ -26,7 +26,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         }
 
 
-        public static IAdditionalWalletRepository Create(IReloadingManager<string> connectionString, ILog log)
+        public static IAdditionalWalletRepository Create(IReloadingManager<string> connectionString, ILogFactory logFactory)
         {
             const string tableName = "AdditionalWallets";
             const string indexTableName = "AdditionalWalletsAddressIndex";
@@ -35,14 +35,14 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             (
                 connectionString,
                 indexTableName,
-                log
+                logFactory
             );
 
             var additionalWalletsTable = AzureTableStorage<AdditionalWalletEntity>.Create
             (
                 connectionString,
                 tableName,
-                log
+                logFactory
             );
 
             return new AdditionalWalletRepository(addressIndexTable, additionalWalletsTable);

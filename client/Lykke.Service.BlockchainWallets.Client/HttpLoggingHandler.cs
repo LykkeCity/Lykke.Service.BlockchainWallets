@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Log;
+using Lykke.Common.Log;
 
 namespace Lykke.Service.BlockchainWallets.Client
 {
@@ -13,10 +14,19 @@ namespace Lykke.Service.BlockchainWallets.Client
     {
         private readonly ILog _log;
 
+        [Obsolete("Please, use the overload which consumes ILogFactory instead.")]
         public HttpErrorLoggingHandler(ILog log, HttpMessageHandler innerHandler = null)
             : base(innerHandler ?? new HttpClientHandler())
         {
-            _log = log;
+            _log = log ?? throw new ArgumentNullException(nameof(log));
+        }
+
+        public HttpErrorLoggingHandler(ILogFactory logFactory, HttpMessageHandler innerHandler = null)
+            : base(innerHandler ?? new HttpClientHandler())
+        {
+            if (logFactory == null)
+                throw new ArgumentNullException(nameof(logFactory));
+            _log = logFactory.CreateLog(nameof(HttpErrorLoggingHandler));
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
@@ -76,7 +86,7 @@ namespace Lykke.Service.BlockchainWallets.Client
                 }
             }
 
-            _log.WriteWarning("HTTP API request ->", message.ToString(), "Response status is non success");
+            _log.Warning("HTTP API request -> Response status is non success", context: message.ToString());
         }
 
         private async Task LogResponseAsync(HttpResponseMessage response, Guid id)
@@ -108,7 +118,7 @@ namespace Lykke.Service.BlockchainWallets.Client
                 }
             }
 
-            _log.WriteWarning("HTTP API response <-", message.ToString(), "Response status is non success");
+            _log.Warning("HTTP API response <- Response status is non success", context: message.ToString());
         }
     }
 }

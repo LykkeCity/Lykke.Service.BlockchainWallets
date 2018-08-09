@@ -105,7 +105,7 @@ namespace Lykke.Service.BlockchainWallets.Client
                     errorResponse = BlockchainWalletsErrorResponse.Create(errorResponseOldV.ErrorMessage,
                         ErrorType.None);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     errorResponse = null;
                 }
