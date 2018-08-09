@@ -7,7 +7,6 @@ using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.Service.BlockchainWallets.Core.Services.FirstGeneration;
 using System;
 using System.Threading.Tasks;
-using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 
 namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
 {
@@ -74,7 +73,7 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
                 throw new InvalidOperationException($"Unknown asset {assetId}");
             }
 
-            var (isErc20, bcnRowKey) = await GetAssetInfoAsync(asset);
+            var (isErc20, bcnRowKey) = GetAssetInfoAsync(asset);
             var current = await _firstGenerationBlockchainWalletRepository.GetBcnCredsAsync(bcnRowKey, clientId);
 
             if (current != null)
@@ -87,7 +86,7 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
             if (string.IsNullOrEmpty(asset.BlockchainIntegrationLayerId))
             {
                 var walletCreds = await _firstGenerationBlockchainWalletRepository.GetAsync(clientId);
-                address = asset.Blockchain != Lykke.Service.Assets.Client.Models.Blockchain.Ethereum
+                address = asset.Blockchain != Blockchain.Ethereum
                     ? (walletCreds?.GetDepositAddressForAsset(asset.Id) ??
                       await ObsoleteGenerateAddress(assetId, clientId))
                     : null;
@@ -154,10 +153,10 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
             return address;
         }
 
-        private async Task<(bool isErc20, string bcnRowKey)> GetAssetInfoAsync(Asset asset)
+        private static (bool isErc20, string bcnRowKey) GetAssetInfoAsync(Asset asset)
         {
-            bool isAssetErc20 = (asset.Type == AssetType.Erc20Token);
-            string bcnRowKey = !isAssetErc20 ? asset.Id : SpecialAssetIds.BcnKeyForErc223;
+            var isAssetErc20 = (asset.Type == AssetType.Erc20Token);
+            var bcnRowKey = !isAssetErc20 ? asset.Id : SpecialAssetIds.BcnKeyForErc223;
 
             return (isAssetErc20, bcnRowKey);
         }

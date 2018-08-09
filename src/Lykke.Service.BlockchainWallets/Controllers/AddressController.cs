@@ -116,10 +116,6 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                         e.ErrorCode.ToErrorCodeType())
                 );
             }
-            catch (Exception e)
-            {
-                throw;
-            }
         }
     }
 }

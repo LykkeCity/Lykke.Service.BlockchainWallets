@@ -51,9 +51,8 @@ namespace Lykke.Service.BlockchainWallets.Client
             HostUrl = hostUrl ?? throw new ArgumentNullException(nameof(hostUrl));
             if (logFactory == null)
                 throw new ArgumentNullException(nameof(logFactory));
-            _log = logFactory.CreateLog(nameof(BlockchainWalletsClient));
 
-            _httpClient = new HttpClient(new HttpErrorLoggingHandler(_log))
+            _httpClient = new HttpClient(new HttpErrorLoggingHandler(logFactory))
             {
                 BaseAddress = new Uri(hostUrl),
                 DefaultRequestHeaders =

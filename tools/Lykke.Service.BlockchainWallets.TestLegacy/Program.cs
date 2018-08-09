@@ -1,5 +1,4 @@
 ﻿using Autofac;
-using Common.Log;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.Services;
@@ -11,6 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lykke.Common.Log;
+using Lykke.Logs;
+using Lykke.Logs.Loggers.LykkeConsole;
 using Lykke.Service.Assets.Client.Models;
 
 namespace Lykke.Service.BlockchainWallets.TestLegacy
@@ -75,20 +77,25 @@ namespace Lykke.Service.BlockchainWallets.TestLegacy
                 return;
             }
 
-            var log = new LogToConsole();
+            var logFactory = LogFactory.Create()
+                .AddConsole();
+
             var appSettings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl);
 
             var builder = new ContainerBuilder();
 
+            builder.RegisterInstance(logFactory)
+                .As<ILogFactory>()
+                .SingleInstance();
+
             builder
-                .RegisterModule(new CqrsModule(appSettings.CurrentValue.BlockchainWalletsService.Cqrs, log))
-                .RegisterModule(new RepositoriesModule(appSettings.Nested(x => x.BlockchainWalletsService.Db), log))
+                .RegisterModule(new CqrsModule(appSettings.CurrentValue.BlockchainWalletsService.Cqrs))
+                .RegisterModule(new RepositoriesModule(appSettings.Nested(x => x.BlockchainWalletsService.Db)))
                 .RegisterModule(new ServiceModule(
                     appSettings.CurrentValue.BlockchainsIntegration,
                     appSettings.CurrentValue.BlockchainSignFacadeClient,
                     appSettings.CurrentValue,
-                    appSettings.CurrentValue.AssetsServiceClient,
-                    log));
+                    appSettings.CurrentValue.AssetsServiceClient));
 
             var resolver = builder.Build();
 
