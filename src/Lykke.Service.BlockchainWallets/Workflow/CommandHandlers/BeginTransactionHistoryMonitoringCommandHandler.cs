@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Common.Log;
 using JetBrains.Annotations;
+using Lykke.Common.Log;
 using Lykke.Cqrs;
 using Lykke.Service.BlockchainApi.Client;
 using Lykke.Service.BlockchainWallets.Core;
@@ -24,11 +25,14 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
         public BeginTransactionHistoryMonitoringCommandHandler(
             IBlockchainIntegrationService blockchainIntegrationService,
             IMonitoringSubscriptionRepository monitoringSubscriptionRepository,
-            ILog log)
+            ILogFactory logFactory)
         {
-            _blockchainIntegrationService = blockchainIntegrationService;
-            _monitoringSubscriptionRepository = monitoringSubscriptionRepository;
-            _log = log;
+            _blockchainIntegrationService = blockchainIntegrationService ?? throw new ArgumentNullException(nameof(blockchainIntegrationService));
+            _monitoringSubscriptionRepository = monitoringSubscriptionRepository ?? throw new ArgumentNullException(nameof(monitoringSubscriptionRepository));
+            if (logFactory == null)
+                throw new ArgumentNullException(nameof(logFactory));
+
+            _log = logFactory.CreateLog(nameof(BeginTransactionHistoryMonitoringCommandHandler));
         }
 
         [UsedImplicitly]
@@ -77,7 +81,7 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
                             throw;
                     }
 
-                    _log.WriteWarning(nameof(BeginTransactionHistoryMonitoringCommand), command, warningMessage);
+                    _log.Warning(warningMessage, context: command);
 
                     return CommandHandlingResult.Ok();
                 }
