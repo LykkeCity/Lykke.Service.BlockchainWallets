@@ -37,13 +37,20 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
             var asset = await _assetsServiceWithCache.TryGetAssetAsync(assetId);
 
             #region BTC & ColoredCoins LKK, LKK1y, CHF|USD|EUR|GBP
-
+            bool isColored = !string.IsNullOrEmpty(asset.BlockChainAssetId) &&
+                             asset.Blockchain == Blockchain.Bitcoin;
             if (assetId != SpecialAssetIds.SolarAssetId &&
                 (assetId == SpecialAssetIds.BitcoinAssetId ||
-                (!string.IsNullOrEmpty(asset.BlockChainAssetId)) &&
-                asset.Blockchain == Blockchain.Bitcoin))
+                 isColored))
             {
                 var bcncreds = await _srvBlockchainHelper.GenerateWallets(clientId);
+
+                if (isColored)
+                {
+                    var wallet = await _firstGenerationBlockchainWalletRepository.GetAsync(clientId);
+
+                    return wallet.ColoredMultiSig;
+                }
 
                 return bcncreds.AssetAddress;
             }
