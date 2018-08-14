@@ -84,14 +84,6 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
         public async Task SetSolarCoinWallet(Guid clientId, string address)
         {
-            //var walletCredentials = await GetAsync(clientId);
-
-            //if (string.IsNullOrEmpty(walletCredentials.SolarCoinWalletAddress))
-            //{
-            //    walletCredentials.SolarCoinWalletAddress = address;
-            //    await MergeAsync(walletCredentials);
-            //}
-
             await SaveAsync(BcnCredentialsRecord.Create(SpecialAssetIds.SolarAssetId, clientId.ToString(), null, address, null));
         }
 
@@ -131,7 +123,14 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                 string id = assetId;
                 if (isColored)
                 {
-                    id = SpecialAssetIds.BitcoinAssetId;
+                    var walletCreds = await GetAsync(clientId);
+
+                    return new FirstGenerationBlockchainWalletDto
+                    {
+                        Address = walletCreds.ColoredMultiSig,
+                        AssetId = assetId,
+                        ClientId = clientId
+                    };
                 }
 
                 var bcnKeys = GetBcnClientCredentialsWalletKeys(id, clientId);
