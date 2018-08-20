@@ -73,7 +73,7 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
                 throw new InvalidOperationException($"Unknown asset {assetId}");
             }
 
-            var (isErc20, bcnRowKey) = GetAssetInfoAsync(asset);
+            var (isErc20, bcnRowKey) = GetAssetInfo(asset);
             var current = await _firstGenerationBlockchainWalletRepository.GetBcnCredsAsync(bcnRowKey, clientId);
 
             if (current != null)
@@ -153,7 +153,7 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
             return address;
         }
 
-        private static (bool isErc20, string bcnRowKey) GetAssetInfoAsync(Asset asset)
+        private static (bool isErc20, string bcnRowKey) GetAssetInfo(Asset asset)
         {
             var isAssetErc20 = (asset.Type == AssetType.Erc20Token);
             var bcnRowKey = !isAssetErc20 ? asset.Id : SpecialAssetIds.BcnKeyForErc223;

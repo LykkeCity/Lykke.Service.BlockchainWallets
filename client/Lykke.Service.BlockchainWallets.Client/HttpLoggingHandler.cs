@@ -26,7 +26,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         {
             if (logFactory == null)
                 throw new ArgumentNullException(nameof(logFactory));
-            _log = logFactory.CreateLog(nameof(HttpErrorLoggingHandler));
+            _log = logFactory.CreateLog(this);
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,

@@ -39,6 +39,11 @@ namespace Lykke.Service.BlockchainWallets
 
         private IHealthNotifier HealthNotifier { get; set; }
 
+        private void FatalErrorStdOut(Exception ex)
+        {
+            Console.WriteLine($"FATAL ERROR: {DateTime.UtcNow} : Startup : {ex}");
+        }
+
 
         [UsedImplicitly]
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
@@ -69,7 +74,11 @@ namespace Lykke.Service.BlockchainWallets
             }
             catch (Exception ex)
             {
-                Log?.Critical(ex);
+                if (Log != null)
+                    Log.Critical(ex);
+                else
+                    FatalErrorStdOut(ex);
+
                 throw;
             }
         }
@@ -105,7 +114,7 @@ namespace Lykke.Service.BlockchainWallets
                     "BlockchainWalletsLog",
                     slackSettings.AzureQueue.ConnectionString,
                     slackSettings.AzureQueue.QueueName,
-                    logging => 
+                    logging =>
                     {
                         logging.AddAdditionalSlackChannel("BlockChainIntegration");
                         logging.AddAdditionalSlackChannel("BlockChainIntegrationImportantMessages", options =>
@@ -135,7 +144,11 @@ namespace Lykke.Service.BlockchainWallets
             }
             catch (Exception ex)
             {
-                Log?.Critical(ex);
+                if (Log != null)
+                    Log.Critical(ex);
+                else
+                    FatalErrorStdOut(ex);
+
                 throw;
             }
         }
@@ -146,14 +159,21 @@ namespace Lykke.Service.BlockchainWallets
             {
                 // NOTE: Service can't recieve and process requests here, so you can destroy all resources
 
-                HealthNotifier?.Notify("Terminating", $"Env: {Program.EnvInfo}");
+                HealthNotifier?.Notify("Terminating");
 
                 ApplicationContainer.Dispose();
             }
             catch (Exception ex)
             {
-                Log?.Critical(ex);
-                (Log as IDisposable)?.Dispose();
+                if (Log != null)
+                {
+                    Log.Critical(ex);
+                    (Log as IDisposable)?.Dispose();
+                }
+                else
+                {
+                    FatalErrorStdOut(ex);
+                }
 
                 throw;
             }
@@ -163,11 +183,15 @@ namespace Lykke.Service.BlockchainWallets
         {
             try
             {
-                HealthNotifier?.Notify("Started", $"Env: {Program.EnvInfo}");
+                HealthNotifier?.Notify("Started");
             }
             catch (Exception ex)
             {
-                Log?.Critical(ex);
+                if (Log != null)
+                    Log.Critical(ex);
+                else
+                    FatalErrorStdOut(ex);
+
                 throw;
             }
         }

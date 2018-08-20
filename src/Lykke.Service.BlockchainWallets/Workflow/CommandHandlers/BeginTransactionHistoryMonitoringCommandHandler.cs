@@ -32,7 +32,7 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
             if (logFactory == null)
                 throw new ArgumentNullException(nameof(logFactory));
 
-            _log = logFactory.CreateLog(nameof(BeginTransactionHistoryMonitoringCommandHandler));
+            _log = logFactory.CreateLog(this);
         }
 
         [UsedImplicitly]

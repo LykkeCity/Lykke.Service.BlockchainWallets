@@ -22,7 +22,7 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
         {
             if (logFactory == null)
                 throw new ArgumentNullException(nameof(logFactory));
-            _log = logFactory.CreateLog(nameof(logFactory));
+            _log = logFactory.CreateLog(this);
 
             _httpClient = new HttpClient();
             _solarCoinSettings = solarCoinSettings;
