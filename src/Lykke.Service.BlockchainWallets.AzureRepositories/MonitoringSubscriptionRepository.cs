@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using AzureStorage;
 using AzureStorage.Tables;
-using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.BlockchainWallets.Core;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.SettingsReader;
@@ -20,14 +20,14 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             _table = table;
         }
 
-        public static IMonitoringSubscriptionRepository Create(IReloadingManager<string> connectionString, ILog log)
+        public static IMonitoringSubscriptionRepository Create(IReloadingManager<string> connectionString, ILogFactory logFactory)
         {
         
             var table = AzureTableStorage<MonitoringSubscriptionEntity>.Create
             (
                 connectionString,
                 "MonitoringSubscriptions",
-                log
+                logFactory
             );
             
 

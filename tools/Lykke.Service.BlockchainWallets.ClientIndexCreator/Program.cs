@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Common.Log;
+using Lykke.Logs;
+using Lykke.Logs.Loggers.LykkeConsole;
 using Lykke.Service.BlockchainWallets.AzureRepositories;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.Settings;
@@ -68,10 +69,12 @@ namespace Lykke.Service.BlockchainWallets.ClientIndexCreator
                 return;
             }
 
-            var log = new LogToConsole();
+            var logFactory = LogFactory.Create()
+                .AddConsole();
+
             var settings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl).Nested(x => x.BlockchainWalletsService.Db.DataConnString);
             
-            var defaultWalletsRepository = (WalletRepository) WalletRepository.Create(settings, log);
+            var defaultWalletsRepository = (WalletRepository) WalletRepository.Create(settings, logFactory);
 
             string continuationToken = null;
 

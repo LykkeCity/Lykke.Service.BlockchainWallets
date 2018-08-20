@@ -6,6 +6,7 @@ using Lykke.Service.BlockchainWallets.Core.Services.FirstGeneration;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Lykke.Common.Log;
 
 namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
 {
@@ -16,13 +17,16 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
         private readonly IFirstGenerationBlockchainWalletRepository _walletCredentialsRepository;
         private readonly HttpClient _httpClient;
 
-        public SrvSolarCoinHelper(SolarCoinServiceClientSettings solarCoinSettings, ILog log,
+        public SrvSolarCoinHelper(SolarCoinServiceClientSettings solarCoinSettings, ILogFactory logFactory,
             IFirstGenerationBlockchainWalletRepository walletCredentialsRepository)
         {
+            if (logFactory == null)
+                throw new ArgumentNullException(nameof(logFactory));
+            _log = logFactory.CreateLog(this);
+
             _httpClient = new HttpClient();
             _solarCoinSettings = solarCoinSettings;
-            _log = log;
-            _walletCredentialsRepository = walletCredentialsRepository;
+            _walletCredentialsRepository = walletCredentialsRepository ?? throw new ArgumentNullException(nameof(walletCredentialsRepository));
         }
 
         public async Task<string> SetNewSolarCoinAddress(Guid clientId)
@@ -38,7 +42,7 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
             }
             catch (Exception ex)
             {
-                await _log.WriteErrorAsync("SolarCoin", "GetAddress", "", ex);
+                _log.Error(ex);
             }
 
             return null;

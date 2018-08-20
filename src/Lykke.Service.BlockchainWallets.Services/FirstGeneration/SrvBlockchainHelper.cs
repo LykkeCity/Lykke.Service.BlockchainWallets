@@ -5,9 +5,9 @@ using Lykke.Service.BlockchainWallets.Core.Services.FirstGeneration;
 using System;
 using System.Threading.Tasks;
 using Lykke.Bitcoin.Api.Client.BitcoinApi;
+using Lykke.Common.Log;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
-using Lykke.Service.BlockchainWallets.Core.Repositories.FirstGeneration;
 using Lykke.Service.ClientAccount.Client;
 using NBitcoin;
 
@@ -17,24 +17,24 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
     {
         private readonly IFirstGenerationBlockchainWalletRepository _walletCredentialsRepository;
         private readonly ILog _log;
-        private readonly IWalletCredentialsHistoryRepository _walletCredentialsHistoryRepository;
         private readonly IClientAccountClient _clientAccountService;
         private readonly IBitcoinApiClient _bitcoinApiClient;
         private readonly BitcoinCoreSettings _btcSettings;
 
         public SrvBlockchainHelper(IFirstGenerationBlockchainWalletRepository walletCredentialsRepository,
-            ILog log,
-            IWalletCredentialsHistoryRepository walletCredentialsHistoryRepository,
+            ILogFactory logFactory,
             IClientAccountClient clientAccountService,
             IBitcoinApiClient bitcoinApiClient,
             BitcoinCoreSettings btcSettings)
         {
-            _walletCredentialsRepository = walletCredentialsRepository;
-            _log = log;
-            _walletCredentialsHistoryRepository = walletCredentialsHistoryRepository;
-            _clientAccountService = clientAccountService;
-            _bitcoinApiClient = bitcoinApiClient;
-            _btcSettings = btcSettings;
+            if (logFactory == null)
+                throw new ArgumentNullException(nameof(logFactory));
+            _log = logFactory.CreateLog(this);
+
+            _walletCredentialsRepository = walletCredentialsRepository ?? throw new ArgumentNullException(nameof(walletCredentialsRepository));
+            _clientAccountService = clientAccountService ?? throw new ArgumentNullException(nameof(clientAccountService));
+            _bitcoinApiClient = bitcoinApiClient ?? throw new ArgumentNullException(nameof(bitcoinApiClient));
+            _btcSettings = btcSettings ?? throw new ArgumentNullException(nameof(btcSettings));
         }
 
         public async Task<IBcnCredentialsRecord> GenerateWallets(Guid clientId)
@@ -42,15 +42,14 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
             var network = _btcSettings.NetworkType == NetworkType.Main ? Network.Main : Network.TestNet;
 
             var wallets = await GetWalletsForPubKey();
-            IBcnCredentialsRecord bcnCreds = null;
+            IBcnCredentialsRecord bcnCreds;
             var currentWalletCreds = await _walletCredentialsRepository.GetAsync(clientId);
 
-            IWalletCredentials walletCreds;
             if (currentWalletCreds == null)
             {
                 var btcConvertionWallet = GetNewAddressAndPrivateKey(network);
 
-                walletCreds = WalletCredentials.Create(
+                IWalletCredentials walletCreds = WalletCredentials.Create(
                     clientId.ToString(), 
                     null, 
                     null, 
@@ -135,7 +134,7 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
             }
             catch (Exception ex)
             {
-                await _log.WriteErrorAsync("SrvBlockchainHelper", "GetWalletsForPubKey", "", ex);
+                _log.Error(ex);
                 throw;
             }
         }
@@ -146,10 +145,10 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
             public string Address { get; set; }
         }
 
-        private WalletKeyAndAddress GetNewAddressAndPrivateKey(Network network)
+        private static WalletKeyAndAddress GetNewAddressAndPrivateKey(Network network)
         {
-            Key key = new Key();
-            BitcoinSecret secret = new BitcoinSecret(key, network);
+            var key = new Key();
+            var secret = new BitcoinSecret(key, network);
 
             var walletAddress = secret.GetAddress().ToWif();
             var walletPrivateKey = secret.PrivateKey.GetWif(network).ToWif();

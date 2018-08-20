@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using AzureStorage;
 using AzureStorage.Tables;
-using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.BlockchainWallets.AzureRepositories.FirstGeneration;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
@@ -33,7 +33,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
         public static IFirstGenerationBlockchainWalletRepository Create(
             IReloadingManager<string> clientPersonalInfoConnectionString,
-            ILog log)
+            ILogFactory logFactory)
         {
             const string bcnClientCredentialsTableName = "BcnClientCredentials";
             const string walletCredentialsTableName = "WalletCredentials";
@@ -43,7 +43,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                 (
                     clientPersonalInfoConnectionString,
                     bcnClientCredentialsTableName,
-                    log
+                    logFactory
                 );
 
             var walletCredentialsWalletTable =
@@ -51,7 +51,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                 (
                     clientPersonalInfoConnectionString,
                     walletCredentialsTableName,
-                    log
+                    logFactory
                 );
 
             return new FirstGenerationBlockchainWalletRepository
@@ -272,7 +272,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         ///TIME
         ///SLR
         /// </summary>
-        public async Task TryAddAsync(string assetId, Guid clientId, bool isErc20, bool isEtherium)
+        public void TryAdd(string assetId, Guid clientId, bool isErc20, bool isEtherium)
         {
             #region BTC & ColoredCoins LKK, LKK1y, CHF|USD|EUR|GBP
 

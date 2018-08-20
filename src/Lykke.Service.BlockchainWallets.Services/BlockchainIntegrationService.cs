@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
-using Common.Log;
 using JetBrains.Annotations;
+using Lykke.Common.Log;
 using Lykke.Service.BlockchainApi.Client;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.Services;
@@ -15,25 +15,23 @@ namespace Lykke.Service.BlockchainWallets.Services
     {
         private readonly ImmutableDictionary<string, BlockchainApiClient> _apiClients;
 
-
         public BlockchainIntegrationService(
             BlockchainsIntegrationSettings settings,
-            ILog log)
+            ILogFactory logFactory)
         {
+            if (logFactory == null)
+                throw new ArgumentNullException(nameof(logFactory));
+            var log = logFactory.CreateLog(this);
+
             foreach (var blockchain in settings.Blockchains)
             {
-                log.WriteInfo
-                (
-                    "Blockchains registration",
-                    "",
-                    $"Registering blockchain: {blockchain.Type} -> \r\nAPI: {blockchain.ApiUrl}\r\nHW: {blockchain.HotWalletAddress}"
-                );
+                log.Info($"Registering blockchain: {blockchain.Type} -> \r\nAPI: {blockchain.ApiUrl}\r\nHW: {blockchain.HotWalletAddress}");
             }
 
             _apiClients = settings.Blockchains.ToImmutableDictionary
             (
                 x => x.Type,
-                y => new BlockchainApiClient(log, y.ApiUrl)
+                y => new BlockchainApiClient(logFactory, y.ApiUrl)
             );
         }
 

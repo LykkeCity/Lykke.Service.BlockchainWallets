@@ -85,6 +85,14 @@ namespace Lykke.Service.BlockchainWallets.Client
         Task<AddressExtensionConstantsResponse> GetAddressExtensionConstantsAsync(string blockchainType);
 
         /// <summary>
+        ///     Returns address extension constants OR null when the underlying info is not accessible for some reason.
+        /// </summary>
+        /// <param name="blockchainType">
+        ///     Target blockchain type.
+        /// </param>
+        Task<AddressExtensionConstantsResponse> TryGetAddressExtensionConstantsAsync(string blockchainType);
+
+        /// <summary>
         ///     Returns Lykke clients wallets.
         /// </summary>
         /// <param name="clientId">
