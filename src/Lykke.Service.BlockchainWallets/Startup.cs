@@ -35,103 +35,166 @@ namespace Lykke.Service.BlockchainWallets
 
         private IConfigurationRoot Configuration { get; }
 
+        private ILog Log { get; set; }
+
         private IHealthNotifier HealthNotifier { get; set; }
+
+        private void FatalErrorStdOut(Exception ex)
+        {
+            Console.WriteLine($"FATAL ERROR: {DateTime.UtcNow} : Startup : {ex}");
+        }
+
 
         [UsedImplicitly]
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
         {
-            if (env.IsDevelopment())
+            try
             {
-                app.UseDeveloperExceptionPage();
+                if (env.IsDevelopment())
+                {
+                    app.UseDeveloperExceptionPage();
+                }
+
+                app.UseLykkeMiddleware(ex => new { Message = "Technical problem" });
+
+                app.UseMvc();
+                app.UseSwagger(c =>
+                {
+                    c.PreSerializeFilters.Add((swagger, httpReq) => swagger.Host = httpReq.Host.Value);
+                });
+                app.UseSwaggerUI(x =>
+                {
+                    x.RoutePrefix = "swagger/ui";
+                    x.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+                });
+                app.UseStaticFiles();
+
+                appLifetime.ApplicationStarted.Register(StartApplication);
+                appLifetime.ApplicationStopped.Register(CleanUp);
             }
-
-            app.UseLykkeMiddleware(ex => new { Message = "Technical problem" });
-
-            app.UseMvc();
-            app.UseSwagger(c =>
+            catch (Exception ex)
             {
-                c.PreSerializeFilters.Add((swagger, httpReq) => swagger.Host = httpReq.Host.Value);
-            });
-            app.UseSwaggerUI(x =>
-            {
-                x.RoutePrefix = "swagger/ui";
-                x.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-            });
-            app.UseStaticFiles();
+                if (Log != null)
+                    Log.Critical(ex);
+                else
+                    FatalErrorStdOut(ex);
 
-            appLifetime.ApplicationStarted.Register(StartApplication);
-            appLifetime.ApplicationStopped.Register(CleanUp);
+                throw;
+            }
         }
 
         [UsedImplicitly]
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc()
-                .AddJsonOptions(options =>
+            try
+            {
+                services.AddMvc()
+                    .AddJsonOptions(options =>
+                    {
+                        options.SerializerSettings.ContractResolver =
+                            new DefaultContractResolver();
+                    });
+
+                services.AddSwaggerGen(options =>
                 {
-                    options.SerializerSettings.ContractResolver =
-                        new DefaultContractResolver();
+                    options.DefaultLykkeConfiguration("v1", "BlockchainWallets API");
                 });
 
-            services.AddSwaggerGen(options =>
-            {
-                options.DefaultLykkeConfiguration("v1", "BlockchainWallets API");
-            });
+                var builder = new ContainerBuilder();
+                var appSettings = Configuration.LoadSettings<AppSettings>();
+                var slackSettings = appSettings.CurrentValue.SlackNotifications;
+                Configuration.CheckDependenciesAsync(
+                    appSettings,
+                    slackSettings.AzureQueue.ConnectionString,
+                    slackSettings.AzureQueue.QueueName,
+                    "BlockchainWallets");
 
-            var builder = new ContainerBuilder();
-            var appSettings = Configuration.LoadSettings<AppSettings>();
-            var slackSettings = appSettings.CurrentValue.SlackNotifications;
-            Configuration.CheckDependenciesAsync(
-                appSettings,
-                slackSettings.AzureQueue.ConnectionString,
-                slackSettings.AzureQueue.QueueName,
-                "BlockchainWallets");
-
-            services.AddLykkeLogging(
-                appSettings.ConnectionString(x => x.BlockchainWalletsService.Db.LogsConnString),
-                "BlockchainWalletsLog",
-                slackSettings.AzureQueue.ConnectionString,
-                slackSettings.AzureQueue.QueueName,
-                logging => 
-                {
-                    logging.AddAdditionalSlackChannel("BlockChainIntegration");
-                    logging.AddAdditionalSlackChannel("BlockChainIntegrationImportantMessages", options =>
+                services.AddLykkeLogging(
+                    appSettings.ConnectionString(x => x.BlockchainWalletsService.Db.LogsConnString),
+                    "BlockchainWalletsLog",
+                    slackSettings.AzureQueue.ConnectionString,
+                    slackSettings.AzureQueue.QueueName,
+                    logging =>
                     {
-                        options.MinLogLevel = Microsoft.Extensions.Logging.LogLevel.Warning;
-                    });
-                }
-            );
+                        logging.AddAdditionalSlackChannel("BlockChainIntegration");
+                        logging.AddAdditionalSlackChannel("BlockChainIntegrationImportantMessages", options =>
+                        {
+                            options.MinLogLevel = Microsoft.Extensions.Logging.LogLevel.Warning;
+                        });
+                    }
+                );
 
-            builder
-            .RegisterModule(new CqrsModule(appSettings.CurrentValue.BlockchainWalletsService.Cqrs))
-            .RegisterModule(new RepositoriesModule(appSettings.Nested(x => x.BlockchainWalletsService.Db)))
-            .RegisterModule(new ServiceModule(
-                appSettings.CurrentValue.BlockchainsIntegration,
-                appSettings.CurrentValue.BlockchainSignFacadeClient,
-                appSettings.CurrentValue,
-                appSettings.CurrentValue.AssetsServiceClient));
+                builder
+                .RegisterModule(new CqrsModule(appSettings.CurrentValue.BlockchainWalletsService.Cqrs))
+                .RegisterModule(new RepositoriesModule(appSettings.Nested(x => x.BlockchainWalletsService.Db)))
+                .RegisterModule(new ServiceModule(
+                    appSettings.CurrentValue.BlockchainsIntegration,
+                    appSettings.CurrentValue.BlockchainSignFacadeClient,
+                    appSettings.CurrentValue,
+                    appSettings.CurrentValue.AssetsServiceClient));
 
-            builder.Populate(services);
+                builder.Populate(services);
 
-            ApplicationContainer = builder.Build();
+                ApplicationContainer = builder.Build();
 
-            HealthNotifier = ApplicationContainer.Resolve<IHealthNotifier>();
+                Log = ApplicationContainer.Resolve<ILogFactory>().CreateLog(this);
+                HealthNotifier = ApplicationContainer.Resolve<IHealthNotifier>();
 
-            return new AutofacServiceProvider(ApplicationContainer);
+                return new AutofacServiceProvider(ApplicationContainer);
+            }
+            catch (Exception ex)
+            {
+                if (Log != null)
+                    Log.Critical(ex);
+                else
+                    FatalErrorStdOut(ex);
+
+                throw;
+            }
         }
 
         private void CleanUp()
-        {            
-            // NOTE: Service can't recieve and process requests here, so you can destroy all resources
+        {
+            try
+            {
+                // NOTE: Service can't recieve and process requests here, so you can destroy all resources
 
-            HealthNotifier?.Notify("Terminating");
+                HealthNotifier?.Notify("Terminating");
 
-            ApplicationContainer.Dispose();
+                ApplicationContainer.Dispose();
+            }
+            catch (Exception ex)
+            {
+                if (Log != null)
+                {
+                    Log.Critical(ex);
+                    (Log as IDisposable)?.Dispose();
+                }
+                else
+                {
+                    FatalErrorStdOut(ex);
+                }
+
+                throw;
+            }
         }
 
         private void StartApplication()
         {
-            HealthNotifier?.Notify("Started");
+            try
+            {
+                HealthNotifier?.Notify("Started");
+                throw new Exception("test msg");
+            }
+            catch (Exception ex)
+            {
+                if (Log != null)
+                    Log.Critical(ex);
+                else
+                    FatalErrorStdOut(ex);
+
+                throw;
+            }
         }
     }
 }
