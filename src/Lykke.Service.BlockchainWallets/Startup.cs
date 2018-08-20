@@ -184,7 +184,6 @@ namespace Lykke.Service.BlockchainWallets
             try
             {
                 HealthNotifier?.Notify("Started");
-                throw new Exception("test msg");
             }
             catch (Exception ex)
             {
