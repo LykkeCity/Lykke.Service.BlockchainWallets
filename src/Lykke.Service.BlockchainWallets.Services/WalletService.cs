@@ -60,7 +60,7 @@ namespace Lykke.Service.BlockchainWallets.Services
 
             if (logFactory == null)
                 throw new ArgumentNullException(nameof(logFactory));
-            _log = logFactory.CreateLog(nameof(WalletService));
+            _log = logFactory.CreateLog(this);
         }
 
         private async Task<bool> AdditionalWalletExistsAsync(string integrationLayerId, string assetId, Guid clientId)

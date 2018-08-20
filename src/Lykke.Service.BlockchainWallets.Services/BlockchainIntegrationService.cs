@@ -21,7 +21,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         {
             if (logFactory == null)
                 throw new ArgumentNullException(nameof(logFactory));
-            var log = logFactory.CreateLog(nameof(BlockchainIntegrationService));
+            var log = logFactory.CreateLog(this);
 
             foreach (var blockchain in settings.Blockchains)
             {
@@ -31,7 +31,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             _apiClients = settings.Blockchains.ToImmutableDictionary
             (
                 x => x.Type,
-                y => new BlockchainApiClient(logFactory.CreateLog(nameof(BlockchainApiClient)), y.ApiUrl)
+                y => new BlockchainApiClient(logFactory, y.ApiUrl)
             );
         }
 

@@ -29,7 +29,7 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
         {
             if (logFactory == null)
                 throw new ArgumentNullException(nameof(logFactory));
-            _log = logFactory.CreateLog(nameof(SrvBlockchainHelper));
+            _log = logFactory.CreateLog(this);
 
             _walletCredentialsRepository = walletCredentialsRepository ?? throw new ArgumentNullException(nameof(walletCredentialsRepository));
             _clientAccountService = clientAccountService ?? throw new ArgumentNullException(nameof(clientAccountService));
