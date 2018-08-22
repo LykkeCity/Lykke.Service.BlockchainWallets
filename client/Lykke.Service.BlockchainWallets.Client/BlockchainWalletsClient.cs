@@ -49,6 +49,9 @@ namespace Lykke.Service.BlockchainWallets.Client
         public BlockchainWalletsClient(string hostUrl, ILogFactory logFactory, int retriesCount = 5)
         {
             HostUrl = hostUrl ?? throw new ArgumentNullException(nameof(hostUrl));
+            if (logFactory == null)
+                throw new ArgumentNullException(nameof(logFactory));
+            _log = logFactory.CreateLog(this);
 
             _httpClient = new HttpClient(new HttpErrorLoggingHandler(logFactory))
             {
