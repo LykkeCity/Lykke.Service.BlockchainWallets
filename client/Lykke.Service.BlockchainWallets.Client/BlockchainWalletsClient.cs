@@ -49,6 +49,9 @@ namespace Lykke.Service.BlockchainWallets.Client
         public BlockchainWalletsClient(string hostUrl, ILogFactory logFactory, int retriesCount = 5)
         {
             HostUrl = hostUrl ?? throw new ArgumentNullException(nameof(hostUrl));
+            if (logFactory == null)
+                throw new ArgumentNullException(nameof(logFactory));
+            _log = logFactory.CreateLog(this);
 
             _httpClient = new HttpClient(new HttpErrorLoggingHandler(logFactory))
             {
@@ -195,7 +198,7 @@ namespace Lykke.Service.BlockchainWallets.Client
             }
             catch (Exception e)
             {
-                _log.Warning("Unable to obtain address extension constants for blockchain type", e, blockchainType);
+                _log.WriteWarning(nameof(TryGetAddressExtensionConstantsAsync), blockchainType, "Unable to obtain address extension constants for blockchain type", e);
                 return null;
             }
         }
