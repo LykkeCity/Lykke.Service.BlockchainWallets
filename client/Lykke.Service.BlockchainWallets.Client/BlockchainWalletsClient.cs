@@ -198,7 +198,7 @@ namespace Lykke.Service.BlockchainWallets.Client
             }
             catch (Exception e)
             {
-                _log.Warning("Unable to obtain address extension constants for blockchain type", e, blockchainType);
+                _log.WriteWarning(nameof(TryGetAddressExtensionConstantsAsync), blockchainType, "Unable to obtain address extension constants for blockchain type", e);
                 return null;
             }
         }
