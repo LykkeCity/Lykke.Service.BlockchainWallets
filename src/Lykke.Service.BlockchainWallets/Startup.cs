@@ -116,8 +116,8 @@ namespace Lykke.Service.BlockchainWallets
                     slackSettings.AzureQueue.QueueName,
                     logging =>
                     {
-                        logging.AddAdditionalSlackChannel("BlockChainIntegration");
-                        logging.AddAdditionalSlackChannel("BlockChainIntegrationImportantMessages", options =>
+                        logging.AddAdditionalSlackChannel("CommonBlockChainIntegration");
+                        logging.AddAdditionalSlackChannel("CommonBlockChainIntegrationImportantMessages", options =>
                         {
                             options.MinLogLevel = Microsoft.Extensions.Logging.LogLevel.Warning;
                         });
