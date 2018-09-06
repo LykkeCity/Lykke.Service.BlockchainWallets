@@ -2,6 +2,8 @@
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using Lykke.Service.BlockchainWallets.Contract;
+using Lykke.Service.BlockchainWallets.Core;
 
 namespace Lykke.Service.BlockchainWallets.Controllers
 {
@@ -32,6 +34,19 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 (
                     BlockchainWalletsErrorResponse.Create($"{nameof(blockchainType)} should not be null or empty.")
                 );
+            }
+
+            if (blockchainType == LykkeConstants.SolarBlockchainType)
+            {
+                return Ok(new AddressExtensionConstantsResponse
+                {
+                    ProhibitedSymbolsForAddressExtension =  null,
+                    ProhibitedSymbolsForBaseAddress =  null,
+                    AddressExtensionDisplayName ="",
+                    BaseAddressDisplayName = "",
+                    TypeForDeposit = AddressExtensionTypeForDeposit.NotSupported,
+                    TypeForWithdrawal = AddressExtensionTypeForWithdrawal.NotSupported
+                });
             }
 
             if (!_blockchainIntegrationService.BlockchainIsSupported(blockchainType))
