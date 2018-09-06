@@ -69,27 +69,6 @@ namespace Lykke.Service.BlockchainWallets.Client
             _apiRunner = new ApiRunner(retriesCount);
         }
 
-        public BlockchainWalletsClient(string hostUrl, ILogFactory logFactory, int retriesCount = 5)
-        {
-            HostUrl = hostUrl ?? throw new ArgumentNullException(nameof(hostUrl));
-
-
-            _httpClient = new HttpClient(new HttpErrorLoggingHandler(logFactory.CreateLog(nameof(BlockchainWalletsClient))))
-            {
-                BaseAddress = new Uri(hostUrl),
-                DefaultRequestHeaders =
-                {
-                    {
-                        "User-Agent",
-                        $"{PlatformServices.Default.Application.ApplicationName}/{PlatformServices.Default.Application.ApplicationVersion}"
-                    }
-                }
-            };
-
-            _api = RestService.For<IBlockchainWalletsApi>(_httpClient);
-            _apiRunner = new ApiRunner(retriesCount);
-        }
-
         /// <summary>
         ///    This constructor intended for testing purposes only.
         /// </summary>
