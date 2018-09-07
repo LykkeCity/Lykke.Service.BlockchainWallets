@@ -12,6 +12,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Lykke.Common.Log;
+using Common;
 
 
 namespace Lykke.Service.BlockchainWallets.Client
@@ -143,7 +144,7 @@ namespace Lykke.Service.BlockchainWallets.Client
             }
             catch (ErrorResponseException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
             {
-                return null;
+                throw new DuplicationWalletException($"Deposit wallet already exists. Context: {new {blockchainType, assetId, clientId, walletType}.ToJson()}");
             }
         }
 
