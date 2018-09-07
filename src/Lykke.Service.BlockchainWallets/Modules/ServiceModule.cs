@@ -1,11 +1,20 @@
 ﻿using Autofac;
-using Common.Log;
+using Lykke.Bitcoin.Api.Client.BitcoinApi;
+using Lykke.Service.Assets.Client;
 using Lykke.Service.BlockchainSignFacade.Client;
 using Lykke.Service.BlockchainWallets.Core.Services;
+using Lykke.Service.BlockchainWallets.Core.Services.FirstGeneration;
+using Lykke.Service.BlockchainWallets.Core.Settings;
 using Lykke.Service.BlockchainWallets.Core.Settings.BlockchainIntegrationSettings;
 using Lykke.Service.BlockchainWallets.Core.Settings.BlockchainSignFacadeClient;
-using Lykke.Service.BlockchainWallets.Core.Settings.ServiceSettings;
 using Lykke.Service.BlockchainWallets.Services;
+using Lykke.Service.BlockchainWallets.Services.FirstGeneration;
+using Lykke.Service.ClientAccount.Client;
+using Lykke.Service.EthereumCore.Client;
+using System;
+using System.Net.Http;
+using Lykke.Common.Log;
+using Lykke.Service.BlockchainWallets.Core.FirstGeneration;
 
 namespace Lykke.Service.BlockchainWallets.Modules
 {
@@ -13,20 +22,19 @@ namespace Lykke.Service.BlockchainWallets.Modules
     {
         private readonly BlockchainsIntegrationSettings _blockchainsIntegrationSettings;
         private readonly BlockchainSignFacadeClientSettings _blockchainSignFacadeClientSettings;
-        private readonly BlockchainWalletsSettings _blockchainWalletsSettings;
-        private readonly ILog _log;
-
+        private readonly AppSettings _appSettings;
+        private readonly AssetServiceClientSettings _assetServiceSettings;
 
         public ServiceModule(
             BlockchainsIntegrationSettings blockchainsIntegrationSettings,
             BlockchainSignFacadeClientSettings blockchainSignFacadeClientSettings,
-            BlockchainWalletsSettings blockchainWalletsSettings,
-            ILog log)
+            AppSettings appSettings,
+            AssetServiceClientSettings assetServiceSettings)
         {
             _blockchainsIntegrationSettings = blockchainsIntegrationSettings;
             _blockchainSignFacadeClientSettings = blockchainSignFacadeClientSettings;
-            _blockchainWalletsSettings = blockchainWalletsSettings;
-            _log = log;
+            _appSettings = appSettings;
+            _assetServiceSettings = assetServiceSettings;
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -37,12 +45,7 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .SingleInstance();
             
             builder
-                .RegisterInstance(_log)
-                .As<ILog>()
-                .SingleInstance();
-            
-            builder
-                .RegisterInstance(CreateBlockchainSignFacadeClient())
+                .Register(CreateBlockchainSignFacadeClient)
                 .As<IBlockchainSignFacadeClient>();
 
             builder
@@ -76,15 +79,48 @@ namespace Lykke.Service.BlockchainWallets.Modules
             builder
                 .RegisterType<AddressParser>()
                 .As<IAddressParser>();
+
+            builder
+                .RegisterAssetsClient(AssetServiceSettings.Create(
+                    new Uri(_assetServiceSettings.ServiceUrl),
+                    _assetServiceSettings.ExpirationPeriod));
+
+            #region FirstGenerationServices
+
+            builder
+                .RegisterType<LegacyWalletService>()
+                .As<ILegacyWalletService>();
+
+            builder
+                .RegisterType<SrvBlockchainHelper>()
+                .As<ISrvBlockchainHelper>();
+
+            builder
+                .RegisterType<SrvEthereumHelper>()
+                .As<ISrvEthereumHelper>();
+
+            builder
+                .RegisterType<SrvSolarCoinHelper>()
+                .As<ISrvSolarCoinHelper>();
+
+            builder.RegisterInstance<BitcoinCoreSettings>(_appSettings.BitcoinCoreSettings);
+            builder.RegisterInstance<IBitcoinApiClient>(new BitcoinApiClient(_appSettings.BitcoinCoreSettings.BitcoinCoreApiUrl));
+            builder.RegisterLykkeServiceClient(_appSettings.ClientAccountServiceClient.ServiceUrl);
+            builder.RegisterInstance<IEthereumCoreAPI>(new EthereumCoreAPI(new Uri(_appSettings.EthereumServiceClient.ServiceUrl), new HttpClient()));
+            builder.RegisterInstance<SolarCoinServiceClientSettings>(_appSettings.SolarCoinServiceClient);
+            builder.RegisterInstance<QuantaServiceClientSettings>(_appSettings.QuantaServiceClient);
+            builder.RegisterInstance<ChronoBankServiceClientSettings>(_appSettings.ChronoBankServiceClient);
+
+            #endregion
         }
 
-        private IBlockchainSignFacadeClient CreateBlockchainSignFacadeClient()
+        private IBlockchainSignFacadeClient CreateBlockchainSignFacadeClient(IComponentContext ctx)
         {
             return new BlockchainSignFacadeClient
             (
                 hostUrl: _blockchainSignFacadeClientSettings.ServiceUrl,
-                apiKey: _blockchainWalletsSettings.SignFacadeApiKey,
-                log: _log
+                apiKey: _appSettings.BlockchainWalletsService.SignFacadeApiKey,
+                log: ctx.Resolve<ILogFactory>().CreateLog(nameof(BlockchainSignFacadeClient))
             );
         }
     }

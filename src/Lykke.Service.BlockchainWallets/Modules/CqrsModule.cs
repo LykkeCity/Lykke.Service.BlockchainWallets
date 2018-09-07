@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Autofac;
 using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Cqrs;
 using Lykke.Cqrs.Configuration;
 using Lykke.Messaging;
@@ -18,13 +20,11 @@ namespace Lykke.Service.BlockchainWallets.Modules
 {
     public class CqrsModule : Module
     {
-        private readonly ILog _log;
         private readonly CqrsSettings _settings;
 
-        public CqrsModule(CqrsSettings settings, ILog log)
+        public CqrsModule(CqrsSettings settings)
         {
             _settings = settings;
-            _log = log;
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -53,13 +53,6 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 {"RabbitMq", transportInfo}
             };
 
-            var messagingEngine = new MessagingEngine
-            (
-                _log,
-                new TransportResolver(transports),
-                new RabbitMqTransportFactory()
-            );
-
             // Command handlers
 
             builder
@@ -83,7 +76,15 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .RegisterType<WalletUnsubscriptionSaga>();
 
             // Create engine
-            builder.Register(ctx => CreateEngine(ctx, messagingEngine))
+            builder.Register(ctx => CreateEngine(
+                    ctx, 
+                    new MessagingEngine(
+                        ctx.Resolve<ILogFactory>(),
+                        new TransportResolver(transports),
+                        new RabbitMqTransportFactory(ctx.Resolve<ILogFactory>())
+                        )
+                    )
+                )
                 .As<ICqrsEngine>()
                 .SingleInstance()
                 .AutoActivate();
@@ -101,7 +102,7 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 Register.DefaultEndpointResolver(new RabbitMqConventionEndpointResolver
                 (
                     "RabbitMq",
-                    "messagepack",
+                    Messaging.Serialization.SerializationFormat.MessagePack,
                     environment: "lykke"
                 )),
 
@@ -160,11 +161,12 @@ namespace Lykke.Service.BlockchainWallets.Modules
             
             return new CqrsEngine
             (
-                _log,
+                ctx.Resolve<ILogFactory>(),
                 ctx.Resolve<IDependencyResolver>(),
                 messagingEngine,
                 new DefaultEndpointProvider(),
-                true, registrations);
+                true, 
+                registrations);
         }
     }
 }

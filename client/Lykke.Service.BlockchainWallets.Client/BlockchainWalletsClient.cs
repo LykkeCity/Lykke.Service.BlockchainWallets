@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Lykke.Common.Log;
 using Common;
 
 
@@ -22,14 +23,38 @@ namespace Lykke.Service.BlockchainWallets.Client
         private readonly IBlockchainWalletsApi _api;
         private readonly ApiRunner _apiRunner;
         private readonly HttpClient _httpClient;
+        private readonly ILog _log;
 
-
+        [Obsolete("Please, use the overload which consumes ILogFactory instead.")]
         public BlockchainWalletsClient(string hostUrl, ILog log, int retriesCount = 5)
         {
             HostUrl = hostUrl ?? throw new ArgumentNullException(nameof(hostUrl));
+            _log = log ?? throw new ArgumentNullException(nameof(log));
 
+            _httpClient = new HttpClient(new HttpErrorLoggingHandler(_log))
+            {
+                BaseAddress = new Uri(hostUrl),
+                DefaultRequestHeaders =
+                {
+                    {
+                        "User-Agent",
+                        $"{PlatformServices.Default.Application.ApplicationName}/{PlatformServices.Default.Application.ApplicationVersion}"
+                    }
+                }
+            };
 
-            _httpClient = new HttpClient(new HttpErrorLoggingHandler(log))
+            _api = RestService.For<IBlockchainWalletsApi>(_httpClient);
+            _apiRunner = new ApiRunner(retriesCount);
+        }
+
+        public BlockchainWalletsClient(string hostUrl, ILogFactory logFactory, int retriesCount = 5)
+        {
+            HostUrl = hostUrl ?? throw new ArgumentNullException(nameof(hostUrl));
+            if (logFactory == null)
+                throw new ArgumentNullException(nameof(logFactory));
+            _log = logFactory.CreateLog(this);
+
+            _httpClient = new HttpClient(new HttpErrorLoggingHandler(logFactory))
             {
                 BaseAddress = new Uri(hostUrl),
                 DefaultRequestHeaders =
@@ -162,6 +187,21 @@ namespace Lykke.Service.BlockchainWallets.Client
             ));
 
             return constants;
+        }
+
+        /// <inheritdoc cref="IBlockchainWalletsClient.TryGetAddressExtensionConstantsAsync" />
+        public async Task<AddressExtensionConstantsResponse> TryGetAddressExtensionConstantsAsync(string blockchainType)
+        {
+            try
+            {
+                var result = await GetAddressExtensionConstantsAsync(blockchainType);
+                return result;
+            }
+            catch (Exception e)
+            {
+                _log.WriteWarning(nameof(TryGetAddressExtensionConstantsAsync), blockchainType, "Unable to obtain address extension constants for blockchain type", e);
+                return null;
+            }
         }
 
         /// <inheritdoc cref="IBlockchainWalletsClient.GetAllWalletsAsync" />

@@ -2,10 +2,11 @@
 {
     public static class SpecialAssetIds
     {
-        public static string Bitcoin = "BTC";
-
-        public static string Ethereum = "ETH";
-
-        public static string Solarcoin = "SLR";
+        public const string BitcoinAssetId = "BTC";
+        public const string SolarAssetId = "SLR";
+        public const string ChronoBankAssetId = "TIME";
+        public const string QuantaAssetId = "QNT";
+        public const string BcnKeyForErc223 = "ERC223";
+        public const string BcnKeyForErc20 = "ERC20";
     }
 }

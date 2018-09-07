@@ -10,5 +10,7 @@ namespace Lykke.Service.BlockchainWallets.Core.Services
         bool BlockchainIsSupported(string blockchainType);
 
         IBlockchainApiClient TryGetApiClient(string blockchainType);
+
+        IBlockchainApiClient GetApiClient(string blockchainType);
     }
 }

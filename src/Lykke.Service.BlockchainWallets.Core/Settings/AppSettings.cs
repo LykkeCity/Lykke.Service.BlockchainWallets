@@ -1,4 +1,5 @@
 ﻿using JetBrains.Annotations;
+using Lykke.Service.BlockchainWallets.Core.FirstGeneration;
 using Lykke.Service.BlockchainWallets.Core.Settings.BlockchainIntegrationSettings;
 using Lykke.Service.BlockchainWallets.Core.Settings.BlockchainSignFacadeClient;
 using Lykke.Service.BlockchainWallets.Core.Settings.ServiceSettings;
@@ -20,5 +21,26 @@ namespace Lykke.Service.BlockchainWallets.Core.Settings
 
         [UsedImplicitly(ImplicitUseKindFlags.Assign)]
         public SlackNotificationsSettings SlackNotifications { get; set; }
+
+        [UsedImplicitly(ImplicitUseKindFlags.Assign)]
+        public AssetServiceClientSettings AssetsServiceClient { get; set; }
+
+        [UsedImplicitly(ImplicitUseKindFlags.Assign)]
+        public ChronoBankServiceClientSettings ChronoBankServiceClient { get; set; }
+
+        [UsedImplicitly(ImplicitUseKindFlags.Assign)]
+        public QuantaServiceClientSettings QuantaServiceClient { get; set; }
+
+        [UsedImplicitly(ImplicitUseKindFlags.Assign)]
+        public SolarCoinServiceClientSettings SolarCoinServiceClient { get; set; }
+
+        [UsedImplicitly(ImplicitUseKindFlags.Assign)]
+        public BitcoinCoreSettings BitcoinCoreSettings { get; set; }
+
+        [UsedImplicitly(ImplicitUseKindFlags.Assign)]
+        public ClientAccountServiceClientSettings ClientAccountServiceClient { get; set; }
+
+        [UsedImplicitly(ImplicitUseKindFlags.Assign)]
+        public EthereumServiceClientSettings EthereumServiceClient { get; set; }
     }
 }

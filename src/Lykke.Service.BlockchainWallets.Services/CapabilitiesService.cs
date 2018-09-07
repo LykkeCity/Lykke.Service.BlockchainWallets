@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -25,38 +24,58 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         public async Task<bool> IsPublicAddressExtensionRequiredAsync(string blockchainType)
         {
-            if (string.IsNullOrEmpty(blockchainType))
+            var key = $"{blockchainType}-IsPublicAddressExtensionRequired";
+            if (_cache.TryGetValue(key, out var value))
             {
-                throw new ArgumentException("Should not be null or empty", nameof(blockchainType));
+                return value;
             }
 
-            var apiClient = _blockchainIntegrationService.TryGetApiClient(blockchainType);
-            if (apiClient == null)
-            {
-                throw new NotSupportedException($"Blockchain type [{blockchainType}] is not supported.");
-            }
-
-            bool result;
-
-            var @lock = _locks.GetOrAdd(blockchainType, x => new SemaphoreSlim(1));
+            var apiClient = _blockchainIntegrationService.GetApiClient(blockchainType);
+            var @lock = _locks.GetOrAdd(key, x => new SemaphoreSlim(1));
 
             await @lock.WaitAsync();
 
             try
             {
                 var capabilities = await apiClient.GetCapabilitiesAsync();
+                var result = capabilities.IsPublicAddressExtensionRequired;
 
-                result = capabilities.IsPublicAddressExtensionRequired;
+                _cache.TryAdd(key, result);
 
-                _cache.TryAdd(blockchainType, result);
+                return result;
             }
             finally
             {
                 @lock.Release();
             }
+        }
 
-            return result;
-            
+        public async Task<bool> IsAddressMappingRequiredAsync(string blockchainType)
+        {
+            var key = $"{blockchainType}-IsAddressMappingRequired";
+            if (_cache.TryGetValue(key, out var value))
+            {
+                return value;
+            }
+
+            var apiClient = _blockchainIntegrationService.GetApiClient(blockchainType);
+            var @lock = _locks.GetOrAdd(key, x => new SemaphoreSlim(1));
+
+            await @lock.WaitAsync();
+
+            try
+            {
+                var capabilities = await apiClient.GetCapabilitiesAsync();
+                var result = capabilities.IsAddressMappingRequired;
+
+                _cache.TryAdd(key, result);
+
+                return result;
+            }
+            finally
+            {
+                @lock.Release();
+            }
         }
     }
 }

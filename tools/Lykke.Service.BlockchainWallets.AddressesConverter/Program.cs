@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
+using Lykke.Logs;
+using Lykke.Logs.Loggers.LykkeConsole;
 using Lykke.Service.BlockchainWallets.AzureRepositories;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.Settings;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Logging;
 
 namespace Lykke.Service.BlockchainWallets.AddressesConverter
 {
@@ -73,12 +76,14 @@ namespace Lykke.Service.BlockchainWallets.AddressesConverter
 
                 return;
             }
+            
+            var logFactory = LogFactory.Create()
+                .AddConsole();
 
-            var log = new LogToConsole();
             var settings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl).Nested(x => x.BlockchainWalletsService.Db.DataConnString);
             
-            var defaultWalletsRepository = (WalletRepository) WalletRepository.Create(settings, log);
-            var additionalWalletsRepository = AdditionalWalletRepository.Create(settings, log);
+            var defaultWalletsRepository = (WalletRepository) WalletRepository.Create(settings, logFactory);
+            var additionalWalletsRepository = AdditionalWalletRepository.Create(settings, logFactory);
 
             string continuationToken = null;
 
