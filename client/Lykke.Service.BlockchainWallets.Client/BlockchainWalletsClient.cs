@@ -143,7 +143,7 @@ namespace Lykke.Service.BlockchainWallets.Client
             }
             catch (ErrorResponseException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
             {
-                throw new DuplicationWalletException();
+                throw new DuplicationWalletException("Deposit wallet already exists");
             }
         }
 

@@ -6,5 +6,9 @@ namespace Lykke.Service.BlockchainWallets.Client
 {
     public class DuplicationWalletException:Exception
     {
+        public DuplicationWalletException(string message) : base(message)
+        {
+
+        }
     }
 }
