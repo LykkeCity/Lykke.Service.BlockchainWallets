@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Lykke.Service.BlockchainWallets.Contract.Models;
+using Lykke.Service.BlockchainWallets.Core;
 using Lykke.Service.BlockchainWallets.Core.Exceptions;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Extensions;
@@ -85,6 +86,14 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
         private async Task<IActionResult> MergeAddressAsync(string blockchainType, string baseAddress, string addressExtension)
         {
+            if (blockchainType == LykkeConstants.SolarBlockchainType)
+            {
+                return Ok(new MergedAddressResponse
+                {
+                    Address = baseAddress
+                });
+            }
+
             if (!_blockchainIntegrationService.BlockchainIsSupported(blockchainType))
             {
                 return BadRequest
