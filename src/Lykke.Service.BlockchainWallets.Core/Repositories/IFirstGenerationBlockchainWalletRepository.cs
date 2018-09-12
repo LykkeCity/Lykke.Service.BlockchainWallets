@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.FirstGeneration;
@@ -26,5 +27,7 @@ namespace Lykke.Service.BlockchainWallets.Core.Repositories
         Task MergeAsync(IWalletCredentials walletCredentials);
 
         Task InsertOrReplaceAsync(IBcnCredentialsRecord credsRecord);
+
+        Task EnumerateBcnCredsByChunksAsync(string assetId, Func<IEnumerable<IBcnCredentialsRecord>, Task> chunks);
     }
 }
