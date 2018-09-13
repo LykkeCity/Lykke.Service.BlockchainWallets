@@ -49,9 +49,9 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         }
 
 
-        private static (string PartitionKey, string RowKey) GetAddressIndexKeys(string blockchainType, string assetId, string address)
+        private static (string PartitionKey, string RowKey) GetAddressIndexKeys(string blockchainType, string address)
         {
-            var partitionKey = $"{blockchainType}-{assetId}-{address.CalculateHexHash32(3)}";
+            var partitionKey = $"{blockchainType}-{address.CalculateHexHash32(3)}";
             var rowKey = address;
 
             return (partitionKey, rowKey);
@@ -65,7 +65,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
             // Address index
 
-            var (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(blockchainType, assetId, address);
+            var (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(blockchainType, address);
             
             await _addressIndexTable.InsertOrReplaceAsync(new AzureIndex(
                 indexPartitionKey,
@@ -95,7 +95,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
             foreach (var wallet in wallets)
             {
-                var (indexPartitionKey, _) = GetAddressIndexKeys(wallet.IntegrationLayerId, wallet.AssetId, wallet.Address);
+                var (indexPartitionKey, _) = GetAddressIndexKeys(wallet.IntegrationLayerId,  wallet.Address);
 
                 await _additionalWalletsTable.DeleteIfExistAsync(wallet.PartitionKey, wallet.RowKey);
                 await _addressIndexTable.DeleteIfExistAsync(indexPartitionKey, wallet.Address);
@@ -109,9 +109,9 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             return (await _additionalWalletsTable.GetDataAsync(partitionKey)).Any();
         }
 
-        public async Task<WalletDto> TryGetAsync(string blockchainType, string assetId, string address)
+        public async Task<WalletDto> TryGetAsync(string blockchainType, string address)
         {
-            var  (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(blockchainType, assetId, address);
+            var  (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(blockchainType, address);
 
             var index = await _addressIndexTable.GetDataAsync
             (

@@ -111,10 +111,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// </summary>
         /// <param name="blockchainType">
         ///     Target blockchain type.
-        /// </param>
-        /// <param name="assetId">
-        ///     Target asset id (as it specified in the integration layer).
-        /// </param>
+        /// </param>        
         /// <param name="address">
         ///     Wallet public address.
         /// </param>
@@ -124,7 +121,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <exception cref="ErrorResponseException">
         ///     Status code: <see cref="HttpStatusCode.NotFound" /> - client is not found.
         /// </exception>
-        Task<Guid> GetClientIdAsync(string blockchainType, string assetId, string address);
+        Task<Guid> GetClientIdAsync(string blockchainType,  string address);
 
         /// <summary>
         ///     Returns service health status.
@@ -188,16 +185,13 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <param name="blockchainType">
         ///     Target blockchain type.
         /// </param>
-        /// <param name="assetId">
-        ///     Target asset id (as it specified in the integration layer).
-        /// </param>
         /// <param name="address">
         ///     Wallet public address.
         /// </param>
         /// <returns>
         ///     Lykke client id, if operation succeeded, null otherwise.
         /// </returns>
-        Task<Guid?> TryGetClientIdAsync(string blockchainType, string assetId, string address);
+        Task<Guid?> TryGetClientIdAsync(string blockchainType, string address);
 
         /// <summary>
         ///     Returns capabilitites

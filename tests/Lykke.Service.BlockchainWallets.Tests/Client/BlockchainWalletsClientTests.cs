@@ -79,10 +79,10 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
                 }
             }
 
-            var addressActions = new List<Func<string, string, string, Task>>
+            var addressActions = new List<Func<string, string, Task>>
             {
-                async (a, b, c) => { await client.GetClientIdAsync(a, b, c); },
-                async (a, b, c) => { await client.TryGetClientIdAsync(a, b, c); }
+                async (a, b) => { await client.GetClientIdAsync(a,  b); },
+                async (a, b) => { await client.TryGetClientIdAsync(a, b); }
             };
 
             var addressCases = new[]
@@ -96,27 +96,22 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             {
                 foreach (var integrationLayerIdCase in integrationLayerIdCases)
                 {
-                    foreach (var integrationLayerAssetIdCase in integrationLayerAssetIdCases)
+                    foreach (var addressCase in addressCases)
                     {
-                        foreach (var addressCase in addressCases)
+                        if (!integrationLayerIdCase.IsValid &&
+                            !addressCase.IsValid)
                         {
-                            if (!integrationLayerIdCase.IsValid &&
-                                !integrationLayerAssetIdCase.IsValid &&
-                                !addressCase.IsValid)
+                            try
                             {
-                                try
-                                {
-                                    await addressAction
-                                    (
-                                        integrationLayerAssetIdCase.Case,
-                                        integrationLayerAssetIdCase.Case,
-                                        addressCase.Case
-                                    );
-                                }
-                                catch (Exception e)
-                                {
-                                    Assert.IsType<ArgumentException>(e);
-                                }
+                                await addressAction
+                                (
+                                    integrationLayerIdCase.Case,
+                                    addressCase.Case
+                                );
+                            }
+                            catch (Exception e)
+                            {
+                                Assert.IsType<ArgumentException>(e);
                             }
                         }
                     }
@@ -253,7 +248,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             });
 
             var client = CreateClient(handlerStub);
-            var response = await client.GetClientIdAsync("EthereumClassic", "ETC", "0x83f0726180cf3964b69f62ac063c5cb9a66b3be5");
+            var response = await client.GetClientIdAsync("EthereumClassic", "0x83f0726180cf3964b69f62ac063c5cb9a66b3be5");
 
             Assert.Equal(clientId, response);
         }
@@ -266,7 +261,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
 
             try
             {
-                await client.GetClientIdAsync("EthereumClassic", "ETC", "0x83f0726180cf3964b69f62ac063c5cb9a66b3be5");
+                await client.GetClientIdAsync("EthereumClassic", "0x83f0726180cf3964b69f62ac063c5cb9a66b3be5");
             }
             catch (Exception e)
             {
@@ -305,7 +300,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
         {
             var clientId = Guid.Parse("25c47ff8-e31e-4913-8e02-8c2512f0111e");
             var counter = 0;
-            
+
             #region Responses
 
             var content1 = new WalletsResponse
