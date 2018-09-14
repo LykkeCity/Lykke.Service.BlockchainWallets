@@ -66,12 +66,12 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
         private static (string PartitionKey, string RowKey) GetAddressIndexKeys(WalletEntity wallet)
         {
-            return GetAddressIndexKeys(wallet.IntegrationLayerId, wallet.AssetId, wallet.Address);
+            return GetAddressIndexKeys(wallet.IntegrationLayerId, wallet.Address);
         }
 
-        private static (string PartitionKey, string RowKey) GetAddressIndexKeys(string blockchainType, string assetId, string address)
+        private static (string PartitionKey, string RowKey) GetAddressIndexKeys(string blockchainType, string address)
         {
-            var partitionKey = $"{blockchainType}-{assetId}-{address.CalculateHexHash32(3)}";
+            var partitionKey = $"{blockchainType}-{address.CalculateHexHash32(3)}";
             var rowKey = address;
 
             return (partitionKey, rowKey);
@@ -106,7 +106,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
             // Address index
 
-            var (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(blockchainType, assetId, address);
+            var (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(blockchainType, address);
             var (clientIndexPartitionKey, clientIndexRowKey) = GetClientIndexKeys(blockchainType, assetId, clientId);
 
             await _addressIndexTable.InsertOrReplaceAsync(new AzureIndex(
@@ -155,9 +155,9 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             }
         }
 
-        public async Task<bool> ExistsAsync(string blockchainType, string assetId, string address)
+        public async Task<bool> ExistsAsync(string blockchainType, string address)
         {
-            return await TryGetAsync(blockchainType, assetId, address) != null;
+            return await TryGetAsync(blockchainType, address) != null;
         }
 
         public async Task<bool> ExistsAsync(string blockchainType, string assetId, Guid clientId)
@@ -195,9 +195,9 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             return (entities.Select(ConvertEntityToDto), continuationToken);
         }
 
-        public async Task<WalletDto> TryGetAsync(string blockchainType, string assetId, string address)
+        public async Task<WalletDto> TryGetAsync(string blockchainType, string address)
         {
-            var (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(blockchainType, assetId, address);
+            var (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(blockchainType, address);
 
             var index = await _addressIndexTable.GetDataAsync
             (

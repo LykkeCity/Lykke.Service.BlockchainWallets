@@ -17,7 +17,7 @@ namespace Lykke.Service.BlockchainWallets.Core.Services
         
         Task<WalletWithAddressExtensionDto> TryGetFirstGenerationBlockchainAddressAsync(string assetId, Guid clientId);
 
-        Task<Guid?> TryGetClientIdAsync(string blockchainType, string assetId, string address);
+        Task<Guid?> TryGetClientIdAsync(string blockchainType, string address);
         
         Task<bool> WalletExistsAsync(string blockchainType, string assetId, Guid clientId);
 

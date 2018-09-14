@@ -247,9 +247,9 @@ namespace Lykke.Service.BlockchainWallets.Client
         }
 
         /// <inheritdoc cref="IBlockchainWalletsClient.GetClientIdAsync" />
-        public async Task<Guid> GetClientIdAsync(string blockchainType, string assetId, string address)
+        public async Task<Guid> GetClientIdAsync(string blockchainType, string address)
         {
-            var clientId = await TryGetClientIdAsync(blockchainType, assetId, address);
+            var clientId = await TryGetClientIdAsync(blockchainType, address);
 
             if (!clientId.HasValue)
             {
@@ -275,14 +275,13 @@ namespace Lykke.Service.BlockchainWallets.Client
         }
 
         /// <inheritdoc cref="IBlockchainWalletsClient.TryGetClientIdAsync" />
-        public async Task<Guid?> TryGetClientIdAsync(string blockchainType, string assetId, string address)
+        public async Task<Guid?> TryGetClientIdAsync(string blockchainType, string address)
         {
-            ValidateInputParameters(blockchainType, assetId, address);
+            ValidateBlockchainTypeAndAddress(blockchainType, address);
 
             var clientId = await _apiRunner.RunWithRetriesAsync(() => _api.GetClientIdAsync
             (
-                blockchainType,
-                assetId,
+                blockchainType,                
                 address
             ));
 
@@ -319,6 +318,16 @@ namespace Lykke.Service.BlockchainWallets.Client
             if (string.IsNullOrEmpty(blockchainType))
             {
                 throw new ArgumentException(nameof(blockchainType));
+            }
+        }
+
+        private static void ValidateBlockchainTypeAndAddress(string blockchainType, string address)
+        {
+            ValidateInputParameters(blockchainType);
+
+            if (string.IsNullOrEmpty(address))
+            {
+                throw new ArgumentException(nameof(address));
             }
         }
 

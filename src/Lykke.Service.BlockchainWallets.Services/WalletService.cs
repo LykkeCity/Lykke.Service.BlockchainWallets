@@ -231,12 +231,12 @@ namespace Lykke.Service.BlockchainWallets.Services
             return null;
         }
 
-        public async Task<Guid?> TryGetClientIdAsync(string blockchainType, string assetId, string address)
+        public async Task<Guid?> TryGetClientIdAsync(string blockchainType, string address)
         {
             address = (await _addressService.GetVirtualAddressAsync(blockchainType, address)) ?? address;
 
-            return (await _walletRepository.TryGetAsync(blockchainType, assetId, address))?.ClientId
-                ?? (await _additionalWalletRepository.TryGetAsync(blockchainType, assetId, address))?.ClientId;
+            return (await _walletRepository.TryGetAsync(blockchainType, address))?.ClientId
+                ?? (await _additionalWalletRepository.TryGetAsync(blockchainType,  address))?.ClientId;
         }
 
         public async Task<bool> WalletExistsAsync(string blockchainType, string assetId, Guid clientId)
