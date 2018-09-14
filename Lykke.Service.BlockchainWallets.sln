@@ -33,7 +33,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.TestLegacy", "tools\Lykke.Service.BlockchainWallets.TestLegacy\Lykke.Service.BlockchainWallets.TestLegacy.csproj", "{0F0D1931-2E7D-4183-B859-A36BDE54711C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Service.BlockchainWallets.BtcDepositsMigration", "tools\Lykke.Service.BlockchainWallets.BtcDepositsMigration\Lykke.Service.BlockchainWallets.BtcDepositsMigration.csproj", "{1AA1607E-0773-450B-B70E-187465DBF05A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.BtcDepositsMigration", "tools\Lykke.Service.BlockchainWallets.BtcDepositsMigration\Lykke.Service.BlockchainWallets.BtcDepositsMigration.csproj", "{1AA1607E-0773-450B-B70E-187465DBF05A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.MigrateWalletsIndexes", "tools\Lykke.Service.BlockchainWallets.MigrateWalletsIndexes\Lykke.Service.BlockchainWallets.MigrateWalletsIndexes.csproj", "{CD1E080E-50DA-47F9-94A4-6D10734A0C43}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -85,6 +87,10 @@ Global
 		{1AA1607E-0773-450B-B70E-187465DBF05A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1AA1607E-0773-450B-B70E-187465DBF05A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1AA1607E-0773-450B-B70E-187465DBF05A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD1E080E-50DA-47F9-94A4-6D10734A0C43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD1E080E-50DA-47F9-94A4-6D10734A0C43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD1E080E-50DA-47F9-94A4-6D10734A0C43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD1E080E-50DA-47F9-94A4-6D10734A0C43}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -101,6 +107,7 @@ Global
 		{B1EB0F1D-0F4B-4883-9697-78796960CF05} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
 		{0F0D1931-2E7D-4183-B859-A36BDE54711C} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
 		{1AA1607E-0773-450B-B70E-187465DBF05A} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
+		{CD1E080E-50DA-47F9-94A4-6D10734A0C43} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C8DE961A-1EFD-437E-B6AC-65490D9ADBE4}
