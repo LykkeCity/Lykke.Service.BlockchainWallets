@@ -40,9 +40,9 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             {
                 return Ok(new AddressExtensionConstantsResponse
                 {
-                    ProhibitedSymbolsForAddressExtension =  null,
-                    ProhibitedSymbolsForBaseAddress =  null,
-                    AddressExtensionDisplayName ="",
+                    ProhibitedSymbolsForAddressExtension = null,
+                    ProhibitedSymbolsForBaseAddress = null,
+                    AddressExtensionDisplayName = "",
                     BaseAddressDisplayName = "",
                     TypeForDeposit = AddressExtensionTypeForDeposit.NotSupported,
                     TypeForWithdrawal = AddressExtensionTypeForWithdrawal.NotSupported
@@ -64,7 +64,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 ProhibitedSymbolsForAddressExtension = constants.SeparatorExists ? new char[] { constants.Separator } : null,
                 ProhibitedSymbolsForBaseAddress = constants.SeparatorExists ? new char[] { constants.Separator } : null,
                 AddressExtensionDisplayName = constants.AddressExtensionDisplayName,
-                BaseAddressDisplayName = constants.BaseAddressDisplayName,
+                BaseAddressDisplayName = !string.IsNullOrEmpty(constants.BaseAddressDisplayName) ? constants.BaseAddressDisplayName : LykkeConstants.PublicAddressExtension.BaseAddressDisplayName,
                 TypeForDeposit = constants.TypeForDeposit,
                 TypeForWithdrawal = constants.TypeForWithdrawal
             });
