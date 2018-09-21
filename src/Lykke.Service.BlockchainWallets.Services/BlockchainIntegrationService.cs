@@ -77,5 +77,10 @@ namespace Lykke.Service.BlockchainWallets.Services
 
             return apiClient;
         }
+
+        public ImmutableDictionary<string, BlockchainApiClient>.Enumerator GetApiClientsEnumerator()
+        {
+            return _apiClients.GetEnumerator();
+        }
     }
 }

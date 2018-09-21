@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Lykke.Service.BlockchainWallets.Contract.Models;
+﻿using Lykke.Service.BlockchainWallets.Contract.Models;
 using Lykke.Service.BlockchainWallets.Core;
 using Lykke.Service.BlockchainWallets.Core.Exceptions;
 using Lykke.Service.BlockchainWallets.Core.Services;
@@ -13,42 +11,42 @@ namespace Lykke.Service.BlockchainWallets.Controllers
     {
         private readonly IAddressService _addressService;
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
-        private readonly ICapabilitiesService _capabilitiesService;
+        private readonly IBlockchainExtensionsService _blockchainExtensionsService;
         private readonly IAddressParser _addressParser;
 
 
         public AddressController(
             IAddressService addressService,
             IBlockchainIntegrationService blockchainIntegrationService,
-            ICapabilitiesService capabilitiesService,
+            IBlockchainExtensionsService blockchainExtensionsService,
             IAddressParser addressParser)
         {
             _addressService = addressService;
             _blockchainIntegrationService = blockchainIntegrationService;
-            _capabilitiesService = capabilitiesService;
+            _blockchainExtensionsService = blockchainExtensionsService;
             _addressParser = addressParser;
         }
 
         [HttpGet("/api/{blockchainType}/address/merged/{baseAddress}")]
-        public async Task<IActionResult> MergeAsync(string blockchainType, string baseAddress)
+        public IActionResult MergeAsync(string blockchainType, string baseAddress)
         {
-            return await MergeAddressAsync(blockchainType, baseAddress, null);
+            return MergeAddress(blockchainType, baseAddress, null);
         }
         /// <summary>
         ///    Merges base address with address extension, according to specified blockchain type settings
         /// </summary>
 
         [HttpGet("/api/{blockchainType}/address/merged/{baseAddress}/{addressExtension}")]
-        public async Task<IActionResult> MergeAsync(string blockchainType, string baseAddress, string addressExtension)
+        public IActionResult MergeAsync(string blockchainType, string baseAddress, string addressExtension)
         {
-            return await MergeAddressAsync(blockchainType, baseAddress, addressExtension);
+            return MergeAddress(blockchainType, baseAddress, addressExtension);
         }
 
         /// <summary>
         ///    Extract address parts based on  capabilities for the specified blockchain type.
         /// </summary>
         [HttpGet("/api/{blockchainType}/address/parsed/{address}")]
-        public async Task<IActionResult> ParseAddress(string blockchainType, string address)
+        public IActionResult ParseAddress(string blockchainType, string address)
         {
             if (string.IsNullOrEmpty(blockchainType))
             {
@@ -74,7 +72,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 );
             }
 
-            var parseResult = await _addressParser.ExtractAddressParts(blockchainType, address);
+            var parseResult = _addressParser.ExtractAddressParts(blockchainType, address);
 
             return Ok(new AddressParseResultResponce
             {
@@ -84,7 +82,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             });
         }
 
-        private async Task<IActionResult> MergeAddressAsync(string blockchainType, string baseAddress, string addressExtension)
+        private IActionResult MergeAddress(string blockchainType, string baseAddress, string addressExtension)
         {
             if (blockchainType == LykkeConstants.SolarBlockchainType)
             {
@@ -104,7 +102,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
             try
             {
-                var address = await _addressService.MergeAsync
+                var address = _addressService.Merge
                 (
                     blockchainType: blockchainType,
                     baseAddress: baseAddress,

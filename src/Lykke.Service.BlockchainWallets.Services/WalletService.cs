@@ -29,7 +29,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         private readonly IAddressParser _addressParser;
         private readonly IFirstGenerationBlockchainWalletRepository _firstGenerationBlockchainWalletRepository;
         private readonly IAssetsServiceWithCache _assetsServiceWithCache;
-        private readonly ICapabilitiesService _capabilitiesService;
+        private readonly IBlockchainExtensionsService _blockchainExtensionsService;
         private readonly IAddressService _addressService;
         private readonly ILegacyWalletService _legacyWalletService;
         private readonly ILog _log;
@@ -42,7 +42,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             IAddressParser addressParser,
             IFirstGenerationBlockchainWalletRepository firstGenerationBlockchainWalletRepository,
             IAssetsServiceWithCache assetsServiceWithCache,
-            ICapabilitiesService capabilitiesService,
+            IBlockchainExtensionsService blockchainExtensionsService,
             IAddressService addressService,
             ILegacyWalletService legacyWalletService,
             ILogFactory logFactory)
@@ -54,7 +54,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             _addressParser = addressParser ?? throw new ArgumentNullException(nameof(addressParser));
             _firstGenerationBlockchainWalletRepository = firstGenerationBlockchainWalletRepository ?? throw new ArgumentNullException(nameof(firstGenerationBlockchainWalletRepository));
             _assetsServiceWithCache = assetsServiceWithCache ?? throw new ArgumentNullException(nameof(assetsServiceWithCache));
-            _capabilitiesService = capabilitiesService ?? throw new ArgumentNullException(nameof(capabilitiesService));
+            _blockchainExtensionsService = blockchainExtensionsService ?? throw new ArgumentNullException(nameof(blockchainExtensionsService));
             _addressService = addressService ?? throw new ArgumentNullException(nameof(addressService));
             _legacyWalletService = legacyWalletService ?? throw new ArgumentNullException(nameof(legacyWalletService));
 
@@ -84,10 +84,10 @@ namespace Lykke.Service.BlockchainWallets.Services
                 var wallet = await _blockchainSignFacadeClient.CreateWalletAsync(blockchainType);
                 address = wallet.PublicAddress;
 
-                var isAddressMappingRequired = await _capabilitiesService.IsAddressMappingRequiredAsync(blockchainType);
+                var isAddressMappingRequired = _blockchainExtensionsService.IsAddressMappingRequired(blockchainType);
                 var underlyingAddress = await _addressService.GetUnderlyingAddressAsync(blockchainType, address);
 
-                if (isAddressMappingRequired && underlyingAddress == null)
+                if (isAddressMappingRequired.HasValue && isAddressMappingRequired.Value && underlyingAddress == null)
                 {
                     throw new ArgumentException($"Failed to get UnderlyingAddress for blockchainType={blockchainType} and address={address}");
                 }
@@ -117,11 +117,11 @@ namespace Lykke.Service.BlockchainWallets.Services
                     BlockchainWalletsBoundedContext.Name
                 );
 
-                return await ConvertWalletToWalletWithAddressExtensionAsync
+                return ConvertWalletToWalletWithAddressExtensionAsync
                 (
                     new WalletDto
                     {
-                        Address = isAddressMappingRequired ? underlyingAddress : address,
+                        Address = isAddressMappingRequired.HasValue && isAddressMappingRequired.Value ? underlyingAddress : address,
                         AssetId = assetId,
                         BlockchainType = blockchainType,
                         ClientId = clientId
@@ -186,7 +186,8 @@ namespace Lykke.Service.BlockchainWallets.Services
 
             if (wallet != null)
             {
-                if (await _capabilitiesService.IsAddressMappingRequiredAsync(blockchainType))
+                var queryResult = _blockchainExtensionsService.IsAddressMappingRequired(blockchainType);
+                if (queryResult.HasValue && queryResult.Value)
                 {
                     var underlyingAddress = await _addressService.GetUnderlyingAddressAsync(blockchainType, wallet.Address);
 
@@ -194,7 +195,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                         $"blockchainType={blockchainType} and address={wallet.Address}");
                 }
 
-                return await ConvertWalletToWalletWithAddressExtensionAsync(wallet);
+                return ConvertWalletToWalletWithAddressExtensionAsync(wallet);
             }
 
             return null;
@@ -256,7 +257,8 @@ namespace Lykke.Service.BlockchainWallets.Services
             
             foreach (var wallet in wallets)
             {
-                if (await _capabilitiesService.IsAddressMappingRequiredAsync(wallet.BlockchainType))
+                var queryResult = _blockchainExtensionsService.IsAddressMappingRequired(wallet.BlockchainType);
+                if (queryResult.HasValue && queryResult.Value)
                 {
                     var underlyingAddress = await _addressService.GetUnderlyingAddressAsync(wallet.BlockchainType, wallet.Address);
                     if (underlyingAddress == null)
@@ -267,21 +269,21 @@ namespace Lykke.Service.BlockchainWallets.Services
                     {
                         wallet.Address = underlyingAddress;
 
-                        finalWallets.Add(await ConvertWalletToWalletWithAddressExtensionAsync(wallet));
+                        finalWallets.Add(ConvertWalletToWalletWithAddressExtensionAsync(wallet));
                     }
                 }
                 else
                 {
-                    finalWallets.Add(await ConvertWalletToWalletWithAddressExtensionAsync(wallet));
+                    finalWallets.Add(ConvertWalletToWalletWithAddressExtensionAsync(wallet));
                 }
             }
 
             return (finalWallets, token);
         }
 
-        private async Task<WalletWithAddressExtensionDto> ConvertWalletToWalletWithAddressExtensionAsync(WalletDto walletDto)
+        private WalletWithAddressExtensionDto ConvertWalletToWalletWithAddressExtensionAsync(WalletDto walletDto)
         {
-            var parseAddressResult = await _addressParser.ExtractAddressParts(walletDto.BlockchainType, walletDto.Address);
+            var parseAddressResult = _addressParser.ExtractAddressParts(walletDto.BlockchainType, walletDto.Address);
 
             return new WalletWithAddressExtensionDto
             {
