@@ -100,7 +100,7 @@ namespace Lykke.Service.BlockchainWallets.Services.FirstGeneration
                 }
 
                 //await _walletCredentialsHistoryRepository.InsertHistoryRecord(currentWalletCreds);
-                //await _walletCredentialsRepository.MergeAsync(walletCreds);
+                //await _walletCredentialsRepository.Merge(walletCreds);
             }
 
             return bcnCreds;

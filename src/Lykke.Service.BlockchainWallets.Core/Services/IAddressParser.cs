@@ -5,6 +5,6 @@ namespace Lykke.Service.BlockchainWallets.Core.Services
 {
     public interface IAddressParser
     {
-        Task<AddressParseResultDto> ExtractAddressParts(string blockchainType, string address);
+        AddressParseResultDto ExtractAddressParts(string blockchainType, string address);
     }
 }

@@ -67,13 +67,8 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .SingleInstance();
 
             builder
-                .RegisterType<CapabilitiesService>()
-                .As<ICapabilitiesService>()
-                .SingleInstance();
-
-            builder
-                .RegisterType<ConstantsService>()
-                .As<IConstantsService>()
+                .RegisterType<BlockchainExtensionsService>()
+                .As<IBlockchainExtensionsService>()
                 .SingleInstance();
 
             builder
@@ -84,6 +79,10 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .RegisterAssetsClient(AssetServiceSettings.Create(
                     new Uri(_assetServiceSettings.ServiceUrl),
                     _assetServiceSettings.ExpirationPeriod));
+
+            builder
+                .RegisterType<StartupManager>()
+                .As<IStartupManager>();
 
             #region FirstGenerationServices
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Common.Log;
@@ -8,6 +9,7 @@ using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.Common.Log;
 using Lykke.Logs;
 using Lykke.Logs.Loggers.LykkeSlack;
+using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Settings;
 using Lykke.Service.BlockchainWallets.Modules;
 using Lykke.SettingsReader;
@@ -183,6 +185,8 @@ namespace Lykke.Service.BlockchainWallets
         {
             try
             {
+                ApplicationContainer.Resolve<IStartupManager>().Start();
+                
                 HealthNotifier?.Notify("Started");
             }
             catch (Exception ex)

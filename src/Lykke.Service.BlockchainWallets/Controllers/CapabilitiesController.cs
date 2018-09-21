@@ -1,7 +1,6 @@
 ﻿using Lykke.Service.BlockchainWallets.Contract.Models;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace Lykke.Service.BlockchainWallets.Controllers
 {
@@ -10,20 +9,20 @@ namespace Lykke.Service.BlockchainWallets.Controllers
     {
 
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
-        private readonly ICapabilitiesService _capabilitiesService;
+        private readonly IBlockchainExtensionsService _blockchainExtensionsService;
 
         public CapabilitiesController(IBlockchainIntegrationService blockchainIntegrationService, 
-            ICapabilitiesService capabilitiesService)
+            IBlockchainExtensionsService blockchainExtensionsService)
         {
             _blockchainIntegrationService = blockchainIntegrationService;
-            _capabilitiesService = capabilitiesService;
+            _blockchainExtensionsService = blockchainExtensionsService;
         }
 
         /// <summary>
         ///    Returns capabilities for the specified blockchain type.
         /// </summary>
         [HttpGet("{blockchainType}")]
-        public async Task<IActionResult> GetCapabilities(string blockchainType)
+        public IActionResult GetCapabilities(string blockchainType)
         {
             if (string.IsNullOrEmpty(blockchainType))
             {
@@ -41,11 +40,11 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 );
             }
 
-            var isPublicAddressExtensionRequired = await _capabilitiesService.IsPublicAddressExtensionRequiredAsync(blockchainType);
+            var isPublicAddressExtensionRequired = _blockchainExtensionsService.IsPublicAddressExtensionRequired(blockchainType);
 
             return Ok(new CapabilititesResponce
             {
-                IsPublicAddressExtensionRequired = isPublicAddressExtensionRequired
+                IsPublicAddressExtensionRequired = isPublicAddressExtensionRequired.HasValue ? isPublicAddressExtensionRequired.Value : false
             });
         }
 
