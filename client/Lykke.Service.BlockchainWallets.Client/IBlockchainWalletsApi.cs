@@ -21,7 +21,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         [Get("/api/wallets/{blockchainType}/{assetId}/by-client-ids/{clientId}/address")]
         Task<AddressResponse> GetAddressAsync(string blockchainType, string assetId, Guid clientId);
 
-        [Get("/api/{blockchainType}/addresses/{address}/client-id")]
+        [Get("/api/blockchains/{blockchainType}/wallets/{address}/client-id")]
         Task<ClientIdResponse> GetClientIdAsync(string blockchainType, string address);
 
         [Get("/api/isalive")]

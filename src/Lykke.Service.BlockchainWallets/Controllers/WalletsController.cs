@@ -173,7 +173,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         /// <summary>
         ///    Return client id for the specified wallet.
         /// </summary>
-        [HttpGet("/api/{blockchainType}/addresses/{address}/client-id")]       
+        [HttpGet("/api/blockchains/{blockchainType}/wallets/{address}/client-id")]       
         public async Task<IActionResult> GetClientId([FromRoute] string blockchainType, [FromRoute] string address)
         {
             if (!ValidateRequest(blockchainType, address, out var badRequest))

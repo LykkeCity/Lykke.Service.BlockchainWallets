@@ -20,7 +20,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             var handlerStub = new DelegatingHandlerStub();
             var client = CreateClient(handlerStub);
 
-            var integrationLayerIdCases = new[]
+            var blockchainTypeCases = new[]
             {
                 new { Case = (string) null, IsValid = false },
                 new { Case = "", IsValid = false },
@@ -50,13 +50,13 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
 
             foreach (var clientAction in clientActions)
             {
-                foreach (var integrationLayerIdCase in integrationLayerIdCases)
+                foreach (var blockchainTypeCase in blockchainTypeCases)
                 {
                     foreach (var integrationLayerAssetIdCase in integrationLayerAssetIdCases)
                     {
                         foreach (var clientIdCase in clientIdCases)
                         {
-                            if (!integrationLayerIdCase.IsValid &&
+                            if (!blockchainTypeCase.IsValid &&
                                 !integrationLayerAssetIdCase.IsValid &&
                                 !clientIdCase.IsValid)
                             {
@@ -94,18 +94,18 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
 
             foreach (var addressAction in addressActions)
             {
-                foreach (var integrationLayerIdCase in integrationLayerIdCases)
+                foreach (var blockchainTypeCase in blockchainTypeCases)
                 {
                     foreach (var addressCase in addressCases)
                     {
-                        if (!integrationLayerIdCase.IsValid &&
+                        if (!blockchainTypeCase.IsValid &&
                             !addressCase.IsValid)
                         {
                             try
                             {
                                 await addressAction
                                 (
-                                    integrationLayerIdCase.Case,
+                                    blockchainTypeCase.Case,
                                     addressCase.Case
                                 );
                             }
