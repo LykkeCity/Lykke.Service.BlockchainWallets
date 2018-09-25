@@ -146,14 +146,15 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         ///    Return client id for the specified wallet.
         /// </summary>
         [HttpGet(RouteSuffix + "/by-addresses/{address}/client-id")]
+        [Obsolete]
         public async Task<IActionResult> GetClientId([FromRoute] string blockchainType, [FromRoute] string assetId, [FromRoute] string address)
         {
-            if (!ValidateRequest(blockchainType, assetId, address, out var badRequest))
+            if (!ValidateRequest(blockchainType, address, out var badRequest))
             {
                 return badRequest;
             }
 
-            var clientId = await _walletService.TryGetClientIdAsync(blockchainType, assetId, address);
+            var clientId = await _walletService.TryGetClientIdAsync(blockchainType, address);
 
             if (clientId != null)
             {
@@ -167,6 +168,34 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 return NoContent();
             }
         }
+
+
+        /// <summary>
+        ///    Return client id for the specified wallet.
+        /// </summary>
+        [HttpGet("/api/blockchains/{blockchainType}/wallets/{address}/client-id")]       
+        public async Task<IActionResult> GetClientId([FromRoute] string blockchainType, [FromRoute] string address)
+        {
+            if (!ValidateRequest(blockchainType, address, out var badRequest))
+            {
+                return badRequest;
+            }
+
+            var clientId = await _walletService.TryGetClientIdAsync(blockchainType, address);
+
+            if (clientId != null)
+            {
+                return Ok(new ClientIdResponse
+                {
+                    ClientId = clientId.Value
+                });
+            }
+            else
+            {
+                return NoContent();
+            }
+        }
+        
 
         /// <summary>
         ///    Returns all wallets for the specified client.
@@ -212,19 +241,14 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         }
 
 
-        private bool ValidateRequest(string blockchainType, string assetId, string address, out IActionResult badRequest)
+        private bool ValidateRequest(string blockchainType,  string address, out IActionResult badRequest)
         {
             var invalidInputParams = new List<string>();
 
             if (string.IsNullOrWhiteSpace(blockchainType))
             {
                 invalidInputParams.Add(nameof(blockchainType));
-            }
-
-            if (string.IsNullOrWhiteSpace(assetId))
-            {
-                invalidInputParams.Add(nameof(assetId));
-            }
+            }        
 
             if (string.IsNullOrWhiteSpace(address))
             {
