@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <AssemblyName>Lykke.Service.BlockchainWallets.MigrateWalletsMultiplePerClient</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Lykke.Logs" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Lykke.Service.BlockchainWallets.AzureRepositories\Lykke.Service.BlockchainWallets.AzureRepositories.csproj" />
+    <ProjectReference Include="..\..\src\Lykke.Service.BlockchainWallets.Core\Lykke.Service.BlockchainWallets.Core.csproj" />
+  </ItemGroup>
+
+</Project>
