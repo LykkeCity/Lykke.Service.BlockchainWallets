@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Common.Log;
 using JetBrains.Annotations;
+using Lykke.Common.Log;
 using Lykke.Service.BlockchainWallets.Core.Exceptions;
 using Lykke.Service.BlockchainWallets.Core.Services;
 
@@ -9,21 +11,22 @@ namespace Lykke.Service.BlockchainWallets.Services
     [UsedImplicitly]
     public class AddressService : IAddressService
     {
-        private readonly ICapabilitiesService _capabilitiesService;
-        private readonly IConstantsService _constantsService;
+        private readonly IBlockchainExtensionsService _blockchainExtensionsService;
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
+        private readonly ILog _log;
 
         public AddressService(
-            ICapabilitiesService capabilitiesService,
-            IConstantsService constantsService,
-            IBlockchainIntegrationService blockchainIntegrationService)
+            IBlockchainExtensionsService blockchainExtensionsService,
+            IBlockchainIntegrationService blockchainIntegrationService,
+            ILogFactory logFactory)
         {
-            _capabilitiesService = capabilitiesService;
-            _constantsService = constantsService;
+            _blockchainExtensionsService = blockchainExtensionsService;
             _blockchainIntegrationService = blockchainIntegrationService;
+
+            _log = logFactory.CreateLog(this);
         }
 
-        public async Task<string> MergeAsync(string blockchainType, string baseAddress, string addressExtension)
+        public string Merge(string blockchainType, string baseAddress, string addressExtension)
         {
             string mergedAddress = null;
 
@@ -33,7 +36,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                     OperationErrorCode.BaseAddressIsEmpty);
             }
 
-            var constants = await _constantsService.GetAddressExtensionConstantsAsync(blockchainType);
+            var constants = _blockchainExtensionsService.TryGetAddressExtensionConstants(blockchainType);
 
             if (baseAddress.Contains(constants.Separator))
             {
@@ -43,7 +46,12 @@ namespace Lykke.Service.BlockchainWallets.Services
 
             if (!string.IsNullOrEmpty(addressExtension))
             {
-                if (!await _capabilitiesService.IsPublicAddressExtensionRequiredAsync(blockchainType))
+                var capabilityQueryResult = _blockchainExtensionsService.IsPublicAddressExtensionRequired(blockchainType);
+                if (!capabilityQueryResult.HasValue)
+                {
+                    throw new InvalidOperationException($"API service for blockchain type [{blockchainType}] is not currently available.");
+                }
+                if (!capabilityQueryResult.Value)
                 {
                     throw new NotSupportedException($"Blockchain type [{blockchainType}] is not supported.");
                 }
@@ -66,14 +74,22 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         public async Task<string> GetUnderlyingAddressAsync(string blockchainType, string address)
         {
-            if (await _capabilitiesService.IsAddressMappingRequiredAsync(blockchainType))
+            var capabilityQueryResult = _blockchainExtensionsService.IsAddressMappingRequired(blockchainType);
+            if (capabilityQueryResult ?? false)
             {
                 var apiClient = _blockchainIntegrationService.GetApiClient(blockchainType);
 
-                var underlyingAddress = await apiClient.GetUnderlyingAddressAsync(address);
-                if (!string.IsNullOrWhiteSpace(underlyingAddress))
+                try
                 {
-                    return underlyingAddress;
+                    var underlyingAddress = await apiClient.GetUnderlyingAddressAsync(address);
+                    if (!string.IsNullOrWhiteSpace(underlyingAddress))
+                    {
+                        return underlyingAddress;
+                    }
+                }
+                catch (Exception ex) when (!(ex is ArgumentException)) // BlockchainAPiClient thows ArgumentException when input parameter validation's failed.
+                {
+                    _log.Warning($"Unable to access API service for blockchain {blockchainType}.", ex);
                 }
             }
 
@@ -82,14 +98,22 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         public async Task<string> GetVirtualAddressAsync(string blockchainType, string address)
         {
-            if (await _capabilitiesService.IsAddressMappingRequiredAsync(blockchainType))
+            var capabilityQueryResult = _blockchainExtensionsService.IsAddressMappingRequired(blockchainType);
+            if (capabilityQueryResult ?? false)
             {
                 var apiClient = _blockchainIntegrationService.GetApiClient(blockchainType);
 
-                var virtualAddress = await apiClient.GetVirtualAddressAsync(address);
-                if (!string.IsNullOrWhiteSpace(virtualAddress))
+                try
                 {
-                    return virtualAddress;
+                    var virtualAddress = await apiClient.GetVirtualAddressAsync(address);
+                    if (!string.IsNullOrWhiteSpace(virtualAddress))
+                    {
+                        return virtualAddress;
+                    }
+                }
+                catch (Exception ex) when (!(ex is ArgumentException)) // BlockchainAPiClient thows ArgumentException when input parameter validation's failed.
+                {
+                    _log.Warning($"Unable to access API service for blockchain {blockchainType}.", ex);
                 }
             }
 

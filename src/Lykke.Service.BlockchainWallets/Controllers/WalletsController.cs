@@ -14,7 +14,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
     [Route("api/wallets")]
     public class WalletsController : Controller
     {
-        private static char[] _trimmedChars = new char[]{' ', '\t'};
+        private static readonly char[] _trimmedChars = new char[]{' ', '\t'};
         private const string RouteSuffix = "{blockchainType}/{assetId}";
         
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
