@@ -117,7 +117,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                     BlockchainWalletsBoundedContext.Name
                 );
 
-                return ConvertWalletToWalletWithAddressExtensionAsync
+                return ConvertWalletToWalletWithAddressExtension
                 (
                     new WalletDto
                     {
@@ -195,7 +195,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                         $"blockchainType={blockchainType} and address={wallet.Address}");
                 }
 
-                return ConvertWalletToWalletWithAddressExtensionAsync(wallet);
+                return ConvertWalletToWalletWithAddressExtension(wallet);
             }
 
             return null;
@@ -269,19 +269,19 @@ namespace Lykke.Service.BlockchainWallets.Services
                     {
                         wallet.Address = underlyingAddress;
 
-                        finalWallets.Add(ConvertWalletToWalletWithAddressExtensionAsync(wallet));
+                        finalWallets.Add(ConvertWalletToWalletWithAddressExtension(wallet));
                     }
                 }
                 else
                 {
-                    finalWallets.Add(ConvertWalletToWalletWithAddressExtensionAsync(wallet));
+                    finalWallets.Add(ConvertWalletToWalletWithAddressExtension(wallet));
                 }
             }
 
             return (finalWallets, token);
         }
 
-        private WalletWithAddressExtensionDto ConvertWalletToWalletWithAddressExtensionAsync(WalletDto walletDto)
+        private WalletWithAddressExtensionDto ConvertWalletToWalletWithAddressExtension(WalletDto walletDto)
         {
             var parseAddressResult = _addressParser.ExtractAddressParts(walletDto.BlockchainType, walletDto.Address);
 

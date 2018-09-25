@@ -49,7 +49,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                 var capabilityQueryResult = _blockchainExtensionsService.IsPublicAddressExtensionRequired(blockchainType);
                 if (!capabilityQueryResult.HasValue)
                 {
-
+                    throw new InvalidOperationException($"API service for blockchain type [{blockchainType}] is not currently available.");
                 }
                 if (!capabilityQueryResult.Value)
                 {
@@ -75,7 +75,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         public async Task<string> GetUnderlyingAddressAsync(string blockchainType, string address)
         {
             var capabilityQueryResult = _blockchainExtensionsService.IsAddressMappingRequired(blockchainType);
-            if (capabilityQueryResult.HasValue && capabilityQueryResult.Value)
+            if (capabilityQueryResult ?? false)
             {
                 var apiClient = _blockchainIntegrationService.GetApiClient(blockchainType);
 
@@ -87,7 +87,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                         return underlyingAddress;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (!(ex is ArgumentException)) // BlockchainAPiClient thows ArgumentException when input parameter validation's failed.
                 {
                     _log.Warning($"Unable to access API service for blockchain {blockchainType}.", ex);
                 }
@@ -99,7 +99,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         public async Task<string> GetVirtualAddressAsync(string blockchainType, string address)
         {
             var capabilityQueryResult = _blockchainExtensionsService.IsAddressMappingRequired(blockchainType);
-            if (capabilityQueryResult.HasValue && capabilityQueryResult.Value)
+            if (capabilityQueryResult ?? false)
             {
                 var apiClient = _blockchainIntegrationService.GetApiClient(blockchainType);
 
@@ -111,7 +111,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                         return virtualAddress;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (!(ex is ArgumentException)) // BlockchainAPiClient thows ArgumentException when input parameter validation's failed.
                 {
                     _log.Warning($"Unable to access API service for blockchain {blockchainType}.", ex);
                 }
