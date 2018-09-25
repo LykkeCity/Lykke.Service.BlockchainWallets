@@ -15,6 +15,7 @@ using Lykke.Service.BlockchainWallets.Core.Repositories;
 
 namespace Lykke.Service.BlockchainWallets.AzureRepositories
 {
+    [Obsolete]
     public class WalletRepository : IWalletRepository
     {
         private readonly INoSQLTableStorage<AzureIndex> _clientIndexTable;
@@ -238,7 +239,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         }
 
         // NB! This method should be used only by conversion utility or in similar cases.
-        internal async Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(int take, string continuationToken)
+        public async Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(int take, string continuationToken)
         {
             IEnumerable<WalletEntity> entities;
 

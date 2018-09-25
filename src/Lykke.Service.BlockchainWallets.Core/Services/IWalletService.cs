@@ -24,5 +24,15 @@ namespace Lykke.Service.BlockchainWallets.Core.Services
         Task<(IEnumerable<WalletWithAddressExtensionDto>, string continuationToken)> GetClientWalletsAsync(Guid clientId, int take, string continuationToken);
 
         Task<bool> DoesAssetExistAsync(string assetId);
+
+        #region NewMethods
+
+        Task<WalletWithAddressExtensionDto> CreateWalletAsync(string blockchainType, Guid clientId);
+
+        Task<bool> WalletExistsAsync(string blockchainType, Guid clientId, string address);
+
+        Task DeleteWalletsAsync(string blockchainType, Guid clientId, string address);
+
+        #endregion
     }
 }
