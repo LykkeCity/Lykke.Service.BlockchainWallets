@@ -9,6 +9,7 @@ using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.Common.Log;
 using Lykke.Logs;
 using Lykke.Logs.Loggers.LykkeSlack;
+using Lykke.Service.BlockchainWallets.Core.Exceptions;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Settings;
 using Lykke.Service.BlockchainWallets.Modules;
@@ -57,7 +58,7 @@ namespace Lykke.Service.BlockchainWallets
                     app.UseDeveloperExceptionPage();
                 }
 
-                app.UseLykkeMiddleware(ex => new { Message = "Technical problem" });
+                app.UseLykkeMiddleware(ex => Common.Api.Contract.Responses.ErrorResponse.Create(ex.Message));
 
                 app.UseMvc();
                 app.UseSwagger(c =>
