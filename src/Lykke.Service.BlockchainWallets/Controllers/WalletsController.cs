@@ -123,6 +123,15 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             if (!ValidateRequest(blockchainType, ref assetId, clientId, out var badRequest))
                 return badRequest;
 
+            if (!_blockchainIntegrationService.BlockchainIsSupported(blockchainType))
+            {
+                return BadRequest
+                (
+                    BlockchainWalletsErrorResponse.Create($"Blockchain type [{blockchainType}] is not supported.")
+                );
+            }
+                
+
             var address = blockchainType == SpecialBlockchainTypes.FirstGenerationBlockchain
                 ? await _walletService.TryGetFirstGenerationBlockchainAddressAsync(assetId, clientId)
                 : await _walletService.TryGetDefaultAddressAsync(blockchainType, assetId, clientId);
@@ -154,6 +163,14 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 return badRequest;
             }
 
+            if (!_blockchainIntegrationService.BlockchainIsSupported(blockchainType))
+            {
+                return BadRequest
+                (
+                    BlockchainWalletsErrorResponse.Create($"Blockchain type [{blockchainType}] is not supported.")
+                );
+            }
+
             var clientId = await _walletService.TryGetClientIdAsync(blockchainType, address);
 
             if (clientId != null)
@@ -179,6 +196,14 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             if (!ValidateRequest(blockchainType, address, out var badRequest))
             {
                 return badRequest;
+            }
+
+            if (!_blockchainIntegrationService.BlockchainIsSupported(blockchainType))
+            {
+                return BadRequest
+                (
+                    BlockchainWalletsErrorResponse.Create($"Blockchain type [{blockchainType}] is not supported.")
+                );
             }
 
             var clientId = await _walletService.TryGetClientIdAsync(blockchainType, address);
