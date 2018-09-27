@@ -42,7 +42,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             assetId = assetId.TrimAllSpacesAroundNullSafe();
 
             if (!ValidateRequest(out var badRequest,
-                ParamsToValidate.UnsupportedAssetId | ParamsToValidate.EmptyClientId,
+                ParamsToValidate.UnsupportedAssetId | ParamsToValidate.EmptyClientId | ParamsToValidate.EmptyBlockchainType,
                 blockchainType: blockchainType, assetId: assetId, clientId: clientId))
                 return badRequest;
 
@@ -87,7 +87,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             assetId = assetId.TrimAllSpacesAroundNullSafe();
 
             if (!ValidateRequest(out var badRequest,
-                ParamsToValidate.UnsupportedAssetId | ParamsToValidate.EmptyClientId,
+                ParamsToValidate.UnsupportedAssetId | ParamsToValidate.EmptyClientId | ParamsToValidate.EmptyBlockchainType,
                 blockchainType: blockchainType, assetId: assetId, clientId: clientId))
                 return badRequest;
 
@@ -147,9 +147,10 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         {
             blockchainType = blockchainType.TrimAllSpacesAroundNullSafe();
             address = address.TrimAllSpacesAroundNullSafe();
+            assetId = assetId.TrimAllSpacesAroundNullSafe();
 
             if (!ValidateRequest(out var badRequest,
-                ParamsToValidate.UnsupportedBlockchainType | ParamsToValidate.EmptyAddress,
+                ParamsToValidate.EmptyBlockchainType | ParamsToValidate.EmptyAssetId | ParamsToValidate.EmptyAddress,
                 blockchainType: blockchainType,
                 address: address))
                 return badRequest;
@@ -180,7 +181,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             address = address.TrimAllSpacesAroundNullSafe();
 
             if (!ValidateRequest(out var badRequest,
-                ParamsToValidate.UnsupportedBlockchainType | ParamsToValidate.EmptyAddress,
+                ParamsToValidate.EmptyBlockchainType | ParamsToValidate.EmptyAddress,
                 blockchainType: blockchainType,
                 address: address))
                 return badRequest;
@@ -252,9 +253,8 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             EmptyAddress = 2,
             EmptyAssetId = 4,
             EmptyClientId = 8,
-            Unsupported = 16,
-            UnsupportedBlockchainType = Unsupported | EmptyBlockchainType,
-            UnsupportedAssetId = Unsupported | EmptyAssetId | EmptyBlockchainType
+            UnsupportedBlockchainType = 16 | EmptyBlockchainType,
+            UnsupportedAssetId = 32 | EmptyAssetId | EmptyBlockchainType
         }
 
         private bool ValidateRequest(out IActionResult badRequest, ParamsToValidate flags, Guid clientId = default(Guid), string blockchainType = null, string address = null, string assetId = null)
