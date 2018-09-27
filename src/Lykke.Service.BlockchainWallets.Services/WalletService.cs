@@ -95,7 +95,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                         $"Failed to get UnderlyingAddress for blockchainType={blockchainType} and address={address}");
                 }
 
-                await _walletRepository.AddAsync(blockchainType, clientId, address);
+                await _walletRepository.AddAsync(blockchainType, clientId, address, CreatorType.LykkeWallet);
                 var @event = new WalletCreatedEvent
                 {
                     Address = address,
@@ -223,7 +223,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             address = (await _addressService.GetVirtualAddressAsync(blockchainType, address)) ?? address;
 
             return (await _walletRepository.TryGetAsync(blockchainType, address))?.ClientId
-                ?? (await _additionalWalletRepository.TryGetAsync(blockchainType,  address))?.ClientId;
+                ?? (await _additionalWalletRepository.TryGetAsync(blockchainType, address))?.ClientId;
         }
 
         public async Task<bool> WalletExistsAsync(string blockchainType, string assetId, Guid clientId)
@@ -271,11 +271,12 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         #region NewMethods
 
-        public async Task<WalletWithAddressExtensionDto> CreateWalletAsync(string blockchainType, Guid clientId)
+        public async Task<WalletWithAddressExtensionDto> CreateWalletAsync(string blockchainType, Guid clientId,
+            CreatorType createdBy)
         {
             string address;
 
-            if (blockchainType != SpecialBlockchainTypes.FirstGenerationBlockchain)
+            if (blockchainType == SpecialBlockchainTypes.FirstGenerationBlockchain)
             {
                 return null;
             }
@@ -292,12 +293,13 @@ namespace Lykke.Service.BlockchainWallets.Services
                     $"Failed to get UnderlyingAddress for blockchainType={blockchainType} and address={address}");
             }
 
-            await _walletRepository.AddAsync(blockchainType, clientId, address);
+            await _walletRepository.AddAsync(blockchainType, clientId, address, createdBy);
             var @event = new WalletCreatedEvent
             {
                 Address = address,
                 BlockchainType = blockchainType,
-                IntegrationLayerId = blockchainType
+                IntegrationLayerId = blockchainType,
+                CreatedBy = createdBy
             };
 
             _cqrsEngine.PublishEvent
@@ -310,10 +312,11 @@ namespace Lykke.Service.BlockchainWallets.Services
             (
                 new WalletDto
                 {
-                    Address = isAddressMappingRequired.HasValue && 
+                    Address = isAddressMappingRequired.HasValue &&
                               isAddressMappingRequired.Value ? underlyingAddress : address,
                     BlockchainType = blockchainType,
-                    ClientId = clientId
+                    ClientId = clientId,
+                    CreatorType = createdBy
                 }
             );
         }
@@ -321,13 +324,21 @@ namespace Lykke.Service.BlockchainWallets.Services
         public async Task<bool> WalletExistsAsync(string blockchainType, Guid clientId, string address)
         {
             var wallet = await _walletRepository.TryGetAsync(blockchainType, address);
-            
+
             return wallet != null && wallet.ClientId == clientId;
         }
 
-        public Task DeleteWalletsAsync(string blockchainType, Guid clientId, string address)
+        public async Task<WalletWithAddressExtensionDto> TryGetWalletAsync(string blockchainType, string address)
         {
-            throw new NotImplementedException();
+            var vAddress = (await _addressService.GetVirtualAddressAsync(blockchainType, address)) ?? address;
+            var wallet = await _walletRepository.TryGetAsync(blockchainType, vAddress);
+
+            return ConvertWalletToWalletWithAddressExtension(wallet);
+        }
+
+        public async Task DeleteWalletsAsync(string blockchainType, Guid clientId, string address)
+        {
+            await _walletRepository.DeleteIfExistsAsync(blockchainType, clientId, address);
         }
 
         #endregion
@@ -335,6 +346,9 @@ namespace Lykke.Service.BlockchainWallets.Services
         private WalletWithAddressExtensionDto ConvertWalletToWalletWithAddressExtension(
             WalletDto walletDto)
         {
+            if (walletDto == null)
+                return null;
+
             var parseAddressResult = _addressParser.ExtractAddressParts(walletDto.BlockchainType, walletDto.Address);
 
             return new WalletWithAddressExtensionDto
@@ -344,7 +358,8 @@ namespace Lykke.Service.BlockchainWallets.Services
                 AssetId = walletDto.AssetId,
                 BaseAddress = parseAddressResult.BaseAddress,
                 BlockchainType = walletDto.BlockchainType,
-                ClientId = walletDto.ClientId
+                ClientId = walletDto.ClientId,
+                CreatorType = walletDto.CreatorType
             };
         }
 

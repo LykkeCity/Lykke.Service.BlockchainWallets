@@ -9,6 +9,7 @@ using Lykke.SettingsReader;
 using Microsoft.WindowsAzure.Storage.Table;
 using System.Linq;
 using Lykke.Common.Log;
+using Lykke.Service.BlockchainWallets.AzureRepositories.Entities;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
 

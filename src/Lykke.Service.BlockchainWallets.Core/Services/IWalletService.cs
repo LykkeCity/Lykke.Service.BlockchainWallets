@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 
 namespace Lykke.Service.BlockchainWallets.Core.Services
@@ -27,9 +28,11 @@ namespace Lykke.Service.BlockchainWallets.Core.Services
 
         #region NewMethods
 
-        Task<WalletWithAddressExtensionDto> CreateWalletAsync(string blockchainType, Guid clientId);
+        Task<WalletWithAddressExtensionDto> CreateWalletAsync(string blockchainType, Guid clientId, CreatorType createdBy);
 
         Task<bool> WalletExistsAsync(string blockchainType, Guid clientId, string address);
+
+        Task<WalletWithAddressExtensionDto> TryGetWalletAsync(string blockchainType, string address);
 
         Task DeleteWalletsAsync(string blockchainType, Guid clientId, string address);
 

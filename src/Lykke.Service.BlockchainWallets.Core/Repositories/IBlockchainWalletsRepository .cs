@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 
 namespace Lykke.Service.BlockchainWallets.Core.Repositories
 {
     public interface IBlockchainWalletsRepository
     {
-        Task AddAsync(string blockchainType, Guid clientId, string address);
+        Task AddAsync(string blockchainType, Guid clientId, string address, CreatorType createdBy);
 
         Task DeleteIfExistsAsync(string blockchainType, Guid clientId, string address);
 
