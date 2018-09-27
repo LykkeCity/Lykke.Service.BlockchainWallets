@@ -1,6 +1,8 @@
 ﻿using System;
 using Common;
 using Lykke.AzureStorage.Tables;
+using Lykke.Service.BlockchainWallets.AzureRepositories.Utils;
+using Lykke.Service.BlockchainWallets.Contract;
 
 namespace Lykke.Service.BlockchainWallets.AzureRepositories
 {
@@ -13,7 +15,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
         public static string GetRowKey(string address)
         {
-            return $"{address}";
+            return address;
         }
 
         public string Address { get; set; }
@@ -21,5 +23,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         public string IntegrationLayerId { get; set; }
 
         public Guid ClientId { get; set; }
+
+        public CreatorType CreatedBy { get; set; }
     }
 }

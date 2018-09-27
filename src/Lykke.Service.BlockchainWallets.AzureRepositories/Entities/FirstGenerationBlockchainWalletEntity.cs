@@ -33,11 +33,6 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                         PartitionKey = GeneratePartition(record.ClientId),
                         RowKey = GenerateRowKey(record.AssetId)
                     };
-                    //var entity = Mapper.Map<BcnCredentialsRecordEntity>(record);
-                    //entity.PartitionKey = GeneratePartition(record.ClientId);
-                    //entity.RowKey = GenerateRowKey(record.AssetId);
-
-                    //return entity;
                 }
             }
 

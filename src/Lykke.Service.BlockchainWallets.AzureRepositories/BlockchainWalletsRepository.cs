@@ -8,7 +8,10 @@ using Common;
 using Lykke.SettingsReader;
 using Microsoft.WindowsAzure.Storage.Table;
 using System.Linq;
+using Lykke.AzureStorage.Tables.Paging;
 using Lykke.Common.Log;
+using Lykke.Service.BlockchainWallets.AzureRepositories.Utils;
+using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
 
@@ -75,7 +78,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                 archiveWalletsTable);
         }
 
-        public async Task AddAsync(string blockchainType, Guid clientId, string address)
+        public async Task AddAsync(string blockchainType, Guid clientId, string address, CreatorType createdBy)
         {
             var partitionKey = BlockchainWalletEntity.GetPartitionKey(blockchainType, clientId);
             var rowKey = BlockchainWalletEntity.GetRowKey(address);
@@ -83,7 +86,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             // Address index
 
             var (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(blockchainType, address);
-            var (clientIndexPartitionKey, clientIndexRowKey) = GetClientIndexKeys(blockchainType, clientId);
+            var (clientIndexPartitionKey, clientIndexRowKey) = GetClientIndexKeys(clientId);
 
             await _addressIndexTable.InsertOrReplaceAsync(new AzureIndex(
                 indexPartitionKey,
@@ -108,26 +111,25 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
                 Address = address,
                 ClientId = clientId,
-                IntegrationLayerId = blockchainType
+                IntegrationLayerId = blockchainType,
+                CreatedBy = createdBy
             });
         }
 
         public async Task DeleteIfExistsAsync(string blockchainType, Guid clientId, string address)
         {
-            var partitionKey = BlockchainWalletEntity.GetPartitionKey(blockchainType, clientId);
-            var rowKey = BlockchainWalletEntity.GetRowKey(address);
+            var (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(blockchainType, address);
+            var addressIndex = await _addressIndexTable.GetDataAsync(indexPartitionKey, indexRowKey);
 
-            var wallet = await _walletsTable.GetDataAsync(partitionKey, rowKey);
-
-            if (wallet != null)
+            if (addressIndex != null)
             {
-                var (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(wallet);
+                var wallet = await _walletsTable.GetDataAsync(addressIndex);
                 var (clientIndexPartitionKey, clientIndexRowKey) = GetClientIndexKeys(wallet);
 
                 await _archiveTable.InsertOrReplaceAsync(wallet);
-                await _walletsTable.DeleteIfExistAsync(wallet.PartitionKey, wallet.RowKey);
-                await _addressIndexTable.DeleteIfExistAsync(indexPartitionKey, indexRowKey);
                 await _clientIndexTable.DeleteIfExistAsync(clientIndexPartitionKey, clientIndexRowKey);
+                await _addressIndexTable.DeleteIfExistAsync(indexPartitionKey, indexRowKey);
+                await _walletsTable.DeleteIfExistAsync(wallet.PartitionKey, wallet.RowKey);
             }
         }
 
@@ -163,10 +165,21 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                 : null;
         }
 
-        public Task<WalletDto> TryGetAsync(string blockchainType, Guid clientId)
+        public async Task<WalletDto> TryGetAsync(string blockchainType, Guid clientId)
         {
-            //Should it be the first deposit address or what?
-            throw new NotImplementedException();
+            var (partitionKey, rowKey) = GetClientIndexKeys(clientId);
+            var indexes = await _clientIndexTable.GetDataWithContinuationTokenAsync(partitionKey, 10, null);
+            var index = await _clientIndexTable.ExecuteQueryWithPaginationAsync(new TableQuery<AzureIndex>()
+            {
+                FilterString = TableQuery.GenerateFilterCondition("PartitionKey", "eq", clientId.ToString()),
+                TakeCount = 1
+            }, null);
+            var latestIndex = index.FirstOrDefault();
+            var entity = await _walletsTable.GetDataAsync(latestIndex);
+
+            return entity != null
+                ? ConvertEntityToDto(entity)
+                : null;
         }
 
         #region Keys
@@ -186,13 +199,13 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
         private static (string PartitionKey, string RowKey) GetClientIndexKeys(BlockchainWalletEntity wallet)
         {
-            return GetClientIndexKeys(wallet.IntegrationLayerId, wallet.ClientId);
+            return GetClientIndexKeys(wallet.ClientId);
         }
 
-        private static (string PartitionKey, string RowKey) GetClientIndexKeys(string blockchainType, Guid clientId)
+        private static (string PartitionKey, string RowKey) GetClientIndexKeys(Guid clientId)
         {
             var partitionKey = GetClientPartitionKey(clientId);
-            var rowKey = $"{blockchainType}";
+            var rowKey = LogTailRowKeyGenerator.GenerateRowKey();
 
             return (partitionKey, rowKey);
         }
@@ -212,7 +225,8 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             {
                 Address = entity.Address,
                 BlockchainType = entity.IntegrationLayerId,
-                ClientId = entity.ClientId
+                ClientId = entity.ClientId,
+                CreatorType = entity.CreatedBy
             };
         }
 
