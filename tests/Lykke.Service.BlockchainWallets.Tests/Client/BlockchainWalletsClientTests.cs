@@ -431,7 +431,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
                 BaseAddress = new Uri("http://localhost")
             };
 
-            return null; // new BlockchainWalletsClient(httpClient);
+            return new BlockchainWalletsClient(httpClient);
         }
     }
 }

@@ -16,6 +16,9 @@ namespace Lykke.Service.BlockchainWallets.Core.Repositories
 
         Task<bool> ExistsAsync(string blockchainType, Guid clientId);
 
+        Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(string blockchainType, 
+            Guid clientId, int take, string continuationToken = null);
+
         Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(Guid clientId, 
             int take, string continuationToken = null);
 

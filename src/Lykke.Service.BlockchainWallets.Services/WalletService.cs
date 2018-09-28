@@ -128,7 +128,8 @@ namespace Lykke.Service.BlockchainWallets.Services
                         Address = isAddressMappingRequired.HasValue && isAddressMappingRequired.Value ? underlyingAddress : address,
                         AssetId = assetId,
                         BlockchainType = blockchainType,
-                        ClientId = clientId
+                        ClientId = clientId,
+                        CreatorType = CreatorType.LykkeWallet
                     }
                 );
             }
@@ -271,6 +272,44 @@ namespace Lykke.Service.BlockchainWallets.Services
         }
 
         #region NewMethods
+
+        public async Task<(IEnumerable<WalletWithAddressExtensionDto>, string continuationToken)> GetClientWalletsAsync(
+            string blockchainType, Guid clientId, int take, string continuationToken)
+        {
+            var finalWallets = new List<WalletWithAddressExtensionDto>();
+            var (wallets, token) = await _walletRepository.GetAllAsync(blockchainType, clientId, take, continuationToken);
+
+            foreach (var wallet in wallets)
+            {
+                var queryResult = _blockchainExtensionsService.IsAddressMappingRequired(wallet.BlockchainType);
+                if (queryResult.HasValue && queryResult.Value)
+                {
+                    var underlyingAddress =
+                        await _addressService.GetUnderlyingAddressAsync(wallet.BlockchainType, wallet.Address);
+                    if (underlyingAddress == null)
+                    {
+                        _log.Error(message: "Failed to get underlyingAddress address", context: new
+                        {
+                            wallet.BlockchainType,
+                            wallet.Address
+                        });
+                    }
+                    else
+                    {
+                        wallet.Address = underlyingAddress;
+
+                        finalWallets.Add(ConvertWalletToWalletWithAddressExtension(wallet));
+                    }
+                }
+                else
+                {
+                    finalWallets.Add(ConvertWalletToWalletWithAddressExtension(wallet));
+                }
+            }
+
+            return (finalWallets, token);
+        }
+
 
         public async Task<WalletWithAddressExtensionDto> CreateWalletAsync(string blockchainType, Guid clientId,
             CreatorType createdBy)
