@@ -28,6 +28,8 @@ namespace Lykke.Service.BlockchainWallets.Core.Services
 
         #region NewMethods
 
+        Task<(IEnumerable<WalletWithAddressExtensionDto>, string continuationToken)> GetClientWalletsAsync(string blockchainType, Guid clientId, int take, string continuationToken);
+
         Task<WalletWithAddressExtensionDto> CreateWalletAsync(string blockchainType, Guid clientId, CreatorType createdBy);
 
         Task<bool> WalletExistsAsync(string blockchainType, Guid clientId, string address);

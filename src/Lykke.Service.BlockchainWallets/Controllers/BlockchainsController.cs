@@ -47,15 +47,13 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
             var wallet = await _walletService.CreateWalletAsync(blockchainType, clientId, createdBy);
 
-            return Ok(new WalletResponse
+            return Ok(new BlockchainWalletResponse
             {
                 Address = wallet.Address,
                 AddressExtension = wallet.AddressExtension,
                 BaseAddress = wallet.BaseAddress,
                 BlockchainType = wallet.BlockchainType,
                 ClientId = wallet.ClientId,
-                IntegrationLayerId = wallet.BlockchainType,
-                IntegrationLayerAssetId = wallet.AssetId,
                 CreatedBy = wallet.CreatorType
             });
         }
@@ -73,19 +71,17 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 return badRequest;
             }
 
-            var (wallets, token) = await _walletService.GetClientWalletsAsync(clientId, take, continuationToken);
+            var (wallets, token) = await _walletService.GetClientWalletsAsync(blockchainType, clientId, take, continuationToken);
 
-            var response = new WalletsResponse
+            var response = new BlockchainWalletsResponse
             {
-                Wallets = wallets.Select(x => new WalletResponse
+                Wallets = wallets.Select(x => new BlockchainWalletResponse
                 {
                     Address = x.Address,
                     AddressExtension = x.AddressExtension,
                     BaseAddress = x.BaseAddress,
                     BlockchainType = x.BlockchainType,
                     ClientId = x.ClientId,
-                    IntegrationLayerId = x.BlockchainType,
-                    IntegrationLayerAssetId = x.AssetId,
                     CreatedBy = x.CreatorType
                 }),
                 ContinuationToken = token
@@ -136,15 +132,14 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             if (wallet == null)
                 return NoContent();
 
-            var response = new WalletResponse
+            var response = new BlockchainWalletResponse
             {
                 Address = wallet.Address,
                 AddressExtension = wallet.AddressExtension,
                 BaseAddress = wallet.BaseAddress,
                 BlockchainType = wallet.BlockchainType,
                 ClientId = wallet.ClientId,
-                IntegrationLayerId = wallet.BlockchainType,
-                IntegrationLayerAssetId = wallet.AssetId
+                CreatedBy = wallet.CreatorType
             };
 
             return Ok(response);

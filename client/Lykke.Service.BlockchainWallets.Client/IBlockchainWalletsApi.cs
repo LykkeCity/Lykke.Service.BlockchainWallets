@@ -22,6 +22,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         [Get("/api/constants/{blockchainType}/address-extension")]
         Task<AddressExtensionConstantsResponse> GetAddressExtensionConstantsAsync(string blockchainType);
 
+        [Obsolete]
         [Get("/api/wallets/{blockchainType}/{assetId}/by-client-ids/{clientId}/address")]
         Task<AddressResponse> GetAddressAsync(string blockchainType, string assetId, Guid clientId);
 
@@ -51,17 +52,17 @@ namespace Lykke.Service.BlockchainWallets.Client
         #region Multiple Deposits for Client
 
         [Post("/api/blockchains/{blockchainType}/clients/{clientId}/wallets")]
-        Task<WalletResponse> CreateWalletAsync(string blockchainType, Guid clientId, [FromQuery] CreatorType createdBy);
+        Task<BlockchainWalletResponse> CreateWalletAsync(string blockchainType, Guid clientId, [FromQuery] CreatorType createdBy);
 
         [Get("/api/blockchains/{blockchainType}/clients/{clientId}/wallets")]
-        Task<WalletsResponse> GetWalletsAsync(string blockchainType, Guid clientId, [FromQuery] int take, 
+        Task<BlockchainWalletsResponse> GetWalletsAsync(string blockchainType, Guid clientId, [FromQuery] int take, 
             [FromQuery] string continuationToken);
 
         [Delete("/api/blockchains/{blockchainType}clients/{clientId}/wallets/{address}")]
         Task DeleteWalletAsync(string blockchainType, Guid clientId, string address);
 
         [Get("/api/blockchains/{blockchainType}/wallets/{address}")]
-        Task<WalletResponse> GetWalletAsync(string blockchainType, string address);
+        Task<BlockchainWalletResponse> GetWalletAsync(string blockchainType, string address);
 
         [Get("/api/blockchains/{blockchainType}/wallets/{address}/created-by")]
         Task<CreatedByResponse> GetCreatedByAsync(string blockchainType, string address);

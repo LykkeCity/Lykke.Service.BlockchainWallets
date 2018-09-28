@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Lykke.Service.BlockchainWallets.CTests.DelegatingHandlers
+namespace Lykke.Service.BlockchainWallets.Client.DelegatingMessageHandlers
 {
     //Used in tests only to redirect http requests to the test fixture server
-    internal class RequestInterceptorHandler : DelegatingHandler
+    public class RequestInterceptorHandler : DelegatingHandler
     {
         private readonly HttpClient _httpClient;
 

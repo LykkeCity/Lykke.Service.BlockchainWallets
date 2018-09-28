@@ -236,7 +236,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <returns>
         ///     Created wallet, or null if operation failed.
         /// </returns>
-        Task<WalletResponse> CreateWalletAsync(string blockchainType, Guid clientId, CreatorType createdBy);
+        Task<BlockchainWalletResponse> CreateWalletAsync(string blockchainType, Guid clientId, CreatorType createdBy);
 
         /// <summary>
         ///     Deletes information about wallet from DB and stops its balance observation.
@@ -270,7 +270,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <returns>
         ///     Lykke client's wallets.
         /// </returns>
-        Task<WalletsResponse> GetWalletsAsync(string blockchainType, Guid clientId, int take, string continuationToken);
+        Task<BlockchainWalletsResponse> GetWalletsAsync(string blockchainType, Guid clientId, int take, string continuationToken);
 
         /// <summary>
         ///     Returns Lykke client wallet.
@@ -284,7 +284,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <returns>
         ///     Lykke client's wallets.
         /// </returns>
-        Task<WalletResponse> GetWalletAsync(string blockchainType, string address);
+        Task<BlockchainWalletResponse> GetWalletAsync(string blockchainType, string address);
 
         /// <summary>
         ///     Returns Lykke client wallet.

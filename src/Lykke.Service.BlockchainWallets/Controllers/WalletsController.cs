@@ -74,7 +74,8 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 BlockchainType = wallet.BlockchainType,
                 ClientId = wallet.ClientId,
                 IntegrationLayerId = wallet.BlockchainType,
-                IntegrationLayerAssetId = wallet.AssetId
+                IntegrationLayerAssetId = wallet.AssetId,
+                CreatedBy = wallet.CreatorType
             });
         }
 
@@ -233,7 +234,8 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                     BlockchainType = x.BlockchainType,
                     ClientId = x.ClientId,
                     IntegrationLayerId = x.BlockchainType,
-                    IntegrationLayerAssetId = x.AssetId
+                    IntegrationLayerAssetId = x.AssetId,
+                    CreatedBy = x.CreatorType
                 }),
                 ContinuationToken = token
             };
