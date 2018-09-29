@@ -98,6 +98,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                     Address = address,
                     AssetId = assetId,
                     BlockchainType = blockchainType,
+                    ClientId = clientId,
                     IntegrationLayerId = blockchainType
                 };
 
@@ -170,6 +171,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                 Address = address,
                 AssetId = assetId,
                 BlockchainType = integrationLayerId,
+                ClientId = clientId,
                 IntegrationLayerId = integrationLayerId
             };
 
