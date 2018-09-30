@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Common.Log;
+﻿using Common.Log;
 using Lykke.Common.Log;
-using Lykke.Service.BlockchainApi.Contract.Wallets;
 using Lykke.Service.BlockchainWallets.Client;
 using Lykke.Service.BlockchainWallets.Client.ClientGenerator;
 using Lykke.Service.BlockchainWallets.Client.DelegatingMessageHandlers;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.CTests.Common;
-using Lykke.Service.BlockchainWallets.CTests.Utils;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Moq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Lykke.Service.BlockchainWallets.CTests.IntegrationTests
