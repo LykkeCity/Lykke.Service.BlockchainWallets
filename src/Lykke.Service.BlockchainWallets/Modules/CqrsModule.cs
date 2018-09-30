@@ -126,6 +126,7 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .With(defaultRoute)
 
                 .PublishingEvents(
+                    typeof(WalletArchivedEvent),
                     typeof(WalletCreatedEvent),
                     typeof(WalletDeletedEvent))
                 .With(BlockchainWalletsBoundedContext.EventsRoute)
@@ -147,6 +148,7 @@ namespace Lykke.Service.BlockchainWallets.Modules
 
             Register.Saga<WalletUnsubscriptionSaga>($"{BlockchainWalletsBoundedContext.Name}.wallet-deletion-saga")
                 .ListeningEvents(
+                    typeof(WalletArchivedEvent),
                     typeof(WalletDeletedEvent))
                 .From(BlockchainWalletsBoundedContext.Name)
                 .On(defaultRoute)

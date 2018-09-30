@@ -6,10 +6,10 @@ namespace Lykke.Service.BlockchainWallets.Core.Repositories
     {
         Task<int> WalletSubscriptionsCount(string blockchainType, string address, MonitoringSubscriptionType subscriptionType);
         
-        Task RegisterWalletSubscriptionAsync(string blockchainType, string address, string assetId, MonitoringSubscriptionType subscriptionType);
+        Task RegisterWalletSubscriptionAsync(string blockchainType, string address, MonitoringSubscriptionType subscriptionType);
 
-        Task UnregisterWalletSubscriptionAsync(string blockchainType, string address, string assetId, MonitoringSubscriptionType subscriptionType);
+        Task UnregisterWalletSubscriptionAsync(string blockchainType, string address, MonitoringSubscriptionType subscriptionType);
 
-        Task<bool> WalletIsSubscribedAsync(string blockchainType, string address, string assetId, MonitoringSubscriptionType subscriptionType);
+        Task<bool> WalletIsSubscribedAsync(string blockchainType, string address, MonitoringSubscriptionType subscriptionType);
     }
 }

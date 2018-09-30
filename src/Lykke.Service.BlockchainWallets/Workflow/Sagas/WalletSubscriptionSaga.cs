@@ -38,7 +38,6 @@ namespace Lykke.Service.BlockchainWallets.Workflow.Sagas
                 (
                     blockchainType: blockchainType,
                     address: address,
-                    assetId: assetId,
                     subscriptionType: subscriptionType
                 );
             }
