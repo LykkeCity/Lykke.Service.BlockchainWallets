@@ -10,9 +10,6 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         public string Address { get; set; }
 
         [UsedImplicitly(ImplicitUseKindFlags.Access)]
-        public string AssetId { get; set; }
-
-        [UsedImplicitly(ImplicitUseKindFlags.Access)]
         public string BlockchainType { get; set; }
 
         [UsedImplicitly(ImplicitUseKindFlags.Access)]

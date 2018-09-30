@@ -6,7 +6,7 @@ namespace Lykke.Service.BlockchainWallets.Contract.Models
     /// <summary>
     ///     Wallet
     /// </summary>
-    public class WalletResponse
+    public class BlockchainWalletResponse
     {
         /// <summary>
         ///     Blockchain address.
@@ -37,18 +37,6 @@ namespace Lykke.Service.BlockchainWallets.Contract.Models
         /// </summary>
         [UsedImplicitly(ImplicitUseKindFlags.Access)]
         public Guid ClientId { get; set; }
-
-        /// <summary>
-        ///     Blockchain Integration Layer Id.
-        /// </summary>
-        [UsedImplicitly(ImplicitUseKindFlags.Access), Obsolete("Use BlockchainType instead")]
-        public string IntegrationLayerId { get; set; }
-
-        /// <summary>
-        ///     Blockchain Integration Layer Asset Id.
-        /// </summary>
-        [UsedImplicitly(ImplicitUseKindFlags.Access)]
-        public string IntegrationLayerAssetId { get; set; }
 
         /// <summary>
         ///     Blockchain Integration Layer Asset Id.

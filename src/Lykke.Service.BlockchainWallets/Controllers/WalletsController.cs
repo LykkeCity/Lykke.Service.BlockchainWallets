@@ -35,6 +35,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         /// <remarks>
         ///    walletType reserved for future use.
         /// </remarks>
+        [Obsolete]
         [HttpPost(RouteSuffix + "/by-client-ids/{clientId}")]
         public async Task<IActionResult> CreateWallet([FromRoute] string blockchainType, [FromRoute] string assetId, [FromRoute] Guid clientId, [FromQuery] WalletType? walletType)
         {
@@ -73,13 +74,15 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 BlockchainType = wallet.BlockchainType,
                 ClientId = wallet.ClientId,
                 IntegrationLayerId = wallet.BlockchainType,
-                IntegrationLayerAssetId = wallet.AssetId
+                IntegrationLayerAssetId = wallet.AssetId,
+                CreatedBy = wallet.CreatorType
             });
         }
 
         /// <summary>
         ///    Removes wallet for the specified client in the specified blockchain type/asset pair
         /// </summary>
+        [Obsolete]
         [HttpDelete(RouteSuffix + "/by-client-ids/{clientId}")]
         public async Task<IActionResult> DeleteWallet([FromRoute] string blockchainType, [FromRoute] string assetId, [FromRoute] Guid clientId)
         {
@@ -107,6 +110,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         /// <summary>
         ///    Returns wallet address for the specified client in the specified blockchain type/asset pair.
         /// </summary>
+        [Obsolete]
         [HttpGet(RouteSuffix + "/by-client-ids/{clientId}/address")]
         public async Task<IActionResult> GetAddress([FromRoute] string blockchainType, [FromRoute] string assetId, [FromRoute] Guid clientId)
         {
@@ -230,7 +234,8 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                     BlockchainType = x.BlockchainType,
                     ClientId = x.ClientId,
                     IntegrationLayerId = x.BlockchainType,
-                    IntegrationLayerAssetId = x.AssetId
+                    IntegrationLayerAssetId = x.AssetId,
+                    CreatedBy = x.CreatorType
                 }),
                 ContinuationToken = token
             };
@@ -244,7 +249,6 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 return NoContent();
             }
         }
-
 
         [Flags]
         private enum ParamsToValidate
