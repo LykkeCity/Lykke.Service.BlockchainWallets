@@ -92,7 +92,6 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
             (
                 blockchainType,
                 address,
-                assetId,
                 subscriptionType
             );
 

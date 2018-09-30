@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Lykke.Service.BlockchainWallets.AzureRepositories;
+using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 
 namespace Lykke.Service.BlockchainWallets.MigrateWalletsMultiplePerClient
@@ -75,7 +76,7 @@ namespace Lykke.Service.BlockchainWallets.MigrateWalletsMultiplePerClient
             var settings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl).Nested(x => x.BlockchainWalletsService.Db.DataConnString);
 
             var defaultWalletsRepository = (WalletRepository)WalletRepository.Create(settings, logFactory);
-            var additionalWalletsRepository = BlockchainWalletsRepository.Create(settings, logFactory);
+            var blockchainWalletsRepository = AzureRepositories.BlockchainWalletsRepository.Create(settings, logFactory);
 
             string continuationToken = null;
 
@@ -93,7 +94,7 @@ namespace Lykke.Service.BlockchainWallets.MigrateWalletsMultiplePerClient
                     foreach (var batch in wallets.Batch(batchSize))
                     {
                         await Task.WhenAll(batch.Select(o =>
-                            defaultWalletsRepository.AddAsync(o.BlockchainType, o.AssetId,o.ClientId, o.Address)));
+                            blockchainWalletsRepository.AddAsync(o.BlockchainType, o.ClientId, o.Address, CreatorType.LykkeWallet)));
                         progressCounter += batchSize;
                         Console.SetCursorPosition(0, Console.CursorTop);
                         Console.Write($"{progressCounter} indexes created");

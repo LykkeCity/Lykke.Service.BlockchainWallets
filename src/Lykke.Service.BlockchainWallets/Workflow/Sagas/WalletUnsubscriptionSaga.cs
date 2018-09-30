@@ -41,7 +41,6 @@ namespace Lykke.Service.BlockchainWallets.Workflow.Sagas
                 (
                     blockchainType: blockchainType,
                     address: address,
-                    assetId: assetId,
                     subscriptionType: subscriptionType
                 );
             }
@@ -53,7 +52,6 @@ namespace Lykke.Service.BlockchainWallets.Workflow.Sagas
                     new EndBalanceMonitoringCommand
                     {
                         Address = address,
-                        AssetId = assetId,
                         BlockchainType = blockchainType
                     },
                     BlockchainWalletsBoundedContext.Name
@@ -67,7 +65,49 @@ namespace Lykke.Service.BlockchainWallets.Workflow.Sagas
                     new EndTransactionHistoryMonitoringCommand
                     {
                         Address = address,
-                        AssetId = assetId,
+                        BlockchainType = blockchainType
+                    },
+                    BlockchainWalletsBoundedContext.Name
+                );
+            }
+        }
+
+        [UsedImplicitly]
+        private async Task Handle(WalletArchivedEvent evt, ICommandSender sender)
+        {
+            var address = evt.Address;
+            var blockchainType = evt.BlockchainType;
+
+            Task<bool> WalletIsSubscribedAsync(MonitoringSubscriptionType subscriptionType)
+            {
+                return _monitoringSubscriptionRepository.WalletIsSubscribedAsync
+                (
+                    blockchainType: blockchainType,
+                    address: address,
+                    subscriptionType: subscriptionType
+                );
+            }
+
+            if (await WalletIsSubscribedAsync(MonitoringSubscriptionType.Balance))
+            {
+                sender.SendCommand
+                (
+                    new EndBalanceMonitoringCommand
+                    {
+                        Address = address,
+                        BlockchainType = blockchainType
+                    },
+                    BlockchainWalletsBoundedContext.Name
+                );
+            }
+
+            if (await WalletIsSubscribedAsync(MonitoringSubscriptionType.TransactionHistory))
+            {
+                sender.SendCommand
+                (
+                    new EndTransactionHistoryMonitoringCommand
+                    {
+                        Address = address,
                         BlockchainType = blockchainType
                     },
                     BlockchainWalletsBoundedContext.Name

@@ -379,6 +379,18 @@ namespace Lykke.Service.BlockchainWallets.Services
         public async Task DeleteWalletsAsync(string blockchainType, Guid clientId, string address)
         {
             await _walletRepository.DeleteIfExistsAsync(blockchainType, clientId, address);
+
+            var @event = new WalletArchivedEvent()
+            {
+                Address = address,
+                BlockchainType = blockchainType,
+            };
+
+            _cqrsEngine.PublishEvent
+            (
+                @event,
+                BlockchainWalletsBoundedContext.Name
+            );
         }
 
         #endregion

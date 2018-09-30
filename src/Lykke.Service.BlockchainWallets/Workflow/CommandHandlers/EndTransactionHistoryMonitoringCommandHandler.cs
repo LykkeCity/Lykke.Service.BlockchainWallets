@@ -40,7 +40,6 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
             const MonitoringSubscriptionType subscriptionType = MonitoringSubscriptionType.TransactionHistory;
 
             var address = command.Address;
-            var assetId = command.AssetId;
             var blockchainType = command.BlockchainType;
 
             
@@ -48,7 +47,6 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
             (
                 blockchainType: blockchainType,
                 address: address,
-                assetId: assetId,
                 subscriptionType: subscriptionType
             );
             
