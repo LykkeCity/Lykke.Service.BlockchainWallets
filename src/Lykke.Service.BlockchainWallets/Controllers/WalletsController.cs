@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Common;
+using Lykke.Service.BlockchainWallets.Enums;
 
 
 namespace Lykke.Service.BlockchainWallets.Controllers
@@ -174,38 +175,6 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             }
         }
 
-
-        /// <summary>
-        ///    Return client id for the specified wallet.
-        /// </summary>
-        [HttpGet("/api/blockchains/{blockchainType}/wallets/{address}/client-id")]
-        public async Task<IActionResult> GetClientId([FromRoute] string blockchainType, [FromRoute] string address)
-        {
-            blockchainType = blockchainType.TrimAllSpacesAroundNullSafe();
-            address = address.TrimAllSpacesAroundNullSafe();
-
-            if (!ValidateRequest(out var badRequest,
-                ParamsToValidate.EmptyBlockchainType | ParamsToValidate.EmptyAddress,
-                blockchainType: blockchainType,
-                address: address))
-                return badRequest;
-
-            var clientId = await _walletService.TryGetClientIdAsync(blockchainType, address);
-
-            if (clientId != null)
-            {
-                return Ok(new ClientIdResponse
-                {
-                    ClientId = clientId.Value
-                });
-            }
-            else
-            {
-                return NoContent();
-            }
-        }
-
-
         /// <summary>
         ///    Returns all wallets for the specified client.
         /// </summary>
@@ -248,17 +217,6 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             {
                 return NoContent();
             }
-        }
-
-        [Flags]
-        private enum ParamsToValidate
-        {
-            EmptyBlockchainType = 1,
-            EmptyAddress = 2,
-            EmptyAssetId = 4,
-            EmptyClientId = 8,
-            UnsupportedBlockchainType = 16 | EmptyBlockchainType,
-            UnsupportedAssetId = 32 | EmptyAssetId | EmptyBlockchainType
         }
 
         private bool ValidateRequest(out IActionResult badRequest, ParamsToValidate flags, Guid clientId = default(Guid), string blockchainType = null, string address = null, string assetId = null)
