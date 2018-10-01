@@ -273,6 +273,23 @@ namespace Lykke.Service.BlockchainWallets.Client
         Task<BlockchainWalletsResponse> GetWalletsAsync(string blockchainType, Guid clientId, int take, string continuationToken);
 
         /// <summary>
+        ///     Returns Lykke clients wallets.
+        /// </summary>
+        /// <param name="clientId">
+        ///     Client Id.
+        /// </param>
+        /// <param name="take">
+        ///     Amount of wallets to retrieve.
+        /// </param>
+        /// <param name="continuationToken">
+        ///     Continuation token for azure storage.
+        /// </param>
+        /// <returns>
+        ///     Lykke client's wallets.
+        /// </returns>
+        Task<BlockchainWalletsResponse> GetClientWalletsAsync(Guid clientId, int take, string continuationToken);
+
+        /// <summary>
         ///     Returns Lykke client wallet.
         /// </summary>
         /// <param name="blockchainType">

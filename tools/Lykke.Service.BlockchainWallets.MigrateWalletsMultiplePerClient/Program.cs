@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AzureStorage;
+using AzureStorage.Tables;
 using Lykke.Service.BlockchainWallets.AzureRepositories;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
@@ -75,8 +77,15 @@ namespace Lykke.Service.BlockchainWallets.MigrateWalletsMultiplePerClient
 
             var settings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl).Nested(x => x.BlockchainWalletsService.Db.DataConnString);
 
+            var archiveWalletsTable = AzureTableStorage<BlockchainWalletEntity>.Create
+            (
+                settings,
+                "BlockchainWalletsArchive",
+                logFactory
+            );
+
             var defaultWalletsRepository = (WalletRepository)WalletRepository.Create(settings, logFactory);
-            var blockchainWalletsRepository = AzureRepositories.BlockchainWalletsRepository.Create(settings, logFactory);
+            var blockchainWalletsRepository = (BlockchainWalletsRepository)AzureRepositories.BlockchainWalletsRepository.Create(settings, logFactory);
 
             string continuationToken = null;
 
@@ -84,6 +93,53 @@ namespace Lykke.Service.BlockchainWallets.MigrateWalletsMultiplePerClient
 
             var progressCounter = 0;
             const int batchSize = 10;
+
+            do
+            {
+                try
+                {
+                    IEnumerable<WalletDto> wallets;
+                    (wallets, continuationToken) = await blockchainWalletsRepository.GetAllAsync(100, continuationToken);
+
+                    foreach (var batch in wallets.Batch(batchSize))
+                    {
+                        await Task.WhenAll(batch.Select(o =>
+                            blockchainWalletsRepository.DeleteIfExistsAsync(o.BlockchainType, o.ClientId, o.Address)));
+                        progressCounter += batchSize;
+                        Console.SetCursorPosition(0, Console.CursorTop);
+                        Console.Write($"{progressCounter} indexes created");
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.StackTrace + " " + e.Message);
+                }
+
+            } while (continuationToken != null);
+
+            do
+            {
+                try
+                {
+                    IEnumerable<BlockchainWalletEntity> wallets;
+                    (wallets, continuationToken) = await archiveWalletsTable.GetDataWithContinuationTokenAsync(100, continuationToken);
+
+                    foreach (var batch in wallets.Batch(batchSize))
+                    {
+                        await Task.WhenAll(batch.Select(o =>
+                            blockchainWalletsRepository.AddAsync(o.IntegrationLayerId, o.ClientId, o.Address, o.CreatedBy)));
+                        progressCounter += batchSize;
+                        Console.SetCursorPosition(0, Console.CursorTop);
+                        Console.Write($"{progressCounter} indexes created");
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.StackTrace + " " + e.Message);
+                }
+
+            } while (continuationToken != null);
+
             do
             {
                 try
