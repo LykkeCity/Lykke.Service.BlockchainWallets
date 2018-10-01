@@ -111,6 +111,7 @@ namespace Lykke.Service.BlockchainWallets.CTests.IntegrationTests
             var blockchainWalletClient = GenerateBlockchainWalletsClient();
             var assetId = "ETC";
             var clientId = Guid.Parse("5b39a8a8-af3f-451d-8284-3c06980e2435");
+            var createdWallet2 = await blockchainWalletClient.TryGetAddressAsync(_blockchainType, assetId, clientId);
             var etcWallet = await blockchainWalletClient.CreateWalletAsync(_blockchainType, assetId, clientId);
             var createdWallet = await blockchainWalletClient.GetAddressAsync(_blockchainType, assetId, clientId);
             var allWallets = await blockchainWalletClient.GetAllWalletsAsync(clientId);

@@ -101,7 +101,8 @@ namespace Lykke.Service.BlockchainWallets.Services
                     Address = address,
                     AssetId = assetId,
                     BlockchainType = blockchainType,
-                    IntegrationLayerId = blockchainType
+                    IntegrationLayerId = blockchainType,
+                    ClientId = clientId
                 };
 
                 await _firstGenerationBlockchainWalletRepository.InsertOrReplaceAsync(new BcnCredentialsRecord
@@ -338,7 +339,8 @@ namespace Lykke.Service.BlockchainWallets.Services
                 Address = address,
                 BlockchainType = blockchainType,
                 IntegrationLayerId = blockchainType,
-                CreatedBy = createdBy
+                CreatedBy = createdBy,
+                ClientId = clientId
             };
 
             _cqrsEngine.PublishEvent
@@ -383,6 +385,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             {
                 Address = address,
                 BlockchainType = blockchainType,
+                ClientId = clientId
             };
 
             _cqrsEngine.PublishEvent
