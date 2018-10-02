@@ -94,51 +94,52 @@ namespace Lykke.Service.BlockchainWallets.MigrateWalletsMultiplePerClient
             var progressCounter = 0;
             const int batchSize = 10;
 
-            do
-            {
-                try
-                {
-                    IEnumerable<WalletDto> wallets;
-                    (wallets, continuationToken) = await blockchainWalletsRepository.GetAllAsync(100, continuationToken);
+            //Commented code recreates all wallets with indicies
+            //do
+            //{
+            //    try
+            //    {
+            //        IEnumerable<WalletDto> wallets;
+            //        (wallets, continuationToken) = await blockchainWalletsRepository.GetAllAsync(100, continuationToken);
 
-                    foreach (var batch in wallets.Batch(batchSize))
-                    {
-                        await Task.WhenAll(batch.Select(o =>
-                            blockchainWalletsRepository.DeleteIfExistsAsync(o.BlockchainType, o.ClientId, o.Address)));
-                        progressCounter += batchSize;
-                        Console.SetCursorPosition(0, Console.CursorTop);
-                        Console.Write($"{progressCounter} indexes created");
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.StackTrace + " " + e.Message);
-                }
+            //        foreach (var batch in wallets.Batch(batchSize))
+            //        {
+            //            await Task.WhenAll(batch.Select(o =>
+            //                blockchainWalletsRepository.DeleteIfExistsAsync(o.BlockchainType, o.ClientId, o.Address)));
+            //            progressCounter += batchSize;
+            //            Console.SetCursorPosition(0, Console.CursorTop);
+            //            Console.Write($"{progressCounter} indexes created");
+            //        }
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        Console.WriteLine(e.StackTrace + " " + e.Message);
+            //    }
 
-            } while (continuationToken != null);
+            //} while (continuationToken != null);
 
-            do
-            {
-                try
-                {
-                    IEnumerable<BlockchainWalletEntity> wallets;
-                    (wallets, continuationToken) = await archiveWalletsTable.GetDataWithContinuationTokenAsync(100, continuationToken);
+            //do
+            //{
+            //    try
+            //    {
+            //        IEnumerable<BlockchainWalletEntity> wallets;
+            //        (wallets, continuationToken) = await archiveWalletsTable.GetDataWithContinuationTokenAsync(100, continuationToken);
 
-                    foreach (var batch in wallets.Batch(batchSize))
-                    {
-                        await Task.WhenAll(batch.Select(o =>
-                            blockchainWalletsRepository.AddAsync(o.IntegrationLayerId, o.ClientId, o.Address, o.CreatedBy)));
-                        progressCounter += batchSize;
-                        Console.SetCursorPosition(0, Console.CursorTop);
-                        Console.Write($"{progressCounter} indexes created");
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.StackTrace + " " + e.Message);
-                }
+            //        foreach (var batch in wallets.Batch(batchSize))
+            //        {
+            //            await Task.WhenAll(batch.Select(o =>
+            //                blockchainWalletsRepository.AddAsync(o.IntegrationLayerId, o.ClientId, o.Address, o.CreatedBy)));
+            //            progressCounter += batchSize;
+            //            Console.SetCursorPosition(0, Console.CursorTop);
+            //            Console.Write($"{progressCounter} indexes created");
+            //        }
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        Console.WriteLine(e.StackTrace + " " + e.Message);
+            //    }
 
-            } while (continuationToken != null);
+            //} while (continuationToken != null);
 
             do
             {
