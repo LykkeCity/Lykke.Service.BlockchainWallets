@@ -387,6 +387,18 @@ namespace Lykke.Service.BlockchainWallets.Client
             return response;
         }
 
+        public async Task<BlockchainWalletsResponse> GetClientWalletsAsync(Guid clientId, int take, string continuationToken)
+        {
+            if (clientId == Guid.Empty)
+            {
+                throw new ArgumentException(nameof(clientId));
+            }
+
+            var response = await _apiRunner.RunWithRetriesAsync(() => _api.GetClientWalletsAsync(clientId, take, continuationToken));
+
+            return response;
+        }
+
         #endregion
 
 

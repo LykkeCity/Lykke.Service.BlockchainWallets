@@ -67,6 +67,10 @@ namespace Lykke.Service.BlockchainWallets.Client
         [Get("/api/blockchains/{blockchainType}/wallets/{address}/created-by")]
         Task<CreatedByResponse> GetCreatedByAsync(string blockchainType, string address);
 
+        [Get("/api/clients/{clientId}/actual-wallets")]
+        Task<BlockchainWalletsResponse> GetClientWalletsAsync(Guid clientId, [FromQuery] int take,
+            [FromQuery] string continuationToken);
+
         #endregion
 
     }
