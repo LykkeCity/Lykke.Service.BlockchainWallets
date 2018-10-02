@@ -21,6 +21,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 {
     public class BlockchainWalletsRepository : IBlockchainWalletsRepository
     {
+        private const int _batchSize = 50;
         private readonly INoSQLTableStorage<AzureIndex> _addressIndexTable;
         private readonly INoSQLTableStorage<BlockchainWalletEntity> _walletsTable;
         private readonly INoSQLTableStorage<AzureIndex> _clientBlockchainTypeIndexTable;
@@ -161,35 +162,52 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                     clientLatestDepositIndexRowKey,
                     (index) => latestDeposit?.ETag == index.ETag);
 
-                string pKey = null, rKey = null;
+                AzureIndex newMostRecent = null;
                 string cToken = null;
+
                 do
                 {
                     var previousDeposits =
-                        await GetForClientAndBlockchainTypeIndicesAsync(blockchainType, clientId, 50, cToken);
-                    var toDelete = previousDeposits.wallets.FirstOrDefault(x => x.WalletRowKey == latestDeposit?.PrimaryRowKey);
-                    if (!string.IsNullOrEmpty(toDelete.WalletRowKey) &&
-                        !string.IsNullOrEmpty(toDelete.WalletPartitionKey))
+                        await GetClientBlockchainTypeIndices(blockchainType, clientId, _batchSize, cToken);
+                    var toDelete = previousDeposits.Entities.FirstOrDefault(x => x.PrimaryRowKey == latestDeposit?.PrimaryRowKey);
+                    if (!string.IsNullOrEmpty(toDelete.PrimaryRowKey) &&
+                        !string.IsNullOrEmpty(toDelete.PrimaryPartitionKey))
                     {
-                        await _clientBlockchainTypeIndexTable.DeleteIfExistAsync(toDelete.WalletPartitionKey, toDelete.WalletRowKey);
+                        await _clientBlockchainTypeIndexTable.DeleteIfExistAsync(toDelete.PartitionKey, toDelete.RowKey);
                     }
-                    if (string.IsNullOrEmpty(pKey) &&
-                        string.IsNullOrEmpty(rKey))
+                    if (newMostRecent == null)
                     {
-                        (pKey, rKey) = previousDeposits.wallets.FirstOrDefault(x => x.WalletRowKey != latestDeposit?.PrimaryRowKey);
+                        newMostRecent = previousDeposits.Entities.FirstOrDefault(x => x.PrimaryRowKey != latestDeposit?.PrimaryRowKey);
                     }
                 } while (cToken != null);
 
 
-                if (!string.IsNullOrEmpty(pKey) &&
-                    !string.IsNullOrEmpty(rKey))
+                if (newMostRecent != null)
                 {
                     await _clientLatestDepositsIndexTable.InsertOrReplaceAsync(new AzureIndex(
                         clientLatestDepositIndexPartitionKey,
                         clientLatestDepositIndexRowKey,
-                        pKey,
-                        rKey));
+                        newMostRecent.PrimaryPartitionKey,
+                        newMostRecent.PrimaryRowKey));
                 }
+            }
+            else
+            {
+                string cToken = null;
+
+                do
+                {
+                    var previousDeposits =
+                        await  GetClientBlockchainTypeIndices(blockchainType, clientId, _batchSize, cToken);
+                    var toDelete = previousDeposits.Entities.FirstOrDefault(x => x.PrimaryRowKey == wallet?.Address);
+                    if (toDelete != null 
+                        && !string.IsNullOrEmpty(toDelete.PrimaryPartitionKey)
+                        && !string.IsNullOrEmpty(toDelete.PrimaryRowKey))
+                    {
+                        await _clientBlockchainTypeIndexTable.DeleteIfExistAsync(toDelete.PartitionKey, toDelete.RowKey);
+                        break;
+                    }
+                } while (cToken != null);
             }
 
             await _walletsTable.DeleteIfExistAsync(wallet?.PartitionKey, wallet?.RowKey);
@@ -373,11 +391,21 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                 int take,
                 string continuationToken)
         {
-            var partitionKey = GetClientBlockchainTypePartitionKey(blockchainType, clientId);
-            var indexes = await _clientBlockchainTypeIndexTable.GetDataWithContinuationTokenAsync(partitionKey, take, continuationToken);
+            var indexes = await GetClientBlockchainTypeIndices(blockchainType, clientId, take, continuationToken);
             var values = indexes.Entities.Select(x => (x.PrimaryPartitionKey, x.PrimaryRowKey));
 
             return (values, indexes.ContinuationToken);
+        }
+
+        private async Task<(IEnumerable<AzureIndex> Entities, string ContinuationToken)>
+            GetClientBlockchainTypeIndices(string blockchainType, Guid clientId, int take,
+            string continuationToken)
+        {
+            var partitionKey = GetClientBlockchainTypePartitionKey(blockchainType, clientId);
+            var indexes =
+                await _clientBlockchainTypeIndexTable.GetDataWithContinuationTokenAsync(partitionKey, take, continuationToken);
+
+            return indexes;
         }
     }
 }

@@ -124,36 +124,42 @@ namespace Lykke.Service.BlockchainWallets.CTests.IntegrationTests
             var clientId = Guid.Parse("5b39a8a8-af3f-451d-8284-3c06980e2435");
             string cToken = null;
 
-            do
-            {
-                try
-                {
-                    var createdWallets =
-                        await blockchainWalletClient.GetWalletsAsync(_blockchainType, clientId, 100, cToken);
-
-                    if (createdWallets == null)
-                    {
-                        cToken = null;
-                        continue;
-                    }
-
-                    cToken = createdWallets.ContinuationToken;
-
-                    foreach (var wallet in createdWallets.Wallets)
-                    {
-                        await blockchainWalletClient.DeleteWalletAsync(_blockchainType, wallet.ClientId,
-                            wallet.Address);
-                    }
-                }
-                finally
-                {
-                }
-            } while (!string.IsNullOrEmpty(cToken));
+            await RemoveAllWalletsForClient(blockchainWalletClient, clientId);
 
             var leftovers =
                 await blockchainWalletClient.GetWalletsAsync(_blockchainType, clientId, 100, cToken);
 
             Assert.True((leftovers?.Wallets?.Count() ?? 0) == 0);
+        }
+
+        private async Task RemoveAllWalletsForClient(BlockchainWalletsClient blockchainWalletClient, Guid clientId)
+        {
+            string cToken = null;
+            do
+            {
+                var createdWallets =
+                    await blockchainWalletClient.GetWalletsAsync(_blockchainType, clientId, 100, cToken);
+
+                if (createdWallets == null)
+                {
+                    cToken = null;
+                    continue;
+                }
+
+                cToken = createdWallets.ContinuationToken;
+
+                foreach (var wallet in createdWallets.Wallets)
+                {
+                    try
+                    {
+                        await blockchainWalletClient.DeleteWalletAsync(_blockchainType, wallet.ClientId,
+                            wallet.Address);
+                    }
+                    catch
+                    {
+                    }
+                }
+            } while (!string.IsNullOrEmpty(cToken));
         }
 
         [Fact]
@@ -162,6 +168,7 @@ namespace Lykke.Service.BlockchainWallets.CTests.IntegrationTests
             var blockchainWalletClient = GenerateBlockchainWalletsClient();
             var assetId = "ETC";
             var clientId = Guid.Parse("5b39a8a8-af3f-451d-8284-3c06980e2435");
+            await RemoveAllWalletsForClient(blockchainWalletClient, clientId);
             var createdWallet2 = await blockchainWalletClient.TryGetAddressAsync(_blockchainType, assetId, clientId);
             var etcWallet = await blockchainWalletClient.CreateWalletAsync(_blockchainType, assetId, clientId);
             var createdWallet = await blockchainWalletClient.GetAddressAsync(_blockchainType, assetId, clientId);
