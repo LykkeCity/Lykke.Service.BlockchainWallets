@@ -434,7 +434,8 @@ namespace Lykke.Service.BlockchainWallets.Services
                 Address = address,
                 AssetId = assetId,
                 BlockchainType = integrationLayerId,
-                IntegrationLayerId = integrationLayerId
+                IntegrationLayerId = integrationLayerId,
+                ClientId = clientId
             };
 
             _cqrsEngine.PublishEvent
