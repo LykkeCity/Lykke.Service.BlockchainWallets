@@ -266,7 +266,9 @@ namespace Lykke.Service.BlockchainWallets.Client
             return clientId.Value;
         }
 
+
         /// <inheritdoc cref="IBlockchainWalletsClient.TryGetAddressAsync" />
+        [Obsolete]
         public async Task<AddressResponse> TryGetAddressAsync(string blockchainType, string assetId, Guid clientId)
         {
             ValidateInputParameters(blockchainType, assetId, clientId);

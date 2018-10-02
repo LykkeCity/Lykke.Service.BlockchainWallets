@@ -167,6 +167,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// </returns>
         Task<string> MergeAddressAsync(string blockchainType, string baseAddress, string addressExtension);
 
+        [Obsolete]
         /// <summary>
         ///     Returns blockchain address by Lykke client id.
         /// </summary>
