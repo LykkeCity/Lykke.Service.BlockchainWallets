@@ -125,6 +125,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <exception cref="ErrorResponseException">
         ///     Status code: <see cref="HttpStatusCode.NotFound" /> - client is not found.
         /// </exception>
+        [Obsolete]
         Task<Guid> GetClientIdAsync(string blockchainType,  string address);
 
         /// <summary>
@@ -197,6 +198,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <returns>
         ///     Lykke client id, if operation succeeded, null otherwise.
         /// </returns>
+        [Obsolete]
         Task<Guid?> TryGetClientIdAsync(string blockchainType, string address);
 
         /// <summary>
