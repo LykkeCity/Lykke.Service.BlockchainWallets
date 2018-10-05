@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Common.Log;
 using JetBrains.Annotations;
@@ -9,7 +7,6 @@ using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.Common.Log;
 using Lykke.Logs;
 using Lykke.Logs.Loggers.LykkeSlack;
-using Lykke.Service.BlockchainWallets.Core.Exceptions;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Settings;
 using Lykke.Service.BlockchainWallets.Modules;
@@ -19,6 +16,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
+using System;
 
 namespace Lykke.Service.BlockchainWallets
 {
