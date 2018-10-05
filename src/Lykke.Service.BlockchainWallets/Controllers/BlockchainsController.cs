@@ -65,7 +65,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         {
             if (take <= 0)
             {
-                return BadRequest(BlockchainWalletsErrorResponse.Create($"{nameof(take)} should be greater then 0."));
+                return BadRequest(BlockchainWalletsErrorResponse.Create($"{nameof(take)} should be integer greater then 0."));
             }
 
             if (!ValidateRequest(blockchainType, clientId, out var badRequest))
@@ -245,9 +245,10 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         {
             var invalidInputParams = new List<string>();
 
-            if (string.IsNullOrWhiteSpace(blockchainType))
+            if (string.IsNullOrWhiteSpace(blockchainType) ||
+                !_blockchainIntegrationService.BlockchainIsSupported(blockchainType))
             {
-                invalidInputParams.Add(nameof(blockchainType));
+                invalidInputParams.Add($"Blockchain type [{blockchainType}] is empty or not supported.");
             }
 
             if (string.IsNullOrEmpty(address))
@@ -274,9 +275,10 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         {
             var invalidInputParams = new List<string>();
 
-            if (string.IsNullOrWhiteSpace(blockchainType))
+            if (string.IsNullOrWhiteSpace(blockchainType) ||
+                !_blockchainIntegrationService.BlockchainIsSupported(blockchainType))
             {
-                invalidInputParams.Add(nameof(blockchainType));
+                invalidInputParams.Add($"Blockchain type [{blockchainType}] is empty or not supported.");
             }
 
             if (clientId == Guid.Empty)
