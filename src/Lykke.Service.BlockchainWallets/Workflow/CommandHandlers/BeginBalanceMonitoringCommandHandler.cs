@@ -40,7 +40,6 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
             const MonitoringSubscriptionType subscriptionType = MonitoringSubscriptionType.Balance;
 
             var address = command.Address;
-            var assetId = command.AssetId;
             var blockchainType = command.BlockchainType;
 
             if (await _monitoringSubscriptionRepository.WalletSubscriptionsCount(blockchainType, address, subscriptionType) == 0)
@@ -51,7 +50,7 @@ namespace Lykke.Service.BlockchainWallets.Workflow.CommandHandlers
                 }
                 catch (ErrorResponseException e) when (e.StatusCode == HttpStatusCode.Conflict)
                 {
-                    
+
                 }
             }
                     

@@ -8,11 +8,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using AzureStorage;
 using AzureStorage.Tables;
+using Lykke.Common.Log;
+using Lykke.Cqrs;
 using Lykke.Service.BlockchainWallets.AzureRepositories;
 using Lykke.Service.BlockchainWallets.Contract;
+using Lykke.Service.BlockchainWallets.Contract.Events;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
+using Lykke.Service.BlockchainWallets.Modules;
 
 namespace Lykke.Service.BlockchainWallets.MigrateWalletsMultiplePerClient
 {
@@ -75,17 +81,36 @@ namespace Lykke.Service.BlockchainWallets.MigrateWalletsMultiplePerClient
 
             var logFactory = LogFactory.Create().AddConsole();
 
-            var settings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl).Nested(x => x.BlockchainWalletsService.Db.DataConnString);
+            var settings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl);
+            var settingsRepo = settings.Nested(x => x.BlockchainWalletsService.Db.DataConnString);
+
+            var builder = new ContainerBuilder();
+            var appSettings = settings;
+
+            builder.RegisterInstance(logFactory).As<ILogFactory>();
+
+            builder
+                .RegisterModule(new CqrsModule(appSettings.CurrentValue.BlockchainWalletsService.Cqrs))
+                .RegisterModule(new RepositoriesModule(appSettings.Nested(x => x.BlockchainWalletsService.Db)))
+                .RegisterModule(new ServiceModule(
+                    appSettings.CurrentValue.BlockchainsIntegration,
+                    appSettings.CurrentValue.BlockchainSignFacadeClient,
+                    appSettings.CurrentValue,
+                    appSettings.CurrentValue.AssetsServiceClient));
+
+            var container = builder.Build();
+
+            var cqrsEngine = container.Resolve<ICqrsEngine>();
 
             var archiveWalletsTable = AzureTableStorage<BlockchainWalletEntity>.Create
             (
-                settings,
+                settingsRepo,
                 "BlockchainWalletsArchive",
                 logFactory
             );
 
-            var defaultWalletsRepository = (WalletRepository)WalletRepository.Create(settings, logFactory);
-            var blockchainWalletsRepository = (BlockchainWalletsRepository)AzureRepositories.BlockchainWalletsRepository.Create(settings, logFactory);
+            var defaultWalletsRepository = (WalletRepository)WalletRepository.Create(settingsRepo, logFactory);
+            var blockchainWalletsRepository = (BlockchainWalletsRepository)AzureRepositories.BlockchainWalletsRepository.Create(settingsRepo, logFactory);
 
             string continuationToken = null;
 
@@ -127,8 +152,26 @@ namespace Lykke.Service.BlockchainWallets.MigrateWalletsMultiplePerClient
 
             //        foreach (var batch in wallets.Batch(batchSize))
             //        {
-            //            await Task.WhenAll(batch.Select(o =>
-            //                blockchainWalletsRepository.AddAsync(o.IntegrationLayerId, o.ClientId, o.Address, o.CreatedBy)));
+            //            await Task.WhenAll(batch.Select(async o =>
+            //            {
+            //                await blockchainWalletsRepository.AddAsync(o.IntegrationLayerId, o.ClientId, o.Address,
+            //                    o.CreatedBy);
+
+            //                var @event = new WalletCreatedEvent
+            //                {
+            //                    Address = o.Address,
+            //                    BlockchainType = o.IntegrationLayerId,
+            //                    IntegrationLayerId = o.IntegrationLayerId,
+            //                    CreatedBy = CreatorType.LykkeWallet,
+            //                    ClientId = o.ClientId
+            //                };
+
+            //                cqrsEngine.PublishEvent
+            //                (
+            //                    @event,
+            //                    BlockchainWalletsBoundedContext.Name
+            //                );
+            //            }));
             //            progressCounter += batchSize;
             //            Console.SetCursorPosition(0, Console.CursorTop);
             //            Console.Write($"{progressCounter} indexes created");
@@ -150,8 +193,27 @@ namespace Lykke.Service.BlockchainWallets.MigrateWalletsMultiplePerClient
 
                     foreach (var batch in wallets.Batch(batchSize))
                     {
-                        await Task.WhenAll(batch.Select(o =>
-                            blockchainWalletsRepository.AddAsync(o.BlockchainType, o.ClientId, o.Address, CreatorType.LykkeWallet)));
+                        await Task.WhenAll(batch.Select(async o =>
+                        {
+                            await blockchainWalletsRepository.AddAsync(o.BlockchainType, o.ClientId, o.Address,
+                                CreatorType.LykkeWallet);
+
+                            var @event = new WalletCreatedEvent
+                            {
+                                Address = o.Address,
+                                BlockchainType = o.BlockchainType,
+                                IntegrationLayerId = o.BlockchainType,
+                                CreatedBy = CreatorType.LykkeWallet,
+                                ClientId = o.ClientId
+                            };
+
+                            cqrsEngine.PublishEvent
+                            (
+                                @event,
+                                BlockchainWalletsBoundedContext.Name
+                            );
+                        }));
+
                         progressCounter += batchSize;
                         Console.SetCursorPosition(0, Console.CursorTop);
                         Console.Write($"{progressCounter} indexes created");
