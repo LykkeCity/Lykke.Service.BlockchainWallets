@@ -178,6 +178,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         /// <summary>
         ///    Returns all wallets for the specified client.
         /// </summary>
+        [Obsolete]
         [HttpGet("all/by-client-ids/{clientId}")]
         public async Task<IActionResult> GetWallets([FromRoute] Guid clientId, [FromQuery] int take, [FromQuery] string continuationToken)
         {
