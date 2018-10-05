@@ -199,48 +199,6 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             }
         }
 
-        /// <summary>
-        ///    Returns all wallets for the specified client.
-        /// </summary>
-        [HttpGet("/clients/{clientId}/actual-wallets")]
-        public async Task<IActionResult> GetWallets([FromRoute] Guid clientId, [FromQuery] int take, [FromQuery] string continuationToken)
-        {
-            if (take <= 0)
-            {
-                return BadRequest(BlockchainWalletsErrorResponse.Create($"{nameof(take)} must be integer greater than 0."));
-            }
-
-            if (!ValidateRequest(out var badRequest,
-                ParamsToValidate.EmptyClientId,
-                clientId: clientId))
-                return badRequest;
-
-            var (wallets, token) = await _walletService.GetClientWalletsAsync(clientId, take, continuationToken);
-
-            var response = new BlockchainWalletsResponse
-            {
-                Wallets = wallets.Select(x => new BlockchainWalletResponse()
-                {
-                    Address = x.Address,
-                    AddressExtension = x.AddressExtension,
-                    BaseAddress = x.BaseAddress,
-                    BlockchainType = x.BlockchainType,
-                    ClientId = x.ClientId,
-                    CreatedBy = x.CreatorType
-                }),
-                ContinuationToken = token
-            };
-
-            if (response.Wallets.Any())
-            {
-                return Ok(response);
-            }
-            else
-            {
-                return NoContent();
-            }
-        }
-
         private bool ValidateRequest(string blockchainType, string address, out IActionResult badRequest)
         {
             var invalidInputParams = new List<string>();

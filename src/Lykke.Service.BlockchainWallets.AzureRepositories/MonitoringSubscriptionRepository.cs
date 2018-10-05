@@ -75,11 +75,15 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             return await _table.GetDataAsync(partitionKey, rowKey) != null;
         }
         
+        //TODO: Get rif of that method?
         public async Task<int> WalletSubscriptionsCount(string blockchainType, string address, MonitoringSubscriptionType subscriptionType)
         {
             var partitionKey = GetPartitionKey(blockchainType, subscriptionType);
+            var rowKey = GetRowKey(address);
 
-            return (await _table.GetDataAsync(partitionKey)).Count();
+            var count = (await _table.GetDataAsync(partitionKey, rowKey));
+
+            return count != null ? 1 : 0;
         }
     }
 }
