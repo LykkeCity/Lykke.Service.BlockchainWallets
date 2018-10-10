@@ -168,10 +168,8 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                     ClientId = clientId.Value
                 });
             }
-            else
-            {
-                return NoContent();
-            }
+
+            return NoContent();
         }
 
         /// <summary>

@@ -71,22 +71,6 @@ namespace Lykke.Service.BlockchainWallets.Client
             _apiRunner = new ApiRunner(retriesCount);
         }
         
-        /// <summary>
-        ///    This constructor intended for testing purposes only.
-        /// </summary>
-        /// <param name="httpClient">
-        ///    Instance of mockable httpClient.
-        /// </param>
-        internal BlockchainWalletsClient(HttpClient httpClient)
-        {
-            var factory = new BlockchainWalletsApiFactory();
-            List<DelegatingHandler> handlersList = new List<DelegatingHandler>(1);
-            handlersList.Add(new RequestInterceptorHandler(httpClient));
-
-            _api = factory.CreateNew(httpClient.BaseAddress.ToString(), false, null, handlersList.ToArray());
-            _apiRunner = new ApiRunner(1);
-        }
-
         /// <inheritdoc cref="IBlockchainWalletsClient.HostUrl" />
         public string HostUrl { get; }
 

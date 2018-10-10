@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lykke.Service.BlockchainWallets.Tests.Common.DelegatingMessageHandlers;
 using Xunit;
 
 namespace Lykke.Service.BlockchainWallets.CTests.IntegrationTests
@@ -197,7 +198,6 @@ namespace Lykke.Service.BlockchainWallets.CTests.IntegrationTests
             var blockchainWalletClient =
                 new Lykke.Service.BlockchainWallets.Client.BlockchainWalletsClient("http://localhost:5000",
                     logFactory.Object,
-                    blockchainWalletsApiFactory,
                     1,
                     interceptor);
 

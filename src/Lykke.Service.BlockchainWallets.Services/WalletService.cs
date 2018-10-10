@@ -101,8 +101,8 @@ namespace Lykke.Service.BlockchainWallets.Services
                     Address = address,
                     AssetId = assetId,
                     BlockchainType = blockchainType,
-                    ClientId = clientId,
-                    IntegrationLayerId = blockchainType
+                    IntegrationLayerId = blockchainType,
+                    ClientId = clientId
                 };
 
                 await _firstGenerationBlockchainWalletRepository.InsertOrReplaceAsync(new BcnCredentialsRecord
@@ -309,7 +309,6 @@ namespace Lykke.Service.BlockchainWallets.Services
 
             return (finalWallets, token);
         }
-
 
         public async Task<WalletWithAddressExtensionDto> CreateWalletAsync(string blockchainType, Guid clientId,
             CreatorType createdBy)
