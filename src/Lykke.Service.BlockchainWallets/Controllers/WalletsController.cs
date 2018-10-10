@@ -150,7 +150,26 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         [Obsolete]
         public async Task<IActionResult> GetClientId([FromRoute] string blockchainType, [FromRoute] string assetId, [FromRoute] string address)
         {
-            return await GetClientId(blockchainType, address);
+            blockchainType = blockchainType.TrimAllSpacesAroundNullSafe();
+            address = address.TrimAllSpacesAroundNullSafe();
+
+            if (!ValidateRequest(out var badRequest,
+                ParamsToValidate.EmptyBlockchainType | ParamsToValidate.EmptyAddress,
+                blockchainType: blockchainType,
+                address: address))
+                return badRequest;
+
+            var clientId = await _walletService.TryGetClientIdAsync(blockchainType, address);
+
+            if (clientId != null)
+            {
+                return Ok(new ClientIdResponse
+                {
+                    ClientId = clientId.Value
+                });
+            }
+
+            return NoContent();
         }
 
         /// <summary>

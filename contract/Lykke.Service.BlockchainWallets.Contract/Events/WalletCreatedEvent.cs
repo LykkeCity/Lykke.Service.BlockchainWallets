@@ -24,8 +24,5 @@ namespace Lykke.Service.BlockchainWallets.Contract.Events
 
         [Key(5)]
         public CreatorType CreatedBy { get; set; }
-
-        [Key(5)]
-        public Guid ClientId { get; set; }
     }
 }
