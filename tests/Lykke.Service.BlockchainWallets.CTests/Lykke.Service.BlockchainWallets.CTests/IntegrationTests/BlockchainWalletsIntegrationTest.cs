@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lykke.Service.BlockchainWallets.Tests.Common.DelegatingMessageHandlers;
 using Xunit;
 
 namespace Lykke.Service.BlockchainWallets.CTests.IntegrationTests

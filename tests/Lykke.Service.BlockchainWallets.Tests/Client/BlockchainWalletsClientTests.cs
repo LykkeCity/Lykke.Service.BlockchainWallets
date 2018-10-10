@@ -4,9 +4,14 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Common.Log;
 using Lykke.Common.Api.Contract.Responses;
+using Lykke.Common.Log;
 using Lykke.Service.BlockchainWallets.Client;
+using Lykke.Service.BlockchainWallets.Client.ClientGenerator;
 using Lykke.Service.BlockchainWallets.Contract.Models;
+using Lykke.Service.BlockchainWallets.Tests.Common.DelegatingMessageHandlers;
+using Moq;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -426,12 +431,24 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
 
         private static BlockchainWalletsClient CreateClient(HttpMessageHandler handlerStub)
         {
+            var log = new Mock<ILog>();
+            var logFactory = new Mock<ILogFactory>();
+            logFactory.Setup(x => x.CreateLog(It.IsAny<object>())).Returns(log.Object);
             var httpClient = new HttpClient(handlerStub)
             {
                 BaseAddress = new Uri("http://localhost")
             };
 
-            return new BlockchainWalletsClient(httpClient);
+            var interceptor = new RequestInterceptorHandler(httpClient);
+            var blockchainWalletsApiFactory = new BlockchainWalletsApiFactory();
+            var blockchainWalletClient =
+                new Lykke.Service.BlockchainWallets.Client.BlockchainWalletsClient("http://localhost:5000",
+                    logFactory.Object,
+                    blockchainWalletsApiFactory,
+                    1,
+                    interceptor);
+
+            return blockchainWalletClient;
         }
     }
 }
