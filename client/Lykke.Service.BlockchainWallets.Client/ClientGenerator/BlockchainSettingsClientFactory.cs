@@ -36,9 +36,12 @@ namespace Lykke.Service.BlockchainWallets.Client.ClientGenerator
                 builder.WithoutCaching();
             }
 
-            foreach (var handler in handlers)
+            if (handlers != null)
             {
-                builder.WithAdditionalDelegatingHandler(handler);
+                foreach (var handler in handlers)
+                {
+                    builder.WithAdditionalDelegatingHandler(handler);
+                }
             }
 
             clientCacheManager = clientCacheManager ?? new ClientCacheManager();
