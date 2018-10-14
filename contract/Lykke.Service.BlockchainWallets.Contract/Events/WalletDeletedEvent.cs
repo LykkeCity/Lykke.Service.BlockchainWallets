@@ -4,7 +4,7 @@ using MessagePack;
 
 namespace Lykke.Service.BlockchainWallets.Contract.Events
 {
-    [MessagePackObject, PublicAPI]
+    [MessagePackObject, PublicAPI, Obsolete]
     public class WalletDeletedEvent
     {
         [Key(0)]
@@ -18,7 +18,7 @@ namespace Lykke.Service.BlockchainWallets.Contract.Events
 
         [Key(3)]
         public string BlockchainType { get; set; }
-        
+
         [Key(4)]
         public Guid ClientId { get; set; }
     }

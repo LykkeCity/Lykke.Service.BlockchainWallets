@@ -5,6 +5,7 @@ using Lykke.Service.BlockchainWallets.Core.DTOs;
 
 namespace Lykke.Service.BlockchainWallets.Core.Repositories
 {
+    [Obsolete]
     public interface IWalletRepository
     {
         Task AddAsync(string blockchainType, string assetId, Guid clientId, string address);

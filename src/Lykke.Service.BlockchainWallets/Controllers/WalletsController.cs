@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Common;
+using Lykke.Service.BlockchainWallets.Enums;
 
 
 namespace Lykke.Service.BlockchainWallets.Controllers
@@ -35,6 +36,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         /// <remarks>
         ///    walletType reserved for future use.
         /// </remarks>
+        [Obsolete]
         [HttpPost(RouteSuffix + "/by-client-ids/{clientId}")]
         public async Task<IActionResult> CreateWallet([FromRoute] string blockchainType, [FromRoute] string assetId, [FromRoute] Guid clientId, [FromQuery] WalletType? walletType)
         {
@@ -73,13 +75,15 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 BlockchainType = wallet.BlockchainType,
                 ClientId = wallet.ClientId,
                 IntegrationLayerId = wallet.BlockchainType,
-                IntegrationLayerAssetId = wallet.AssetId
+                IntegrationLayerAssetId = wallet.AssetId,
+                CreatedBy = wallet.CreatorType
             });
         }
 
         /// <summary>
         ///    Removes wallet for the specified client in the specified blockchain type/asset pair
         /// </summary>
+        [Obsolete]
         [HttpDelete(RouteSuffix + "/by-client-ids/{clientId}")]
         public async Task<IActionResult> DeleteWallet([FromRoute] string blockchainType, [FromRoute] string assetId, [FromRoute] Guid clientId)
         {
@@ -107,6 +111,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         /// <summary>
         ///    Returns wallet address for the specified client in the specified blockchain type/asset pair.
         /// </summary>
+        [Obsolete]
         [HttpGet(RouteSuffix + "/by-client-ids/{clientId}/address")]
         public async Task<IActionResult> GetAddress([FromRoute] string blockchainType, [FromRoute] string assetId, [FromRoute] Guid clientId)
         {
@@ -145,16 +150,6 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         [Obsolete]
         public async Task<IActionResult> GetClientId([FromRoute] string blockchainType, [FromRoute] string assetId, [FromRoute] string address)
         {
-            return await GetClientId(blockchainType, address);
-        }
-
-
-        /// <summary>
-        ///    Return client id for the specified wallet.
-        /// </summary>
-        [HttpGet("/api/blockchains/{blockchainType}/wallets/{address}/client-id")]
-        public async Task<IActionResult> GetClientId([FromRoute] string blockchainType, [FromRoute] string address)
-        {
             blockchainType = blockchainType.TrimAllSpacesAroundNullSafe();
             address = address.TrimAllSpacesAroundNullSafe();
 
@@ -173,16 +168,14 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                     ClientId = clientId.Value
                 });
             }
-            else
-            {
-                return NoContent();
-            }
-        }
 
+            return NoContent();
+        }
 
         /// <summary>
         ///    Returns all wallets for the specified client.
         /// </summary>
+        [Obsolete]
         [HttpGet("all/by-client-ids/{clientId}")]
         public async Task<IActionResult> GetWallets([FromRoute] Guid clientId, [FromQuery] int take, [FromQuery] string continuationToken)
         {
@@ -208,7 +201,8 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                     BlockchainType = x.BlockchainType,
                     ClientId = x.ClientId,
                     IntegrationLayerId = x.BlockchainType,
-                    IntegrationLayerAssetId = x.AssetId
+                    IntegrationLayerAssetId = x.AssetId,
+                    CreatedBy = x.CreatorType
                 }),
                 ContinuationToken = token
             };
@@ -221,18 +215,6 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             {
                 return NoContent();
             }
-        }
-
-
-        [Flags]
-        private enum ParamsToValidate
-        {
-            EmptyBlockchainType = 1,
-            EmptyAddress = 2,
-            EmptyAssetId = 4,
-            EmptyClientId = 8,
-            UnsupportedBlockchainType = 16 | EmptyBlockchainType,
-            UnsupportedAssetId = 32 | EmptyAssetId | EmptyBlockchainType
         }
 
         private bool ValidateRequest(out IActionResult badRequest, ParamsToValidate flags, Guid clientId = default(Guid), string blockchainType = null, string address = null, string assetId = null)

@@ -19,6 +19,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// </summary>
         string HostUrl { get; }
 
+        [Obsolete]
         /// <summary>
         ///     Creates new wallet and initiates its balance observation.
         /// </summary>
@@ -39,6 +40,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// </returns>
         Task<WalletResponse> CreateWalletAsync(string blockchainType, string assetId, Guid clientId, WalletType walletType = WalletType.DepositWallet);
 
+        [Obsolete]
         /// <summary>
         ///     Deletes information about wallet from DB and stops its balance observation.
         /// </summary>
@@ -56,6 +58,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// </returns>
         Task<bool> DeleteWalletAsync(string blockchainType, string assetId, Guid clientId);
 
+        [Obsolete]
         /// <summary>
         ///     Returns blockchain address by Lykke client id.
         /// </summary>
@@ -92,6 +95,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// </param>
         Task<AddressExtensionConstantsResponse> TryGetAddressExtensionConstantsAsync(string blockchainType);
 
+        [Obsolete]
         /// <summary>
         ///     Returns Lykke clients wallets.
         /// </summary>
@@ -121,6 +125,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <exception cref="ErrorResponseException">
         ///     Status code: <see cref="HttpStatusCode.NotFound" /> - client is not found.
         /// </exception>
+        [Obsolete]
         Task<Guid> GetClientIdAsync(string blockchainType,  string address);
 
         /// <summary>
@@ -128,6 +133,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// </summary>
         Task<IsAliveResponse> GetIsAliveAsync();
 
+        [Obsolete]
         /// <summary>
         ///     Returns Lykke clients wallets.
         /// </summary>
@@ -162,6 +168,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// </returns>
         Task<string> MergeAddressAsync(string blockchainType, string baseAddress, string addressExtension);
 
+        [Obsolete]
         /// <summary>
         ///     Returns blockchain address by Lykke client id.
         /// </summary>
@@ -191,6 +198,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <returns>
         ///     Lykke client id, if operation succeeded, null otherwise.
         /// </returns>
+        [Obsolete]
         Task<Guid?> TryGetClientIdAsync(string blockchainType, string address);
 
         /// <summary>
@@ -211,6 +219,108 @@ namespace Lykke.Service.BlockchainWallets.Client
         ///     address to parse
         /// </param>
         Task<AddressParseResultResponce> ParseAddressAsync(string blockchainType, string address);
+
+        #region Multiple Client Deposits
+
+        //TODO: Fix documentation
+
+        /// <summary>
+        ///     Creates new wallet and initiates its balance observation.
+        /// </summary>
+        /// <param name="blockchainType">
+        ///     Target blockchain type.
+        /// </param>
+        /// <param name="clientId">
+        ///     Lykke client id.
+        /// </param>
+        /// <param name="walletType">
+        ///     Type of wallet.
+        /// </param>
+        /// <returns>
+        ///     Created wallet, or null if operation failed.
+        /// </returns>
+        Task<BlockchainWalletResponse> CreateWalletAsync(string blockchainType, Guid clientId, CreatorType createdBy);
+
+        /// <summary>
+        ///     Deletes information about wallet from DB and stops its balance observation.
+        /// </summary>
+        /// <param name="blockchainType">
+        ///     Target blockchain type.
+        /// </param>
+        /// <param name="clientId">
+        ///     Lykke client id.
+        /// </param>
+        /// <param name="address">
+        ///     Target wallet's address.
+        /// </param>
+        /// <returns>
+        ///     True, if walle has been deleted, false otherwise.
+        /// </returns>
+        Task<bool> DeleteWalletAsync(string blockchainType, Guid clientId, string address);
+
+        /// <summary>
+        ///     Returns Lykke clients wallets.
+        /// </summary>
+        /// <param name="clientId">
+        ///     Client Id.
+        /// </param>
+        /// <param name="take">
+        ///     Amount of wallets to retrieve.
+        /// </param>
+        /// <param name="continuationToken">
+        ///     Continuation token for azure storage.
+        /// </param>
+        /// <returns>
+        ///     Lykke client's wallets.
+        /// </returns>
+        Task<BlockchainWalletsResponse> GetWalletsAsync(string blockchainType, Guid clientId, int take, string continuationToken);
+
+        /// <summary>
+        ///     Returns Lykke clients wallets.
+        /// </summary>
+        /// <param name="clientId">
+        ///     Client Id.
+        /// </param>
+        /// <param name="take">
+        ///     Amount of wallets to retrieve.
+        /// </param>
+        /// <param name="continuationToken">
+        ///     Continuation token for azure storage.
+        /// </param>
+        /// <returns>
+        ///     Lykke client's wallets.
+        /// </returns>
+        Task<BlockchainWalletsResponse> GetClientWalletsAsync(Guid clientId, int take, string continuationToken);
+
+        /// <summary>
+        ///     Returns Lykke client wallet.
+        /// </summary>
+        /// <param name="blockchainType">
+        ///     Target blockchain type.
+        /// </param>
+        /// <param name="address">
+        ///     Target wallet's address.
+        /// </param>
+        /// <returns>
+        ///     Lykke client's wallets.
+        /// </returns>
+        Task<BlockchainWalletResponse> GetWalletAsync(string blockchainType, string address);
+
+        /// <summary>
+        ///     Returns Lykke client wallet.
+        /// </summary>
+        /// <param name="blockchainType">
+        ///     Target blockchain type.
+        /// </param>
+        /// <param name="address">
+        ///     Target wallet's address.
+        /// </param>
+        /// <returns>
+        ///     Lykke client's wallets.
+        /// </returns>
+        Task<CreatedByResponse> GetWalletsCreatorAsync(string blockchainType, string address);
+
+        #endregion
 
     }
 }
