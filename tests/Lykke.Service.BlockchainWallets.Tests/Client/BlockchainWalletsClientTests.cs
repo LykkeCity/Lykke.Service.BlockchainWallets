@@ -295,7 +295,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             });
             var client = CreateClient(handlerStub);
 
-            var result = await client.GetWalletsAsync(clientId, 10, null);
+            var result = await client.TryGetWalletsAsync(clientId, 10, null);
 
             Assert.True(result?.Wallets.FirstOrDefault()?.ClientId == clientId);
         }

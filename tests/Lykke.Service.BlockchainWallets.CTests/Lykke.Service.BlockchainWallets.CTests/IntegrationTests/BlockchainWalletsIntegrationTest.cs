@@ -34,9 +34,9 @@ namespace Lykke.Service.BlockchainWallets.CTests.IntegrationTests
             var clientId = Guid.Parse("5b39a8a8-af3f-451d-8284-3c06980e2435");
             var etcWallet1 = await blockchainWalletClient.CreateWalletAsync(_blockchainType, clientId, CreatorType.LykkeWallet);
             var etcWallet2 = await blockchainWalletClient.CreateWalletAsync(_blockchainType, clientId, CreatorType.LykkeWallet);
-            var createdWallets = await blockchainWalletClient.GetClientWalletsAsync(clientId, 200, null);
+            var createdWallets = await blockchainWalletClient.TryGetClientWalletsAsync(clientId, 200, null);
             await blockchainWalletClient.DeleteWalletAsync(_blockchainType, clientId, etcWallet2.Address);
-            var existingDepositsAfterDeletion = await blockchainWalletClient.GetClientWalletsAsync(clientId, 200, null);
+            var existingDepositsAfterDeletion = await blockchainWalletClient.TryGetClientWalletsAsync(clientId, 200, null);
             var arrayFromDB = createdWallets.Wallets.ToArray();
             var arrayAfterDeletion = existingDepositsAfterDeletion.Wallets.ToArray();
 
@@ -63,7 +63,7 @@ namespace Lykke.Service.BlockchainWallets.CTests.IntegrationTests
             var clientId = Guid.Parse("5b39a8a8-af3f-451d-8284-3c06980e2435");
             var etcWallet1 = await blockchainWalletClient.CreateWalletAsync(_blockchainType, clientId, CreatorType.LykkeWallet);
             var etcWallet2 = await blockchainWalletClient.CreateWalletAsync(_blockchainType, clientId, CreatorType.LykkeWallet);
-            var createdWallets = await blockchainWalletClient.GetClientWalletsAsync(clientId, 200, null);
+            var createdWallets = await blockchainWalletClient.TryGetClientWalletsAsync(clientId, 200, null);
             var arrayFromDB = createdWallets.Wallets.ToArray();
 
             var etcDeposits = arrayFromDB.Where(x => x.BlockchainType == _blockchainType);
@@ -81,9 +81,9 @@ namespace Lykke.Service.BlockchainWallets.CTests.IntegrationTests
 
             var clientId = Guid.Parse("5b39a8a8-af3f-451d-8284-3c06980e2435");
             var etcWallet = await blockchainWalletClient.CreateWalletAsync(_blockchainType, clientId, CreatorType.LykkeWallet);
-            var createdWallet = await blockchainWalletClient.GetWalletAsync(_blockchainType, etcWallet.Address);
+            var createdWallet = await blockchainWalletClient.TryGetWalletAsync(_blockchainType, etcWallet.Address);
             await blockchainWalletClient.DeleteWalletAsync(_blockchainType, clientId, etcWallet.Address);
-            var existingWallet = await blockchainWalletClient.GetWalletAsync(_blockchainType, etcWallet.Address);
+            var existingWallet = await blockchainWalletClient.TryGetWalletAsync(_blockchainType, etcWallet.Address);
 
             Assert.Equal(etcWallet.Address, createdWallet.Address);
             Assert.True(existingWallet == null);
@@ -109,7 +109,7 @@ namespace Lykke.Service.BlockchainWallets.CTests.IntegrationTests
                 etcWallet1
             };
 
-            var createdWallets = await blockchainWalletClient.GetWalletsAsync(_blockchainType, clientId, 5, null);
+            var createdWallets = await blockchainWalletClient.TryGetWalletsAsync(_blockchainType, clientId, 5, null);
             var arrayFromDB = createdWallets.Wallets.ToArray();
 
             for (int i = 0; i < 5; i++)
@@ -128,7 +128,7 @@ namespace Lykke.Service.BlockchainWallets.CTests.IntegrationTests
             await RemoveAllWalletsForClient(blockchainWalletClient, clientId);
 
             var leftovers =
-                await blockchainWalletClient.GetWalletsAsync(_blockchainType, clientId, 100, cToken);
+                await blockchainWalletClient.TryGetWalletsAsync(_blockchainType, clientId, 100, cToken);
 
             Assert.True((leftovers?.Wallets?.Count() ?? 0) == 0);
         }
@@ -139,7 +139,7 @@ namespace Lykke.Service.BlockchainWallets.CTests.IntegrationTests
             do
             {
                 var createdWallets =
-                    await blockchainWalletClient.GetWalletsAsync(_blockchainType, clientId, 100, cToken);
+                    await blockchainWalletClient.TryGetWalletsAsync(_blockchainType, clientId, 100, cToken);
 
                 if (createdWallets == null)
                 {
