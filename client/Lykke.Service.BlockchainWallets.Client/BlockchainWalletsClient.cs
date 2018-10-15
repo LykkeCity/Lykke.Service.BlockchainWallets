@@ -83,7 +83,7 @@ namespace Lykke.Service.BlockchainWallets.Client
 
         /// <inheritdoc cref="IBlockchainWalletsClient.GetWalletsAsync" />
         [Obsolete]
-        public async Task<WalletsResponse> GetWalletsAsync(Guid clientId, int take, string continuationToken)
+        public async Task<WalletsResponse> TryGetWalletsAsync(Guid clientId, int take, string continuationToken)
         {
             if (clientId == Guid.Empty)
             {
@@ -208,7 +208,7 @@ namespace Lykke.Service.BlockchainWallets.Client
 
             do
             {
-                var response = await GetWalletsAsync(clientId, batchSize, continuationToken);
+                var response = await TryGetWalletsAsync(clientId, batchSize, continuationToken);
 
                 continuationToken = response?.ContinuationToken;
 
@@ -337,7 +337,7 @@ namespace Lykke.Service.BlockchainWallets.Client
             return true;
         }
 
-        public async Task<BlockchainWalletsResponse> GetWalletsAsync(string blockchainType, Guid clientId, int take, string continuationToken)
+        public async Task<BlockchainWalletsResponse> TryGetWalletsAsync(string blockchainType, Guid clientId, int take, string continuationToken)
         {
             if (clientId == Guid.Empty)
             {
@@ -349,7 +349,7 @@ namespace Lykke.Service.BlockchainWallets.Client
             return response;
         }
 
-        public async Task<BlockchainWalletResponse> GetWalletAsync(string blockchainType, string address)
+        public async Task<BlockchainWalletResponse> TryGetWalletAsync(string blockchainType, string address)
         {
             if (string.IsNullOrEmpty(address))
             {
@@ -361,7 +361,7 @@ namespace Lykke.Service.BlockchainWallets.Client
             return response;
         }
 
-        public async Task<CreatedByResponse> GetWalletsCreatorAsync(string blockchainType, string address)
+        public async Task<CreatedByResponse> TryGetWalletsCreatorAsync(string blockchainType, string address)
         {
             if (string.IsNullOrEmpty(address))
             {
@@ -373,7 +373,7 @@ namespace Lykke.Service.BlockchainWallets.Client
             return response;
         }
 
-        public async Task<BlockchainWalletsResponse> GetClientWalletsAsync(Guid clientId, int take, string continuationToken)
+        public async Task<BlockchainWalletsResponse> TryGetClientWalletsAsync(Guid clientId, int take, string continuationToken)
         {
             if (clientId == Guid.Empty)
             {
