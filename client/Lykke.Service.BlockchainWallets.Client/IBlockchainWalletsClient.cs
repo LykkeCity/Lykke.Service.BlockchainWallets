@@ -149,7 +149,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <returns>
         ///     Lykke client's wallets.
         /// </returns>
-        Task<WalletsResponse> GetWalletsAsync(Guid clientId, int take, string continuationToken);
+        Task<WalletsResponse> TryGetWalletsAsync(Guid clientId, int take, string continuationToken);
 
         /// <summary>
         ///    Creates address from base address and address extension ensures it has valid extension.
@@ -272,7 +272,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <returns>
         ///     Lykke client's wallets.
         /// </returns>
-        Task<BlockchainWalletsResponse> GetWalletsAsync(string blockchainType, Guid clientId, int take, string continuationToken);
+        Task<BlockchainWalletsResponse> TryGetWalletsAsync(string blockchainType, Guid clientId, int take, string continuationToken);
 
         /// <summary>
         ///     Returns Lykke clients wallets.
@@ -289,7 +289,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <returns>
         ///     Lykke client's wallets.
         /// </returns>
-        Task<BlockchainWalletsResponse> GetClientWalletsAsync(Guid clientId, int take, string continuationToken);
+        Task<BlockchainWalletsResponse> TryGetClientWalletsAsync(Guid clientId, int take, string continuationToken);
 
         /// <summary>
         ///     Returns Lykke client wallet.
@@ -303,7 +303,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <returns>
         ///     Lykke client's wallets.
         /// </returns>
-        Task<BlockchainWalletResponse> GetWalletAsync(string blockchainType, string address);
+        Task<BlockchainWalletResponse> TryGetWalletAsync(string blockchainType, string address);
 
         /// <summary>
         ///     Returns Lykke client wallet.
@@ -317,7 +317,7 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <returns>
         ///     Lykke client's wallets.
         /// </returns>
-        Task<CreatedByResponse> GetWalletsCreatorAsync(string blockchainType, string address);
+        Task<CreatedByResponse> TryGetWalletsCreatorAsync(string blockchainType, string address);
 
         #endregion
 
