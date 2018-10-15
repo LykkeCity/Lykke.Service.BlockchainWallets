@@ -198,7 +198,6 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <returns>
         ///     Lykke client id, if operation succeeded, null otherwise.
         /// </returns>
-        [Obsolete]
         Task<Guid?> TryGetClientIdAsync(string blockchainType, string address);
 
         /// <summary>
