@@ -1,5 +1,4 @@
-﻿using System;
-using Autofac;
+﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Common.Log;
 using JetBrains.Annotations;
@@ -8,6 +7,7 @@ using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.Common.Log;
 using Lykke.Logs;
 using Lykke.Logs.Loggers.LykkeSlack;
+using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Settings;
 using Lykke.Service.BlockchainWallets.Modules;
 using Lykke.SettingsReader;
@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
+using System;
 
 namespace Lykke.Service.BlockchainWallets
 {
@@ -55,7 +56,7 @@ namespace Lykke.Service.BlockchainWallets
                     app.UseDeveloperExceptionPage();
                 }
 
-                app.UseLykkeMiddleware(ex => new { Message = "Technical problem" });
+                app.UseLykkeMiddleware(ex => Common.Api.Contract.Responses.ErrorResponse.Create(ex.Message));
 
                 app.UseMvc();
                 app.UseSwagger(c =>
@@ -183,6 +184,8 @@ namespace Lykke.Service.BlockchainWallets
         {
             try
             {
+                ApplicationContainer.Resolve<IStartupManager>().Start();
+                
                 HealthNotifier?.Notify("Started");
             }
             catch (Exception ex)

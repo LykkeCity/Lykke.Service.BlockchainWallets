@@ -4,9 +4,14 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Common.Log;
 using Lykke.Common.Api.Contract.Responses;
+using Lykke.Common.Log;
 using Lykke.Service.BlockchainWallets.Client;
+using Lykke.Service.BlockchainWallets.Client.ClientGenerator;
 using Lykke.Service.BlockchainWallets.Contract.Models;
+using Lykke.Service.BlockchainWallets.Tests.Common.DelegatingMessageHandlers;
+using Moq;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -20,7 +25,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             var handlerStub = new DelegatingHandlerStub();
             var client = CreateClient(handlerStub);
 
-            var integrationLayerIdCases = new[]
+            var blockchainTypeCases = new[]
             {
                 new { Case = (string) null, IsValid = false },
                 new { Case = "", IsValid = false },
@@ -50,13 +55,13 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
 
             foreach (var clientAction in clientActions)
             {
-                foreach (var integrationLayerIdCase in integrationLayerIdCases)
+                foreach (var blockchainTypeCase in blockchainTypeCases)
                 {
                     foreach (var integrationLayerAssetIdCase in integrationLayerAssetIdCases)
                     {
                         foreach (var clientIdCase in clientIdCases)
                         {
-                            if (!integrationLayerIdCase.IsValid &&
+                            if (!blockchainTypeCase.IsValid &&
                                 !integrationLayerAssetIdCase.IsValid &&
                                 !clientIdCase.IsValid)
                             {
@@ -79,10 +84,10 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
                 }
             }
 
-            var addressActions = new List<Func<string, string, string, Task>>
+            var addressActions = new List<Func<string, string, Task>>
             {
-                async (a, b, c) => { await client.GetClientIdAsync(a, b, c); },
-                async (a, b, c) => { await client.TryGetClientIdAsync(a, b, c); }
+                async (a, b) => { await client.GetClientIdAsync(a,  b); },
+                async (a, b) => { await client.TryGetClientIdAsync(a, b); }
             };
 
             var addressCases = new[]
@@ -94,29 +99,24 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
 
             foreach (var addressAction in addressActions)
             {
-                foreach (var integrationLayerIdCase in integrationLayerIdCases)
+                foreach (var blockchainTypeCase in blockchainTypeCases)
                 {
-                    foreach (var integrationLayerAssetIdCase in integrationLayerAssetIdCases)
+                    foreach (var addressCase in addressCases)
                     {
-                        foreach (var addressCase in addressCases)
+                        if (!blockchainTypeCase.IsValid &&
+                            !addressCase.IsValid)
                         {
-                            if (!integrationLayerIdCase.IsValid &&
-                                !integrationLayerAssetIdCase.IsValid &&
-                                !addressCase.IsValid)
+                            try
                             {
-                                try
-                                {
-                                    await addressAction
-                                    (
-                                        integrationLayerAssetIdCase.Case,
-                                        integrationLayerAssetIdCase.Case,
-                                        addressCase.Case
-                                    );
-                                }
-                                catch (Exception e)
-                                {
-                                    Assert.IsType<ArgumentException>(e);
-                                }
+                                await addressAction
+                                (
+                                    blockchainTypeCase.Case,
+                                    addressCase.Case
+                                );
+                            }
+                            catch (Exception e)
+                            {
+                                Assert.IsType<ArgumentException>(e);
                             }
                         }
                     }
@@ -253,7 +253,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             });
 
             var client = CreateClient(handlerStub);
-            var response = await client.GetClientIdAsync("EthereumClassic", "ETC", "0x83f0726180cf3964b69f62ac063c5cb9a66b3be5");
+            var response = await client.GetClientIdAsync("EthereumClassic", "0x83f0726180cf3964b69f62ac063c5cb9a66b3be5");
 
             Assert.Equal(clientId, response);
         }
@@ -266,7 +266,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
 
             try
             {
-                await client.GetClientIdAsync("EthereumClassic", "ETC", "0x83f0726180cf3964b69f62ac063c5cb9a66b3be5");
+                await client.GetClientIdAsync("EthereumClassic", "0x83f0726180cf3964b69f62ac063c5cb9a66b3be5");
             }
             catch (Exception e)
             {
@@ -295,7 +295,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             });
             var client = CreateClient(handlerStub);
 
-            var result = await client.GetWalletsAsync(clientId, 10, null);
+            var result = await client.TryGetWalletsAsync(clientId, 10, null);
 
             Assert.True(result?.Wallets.FirstOrDefault()?.ClientId == clientId);
         }
@@ -305,7 +305,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
         {
             var clientId = Guid.Parse("25c47ff8-e31e-4913-8e02-8c2512f0111e");
             var counter = 0;
-            
+
             #region Responses
 
             var content1 = new WalletsResponse
@@ -431,12 +431,24 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
 
         private static BlockchainWalletsClient CreateClient(HttpMessageHandler handlerStub)
         {
+            var log = new Mock<ILog>();
+            var logFactory = new Mock<ILogFactory>();
+            logFactory.Setup(x => x.CreateLog(It.IsAny<object>())).Returns(log.Object);
             var httpClient = new HttpClient(handlerStub)
             {
                 BaseAddress = new Uri("http://localhost")
             };
 
-            return new BlockchainWalletsClient(httpClient);
+            var interceptor = new RequestInterceptorHandler(httpClient);
+            var blockchainWalletsApiFactory = new BlockchainWalletsApiFactory();
+            var blockchainWalletClient =
+                new Lykke.Service.BlockchainWallets.Client.BlockchainWalletsClient("http://localhost:5000",
+                    logFactory.Object,
+                    blockchainWalletsApiFactory,
+                    1,
+                    interceptor);
+
+            return blockchainWalletClient;
         }
     }
 }

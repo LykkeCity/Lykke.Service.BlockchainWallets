@@ -9,12 +9,14 @@ using Lykke.SettingsReader;
 using Microsoft.WindowsAzure.Storage.Table;
 using System.Linq;
 using Lykke.Common.Log;
+using Lykke.Service.BlockchainWallets.AzureRepositories.Entities;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
 
 
 namespace Lykke.Service.BlockchainWallets.AzureRepositories
 {
+    [Obsolete]
     public class WalletRepository : IWalletRepository
     {
         private readonly INoSQLTableStorage<AzureIndex> _clientIndexTable;
@@ -66,12 +68,12 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
         private static (string PartitionKey, string RowKey) GetAddressIndexKeys(WalletEntity wallet)
         {
-            return GetAddressIndexKeys(wallet.IntegrationLayerId, wallet.AssetId, wallet.Address);
+            return GetAddressIndexKeys(wallet.IntegrationLayerId, wallet.Address);
         }
 
-        private static (string PartitionKey, string RowKey) GetAddressIndexKeys(string blockchainType, string assetId, string address)
+        private static (string PartitionKey, string RowKey) GetAddressIndexKeys(string blockchainType, string address)
         {
-            var partitionKey = $"{blockchainType}-{assetId}-{address.CalculateHexHash32(3)}";
+            var partitionKey = $"{blockchainType}-{address.CalculateHexHash32(3)}";
             var rowKey = address;
 
             return (partitionKey, rowKey);
@@ -106,7 +108,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
             // Address index
 
-            var (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(blockchainType, assetId, address);
+            var (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(blockchainType, address);
             var (clientIndexPartitionKey, clientIndexRowKey) = GetClientIndexKeys(blockchainType, assetId, clientId);
 
             await _addressIndexTable.InsertOrReplaceAsync(new AzureIndex(
@@ -155,9 +157,9 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             }
         }
 
-        public async Task<bool> ExistsAsync(string blockchainType, string assetId, string address)
+        public async Task<bool> ExistsAsync(string blockchainType, string address)
         {
-            return await TryGetAsync(blockchainType, assetId, address) != null;
+            return await TryGetAsync(blockchainType, address) != null;
         }
 
         public async Task<bool> ExistsAsync(string blockchainType, string assetId, Guid clientId)
@@ -195,9 +197,9 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             return (entities.Select(ConvertEntityToDto), continuationToken);
         }
 
-        public async Task<WalletDto> TryGetAsync(string blockchainType, string assetId, string address)
+        public async Task<WalletDto> TryGetAsync(string blockchainType, string address)
         {
-            var (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(blockchainType, assetId, address);
+            var (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(blockchainType, address);
 
             var index = await _addressIndexTable.GetDataAsync
             (
@@ -238,7 +240,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         }
 
         // NB! This method should be used only by conversion utility or in similar cases.
-        internal async Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(int take, string continuationToken)
+        public async Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(int take, string continuationToken)
         {
             IEnumerable<WalletEntity> entities;
 

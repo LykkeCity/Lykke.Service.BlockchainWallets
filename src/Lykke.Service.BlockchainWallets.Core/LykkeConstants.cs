@@ -3,5 +3,10 @@
     public static class LykkeConstants
     {
         public const string SolarBlockchainType = "Solar";
+
+        public class PublicAddressExtension
+        {
+            public const string BaseAddressDisplayName = "Address";
+        }
     }
 }

@@ -34,53 +34,56 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             return new MonitoringSubscriptionRepository(table);
         }
 
-        private static string GetPartitionKey(string blockchainType, string address, MonitoringSubscriptionType subscriptionType)
+        private static string GetPartitionKey(string blockchainType, MonitoringSubscriptionType subscriptionType)
         {
-            return $"{subscriptionType.ToString()}-{blockchainType}-{address}";
+            return $"{subscriptionType.ToString()}-{blockchainType}";
         }
 
-        private static string GetRowKey(string assetId)
+        private static string GetRowKey(string address)
         {
-            return assetId;
+            return address;
         }
 
-        public async Task RegisterWalletSubscriptionAsync(string blockchainType, string address, string assetId, MonitoringSubscriptionType subscriptionType)
+        public async Task RegisterWalletSubscriptionAsync(string blockchainType, string address, MonitoringSubscriptionType subscriptionType)
         {
             var entity = new MonitoringSubscriptionEntity
             {
                 Address = address,
-                AssetId = assetId,
                 BlockchainType = blockchainType,
                 SubscriptionType = subscriptionType,
 
-                PartitionKey = GetPartitionKey(blockchainType, address, subscriptionType),
-                RowKey = GetRowKey(assetId)
+                PartitionKey = GetPartitionKey(blockchainType, subscriptionType),
+                RowKey = GetRowKey(address)
             };
 
             await _table.InsertOrReplaceAsync(entity);
         }
 
-        public async Task UnregisterWalletSubscriptionAsync(string blockchainType, string address, string assetId, MonitoringSubscriptionType subscriptionType)
+        public async Task UnregisterWalletSubscriptionAsync(string blockchainType, string address, MonitoringSubscriptionType subscriptionType)
         {
-            var partitionKey = GetPartitionKey(blockchainType, address, subscriptionType);
-            var rowKey = GetRowKey(assetId);
+            var partitionKey = GetPartitionKey(blockchainType, subscriptionType);
+            var rowKey = GetRowKey(address);
 
             await _table.DeleteIfExistAsync(partitionKey, rowKey);
         }
 
-        public async Task<bool> WalletIsSubscribedAsync(string blockchainType, string address, string assetId, MonitoringSubscriptionType subscriptionType)
+        public async Task<bool> WalletIsSubscribedAsync(string blockchainType, string address, MonitoringSubscriptionType subscriptionType)
         {
-            var partitionKey = GetPartitionKey(blockchainType, address, subscriptionType);
-            var rowKey = GetRowKey(assetId);
+            var partitionKey = GetPartitionKey(blockchainType, subscriptionType);
+            var rowKey = GetRowKey(address);
 
             return await _table.GetDataAsync(partitionKey, rowKey) != null;
         }
         
+        //TODO: Get rif of that method?
         public async Task<int> WalletSubscriptionsCount(string blockchainType, string address, MonitoringSubscriptionType subscriptionType)
         {
-            var partitionKey = GetPartitionKey(blockchainType, address, subscriptionType);
+            var partitionKey = GetPartitionKey(blockchainType, subscriptionType);
+            var rowKey = GetRowKey(address);
 
-            return (await _table.GetDataAsync(partitionKey)).Count();
+            var count = (await _table.GetDataAsync(partitionKey, rowKey));
+
+            return count != null ? 1 : 0;
         }
     }
 }

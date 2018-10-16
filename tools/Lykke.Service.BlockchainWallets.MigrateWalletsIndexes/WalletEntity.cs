@@ -2,7 +2,7 @@
 using Common;
 using Lykke.AzureStorage.Tables;
 
-namespace Lykke.Service.BlockchainWallets.AzureRepositories
+namespace Lykke.Service.BlockchainWallets.MigrateWalletsIndexes
 {
     public class WalletEntity : AzureTableEntity
     {

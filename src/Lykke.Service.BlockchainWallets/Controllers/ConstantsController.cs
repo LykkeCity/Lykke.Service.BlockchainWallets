@@ -1,7 +1,6 @@
 ﻿using Lykke.Service.BlockchainWallets.Contract.Models;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core;
 
@@ -11,22 +10,22 @@ namespace Lykke.Service.BlockchainWallets.Controllers
     public class ConstantsController : Controller
     {
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
-        private readonly IConstantsService _constantsService;
+        private readonly IBlockchainExtensionsService _blockchainExtensionsService;
 
 
         public ConstantsController(
             IBlockchainIntegrationService blockchainIntegrationService,
-            IConstantsService constantsService)
+            IBlockchainExtensionsService blockchainExtensionsService)
         {
             _blockchainIntegrationService = blockchainIntegrationService;
-            _constantsService = constantsService;
+            _blockchainExtensionsService = blockchainExtensionsService;
         }
 
         /// <summary>
         ///    Returns address extensions constants for the specified blockchain type.
         /// </summary>
         [HttpGet("{blockchainType}/address-extension")]
-        public async Task<IActionResult> GetAddressExtensionConstants(string blockchainType)
+        public IActionResult GetAddressExtensionConstants(string blockchainType)
         {
             if (string.IsNullOrEmpty(blockchainType))
             {
@@ -40,9 +39,9 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             {
                 return Ok(new AddressExtensionConstantsResponse
                 {
-                    ProhibitedSymbolsForAddressExtension =  null,
-                    ProhibitedSymbolsForBaseAddress =  null,
-                    AddressExtensionDisplayName ="",
+                    ProhibitedSymbolsForAddressExtension = null,
+                    ProhibitedSymbolsForBaseAddress = null,
+                    AddressExtensionDisplayName = "",
                     BaseAddressDisplayName = "",
                     TypeForDeposit = AddressExtensionTypeForDeposit.NotSupported,
                     TypeForWithdrawal = AddressExtensionTypeForWithdrawal.NotSupported
@@ -57,16 +56,16 @@ namespace Lykke.Service.BlockchainWallets.Controllers
                 );
             }
 
-            var constants = await _constantsService.GetAddressExtensionConstantsAsync(blockchainType);
+            var constants = _blockchainExtensionsService.TryGetAddressExtensionConstants(blockchainType);
 
             return Ok(new AddressExtensionConstantsResponse
             {
-                ProhibitedSymbolsForAddressExtension = constants.SeparatorExists ? new char[] { constants.Separator } : null,
-                ProhibitedSymbolsForBaseAddress = constants.SeparatorExists ? new char[] { constants.Separator } : null,
-                AddressExtensionDisplayName = constants.AddressExtensionDisplayName,
-                BaseAddressDisplayName = constants.BaseAddressDisplayName,
-                TypeForDeposit = constants.TypeForDeposit,
-                TypeForWithdrawal = constants.TypeForWithdrawal
+                ProhibitedSymbolsForAddressExtension = constants?.SeparatorExists != null ? new char[] { constants.Separator } : null,
+                ProhibitedSymbolsForBaseAddress = constants?.SeparatorExists != null ? new char[] { constants.Separator } : null,
+                AddressExtensionDisplayName = constants?.AddressExtensionDisplayName,
+                BaseAddressDisplayName = !string.IsNullOrEmpty(constants?.BaseAddressDisplayName) ? constants.BaseAddressDisplayName : LykkeConstants.PublicAddressExtension.BaseAddressDisplayName,
+                TypeForDeposit = constants?.TypeForDeposit ?? AddressExtensionTypeForDeposit.NotSupported,
+                TypeForWithdrawal = constants?.TypeForWithdrawal ?? AddressExtensionTypeForWithdrawal.NotSupported
             });
         }
     }

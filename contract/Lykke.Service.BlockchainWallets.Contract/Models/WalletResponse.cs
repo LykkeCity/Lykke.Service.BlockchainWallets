@@ -49,5 +49,11 @@ namespace Lykke.Service.BlockchainWallets.Contract.Models
         /// </summary>
         [UsedImplicitly(ImplicitUseKindFlags.Access)]
         public string IntegrationLayerAssetId { get; set; }
+
+        /// <summary>
+        ///     Blockchain Integration Layer Asset Id.
+        /// </summary>
+        [UsedImplicitly(ImplicitUseKindFlags.Access)]
+        public CreatorType CreatedBy { get; set; }
     }
 }

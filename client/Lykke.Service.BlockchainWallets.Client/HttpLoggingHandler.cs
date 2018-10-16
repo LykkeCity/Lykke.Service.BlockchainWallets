@@ -86,7 +86,8 @@ namespace Lykke.Service.BlockchainWallets.Client
                 }
             }
 
-            _log.Warning("HTTP API request -> Response status is non success", context: message.ToString());
+            _log.WriteWarning(nameof(LogRequestAsync), message.ToString(), "HTTP API request -> Response status is non success");
+
         }
 
         private async Task LogResponseAsync(HttpResponseMessage response, Guid id)
@@ -118,7 +119,7 @@ namespace Lykke.Service.BlockchainWallets.Client
                 }
             }
 
-            _log.Warning("HTTP API response <- Response status is non success", context: message.ToString());
+            _log.WriteWarning(nameof(LogResponseAsync), message.ToString(), "HTTP API response <- Response status is non success");
         }
     }
 }

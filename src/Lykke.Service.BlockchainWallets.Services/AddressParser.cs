@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.Services;
 
@@ -8,37 +7,31 @@ namespace Lykke.Service.BlockchainWallets.Services
     [UsedImplicitly]
     public class AddressParser : IAddressParser
     {
-        private readonly ICapabilitiesService _capabilitiesService;
-        private readonly IConstantsService _constantsService;
+        private readonly IBlockchainExtensionsService _extensionsService;
 
         public AddressParser(
-            ICapabilitiesService capabilitiesService,
-            IConstantsService constantsService)
+            IBlockchainExtensionsService extensionsService)
         {
-            _capabilitiesService = capabilitiesService;
-            _constantsService = constantsService;
+            _extensionsService = extensionsService;
         }
 
-
-        public async Task<AddressParseResultDto> ExtractAddressParts(string blockchainType, string address)
+        public AddressParseResultDto ExtractAddressParts(string blockchainType, string address)
         {
             var addressExtension = string.Empty;
             var baseAddress = string.Empty;
             var isPublicAddressExtensionRequired = false;
+            
+            var constants = _extensionsService.TryGetAddressExtensionConstants(blockchainType);
 
-            if (await _capabilitiesService.IsPublicAddressExtensionRequiredAsync(blockchainType))
+            if (constants != null)
             {
-                var constants = await _constantsService.GetAddressExtensionConstantsAsync(blockchainType);
-
                 var addressAndExtension = address.Split(constants.Separator, 2);
 
                 isPublicAddressExtensionRequired = true;
                 baseAddress = addressAndExtension[0];
 
                 if (addressAndExtension.Length == 2)
-                {
                     addressExtension = addressAndExtension[1];
-                }
             }
 
             return new AddressParseResultDto
