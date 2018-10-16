@@ -33,12 +33,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.TestLegacy", "tools\Lykke.Service.BlockchainWallets.TestLegacy\Lykke.Service.BlockchainWallets.TestLegacy.csproj", "{0F0D1931-2E7D-4183-B859-A36BDE54711C}"
 EndProject
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Service.BlockchainWallets.BtcDepositsMigration", "tools\Lykke.Service.BlockchainWallets.BtcDepositsMigration\Lykke.Service.BlockchainWallets.BtcDepositsMigration.csproj", "{1AA1607E-0773-450B-B70E-187465DBF05A}"
-=======
->>>>>>> feature_LWDEV-9324_migrate_btc_wallets
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.MigrateWalletsIndexes", "tools\Lykke.Service.BlockchainWallets.MigrateWalletsIndexes\Lykke.Service.BlockchainWallets.MigrateWalletsIndexes.csproj", "{CD1E080E-50DA-47F9-94A4-6D10734A0C43}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.MigrateAddressStorage", "Lykke.Service.BlockchainWallets.MigrateAddressStorage\Lykke.Service.BlockchainWallets.MigrateAddressStorage.csproj", "{8E5886C7-D438-4E63-97FC-F82273E80F40}"
@@ -48,10 +44,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.CTests", "tests\Lykke.Service.BlockchainWallets.CTests\Lykke.Service.BlockchainWallets.CTests\Lykke.Service.BlockchainWallets.CTests.csproj", "{AA5F890F-A906-4980-AE04-C7BF04CE9D75}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Service.BlockchainWallets.Tests.Common", "tests\Lykke.Service.BlockchainWallets.Tests.Common\Lykke.Service.BlockchainWallets.Tests.Common.csproj", "{0E9CCD87-193F-47DB-B97B-A80123961D93}"
-<<<<<<< HEAD
-=======
->>>>>>> test
->>>>>>> feature_LWDEV-9324_migrate_btc_wallets
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
