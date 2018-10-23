@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AzureStorage;
 using AzureStorage.Tables;
@@ -9,6 +10,7 @@ using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.FirstGeneration;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.SettingsReader;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Lykke.Service.BlockchainWallets.AzureRepositories
 {
@@ -116,7 +118,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             {
                 var bcn223Keys = GetBcnClientCredentialsWalletKeys(SpecialAssetIds.BcnKeyForErc223, clientId);
                 var bcn20Keys = GetBcnClientCredentialsWalletKeys(SpecialAssetIds.BcnKeyForErc20, clientId);
-                bcnEntity = await _bcnClientCredentialsWalletTable.GetDataAsync(bcn223Keys.PartitionKey, bcn223Keys.RowKey); 
+                bcnEntity = await _bcnClientCredentialsWalletTable.GetDataAsync(bcn223Keys.PartitionKey, bcn223Keys.RowKey);
             }
             else
             {
@@ -212,6 +214,19 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             await _bcnClientCredentialsWalletTable.InsertOrReplaceAsync(byAssetAddressEntity);
         }
 
+        public Task EnumerateBcnCredsByChunksAsync(string assetId, Func<IEnumerable<IBcnCredentialsRecord>, Task> chunks)
+        {
+            var partition = FirstGenerationBlockchainWalletEntity.FromBcnClientCredentials.ByAssetAddress.GeneratePartition();
+            
+            var filter = TableQuery.CombineFilters(
+                    TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partition),
+                    TableOperators.And,
+                    TableQuery.GenerateFilterCondition("AssetId", QueryComparisons.Equal, assetId));
+
+            var query = new TableQuery<FirstGenerationBlockchainWalletEntity.FromBcnClientCredentials>().Where(filter);
+            return _bcnClientCredentialsWalletTable.GetDataByChunksAsync(query, chunks);            
+        }
+
         public Task SaveAsync(IWalletCredentials walletCredentials)
         {
             var newByClientEntity = WalletCredentialsEntity.ByClientId.CreateNew(walletCredentials);
@@ -246,7 +261,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                 insertByQuantaTask = _walletCredentialsWalletTable.InsertAsync(newByQuantaContractEntity);
             }
 
-            var insertMultisigTask = newByMultisigEntity.MultiSig != null ? 
+            var insertMultisigTask = newByMultisigEntity.MultiSig != null ?
                 _walletCredentialsWalletTable.InsertAsync(newByMultisigEntity) : Task.CompletedTask;
 
             return Task.WhenAll(
