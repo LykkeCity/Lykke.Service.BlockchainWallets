@@ -104,7 +104,7 @@ namespace Lykke.Service.BlockchainWallets.BtcDepositsMigration
             var signingService = RestClient.For<ISigningServiceApi>(new HttpClient { BaseAddress = new Uri(bitcoinSettings.SignatureProviderUrl) });
             signingService.ApiKey = bitcoinSettings.SigningServiceApiKey;
 
-            var walletRepository = WalletRepository.Create(appSettings.Nested(o => o.BlockchainWalletsService.Db.DataConnString), logFactory);
+            var walletRepository = BlockchainWalletsRepository.Create(appSettings.Nested(o => o.BlockchainWalletsService.Db.DataConnString), logFactory);
 
             var firstGenerationBlockchainWalletRepository = FirstGenerationBlockchainWalletRepository.Create(
                 appSettings.Nested(o => o.BlockchainWalletsService.Db.ClientPersonalInfoConnString), logFactory);
@@ -166,12 +166,12 @@ namespace Lykke.Service.BlockchainWallets.BtcDepositsMigration
             }
         }
 
-        private static async Task Migrate(IWalletRepository walletRepository, ISigningServiceApi signingServiceApi,
+        private static async Task Migrate(IBlockchainWalletsRepository walletRepository, ISigningServiceApi signingServiceApi,
             IBlockchainSignFacadeClient blockchainSignFacade, ICqrsEngine cqrs,
             IBcnCredentialsRecord bcnCredentialsRecord)
         {
             var clientId = Guid.Parse(bcnCredentialsRecord.ClientId);
-            var existingWallet = await walletRepository.TryGetAsync(BlockchainType, AssetId, clientId);
+            var existingWallet = await walletRepository.TryGetAsync(BlockchainType,  clientId);
             if (existingWallet != null)
                 return;
             var address = bcnCredentialsRecord.AssetAddress;
@@ -181,13 +181,15 @@ namespace Lykke.Service.BlockchainWallets.BtcDepositsMigration
 
             await ImportWalletToSignFacade(blockchainSignFacade, privateKey, address);
 
-            await walletRepository.AddAsync(BlockchainType, AssetId, clientId, address);
+            await walletRepository.AddAsync(BlockchainType,  clientId, address, CreatorType.LykkeWallet);
             var @event = new WalletCreatedEvent
             {
                 Address = address,
                 AssetId = AssetId,
                 BlockchainType = BlockchainType,
-                IntegrationLayerId = BlockchainType
+                IntegrationLayerId = BlockchainType,
+                ClientId = clientId,
+                CreatedBy = CreatorType.LykkeWallet
             };
             cqrs.PublishEvent(@event, BlockchainWalletsBoundedContext.Name);
         }
