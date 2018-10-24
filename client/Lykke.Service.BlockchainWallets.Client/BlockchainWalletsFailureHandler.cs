@@ -5,7 +5,7 @@ using Polly.Timeout;
 
 namespace Lykke.Service.BlockchainWallets.Client
 {
-    public class BlockchainWalletsFailureHandler
+    public class BlockchainWalletsFailureHandler: IBlockchainWalletsFailureHandler
     {
         private readonly Policy _circuitBreakPolicy;
 
