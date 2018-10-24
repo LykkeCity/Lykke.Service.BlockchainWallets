@@ -452,7 +452,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             });
 
             var client = CreateClient(handlerStub);
-            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5), flaggedUnavailiable: false);
+            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5));
 
             var result = await failureHandler.Execute(
                 () => client.TryGetClientIdAsync("blockchainType", "Address"), timeout: TimeSpan.FromSeconds(60));
@@ -485,8 +485,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             });
 
             var client = CreateClient(handlerStub);
-            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5),
-                flaggedUnavailiable: false);
+            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5));
 
             await Assert.ThrowsAnyAsync<Exception>(async () =>
             {
@@ -519,42 +518,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             });
 
             var client = CreateClient(handlerStub);
-            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5),
-                flaggedUnavailiable: false);
-
-            await Assert.ThrowsAnyAsync<Exception>(async () =>
-            {
-                await failureHandler.Execute(
-                    () => client.TryGetClientIdAsync("blockchainType", "Address"));
-            });
-        }
-
-
-        [Fact]
-        public async Task Throws_Exception_On_Flagged_Unavaliable()
-        {
-            #region Responses
-
-            var clientId = Guid.NewGuid();
-            var content1 = new ClientIdResponse { ClientId = clientId };
-
-            #endregion
-
-            var handlerStub = new DelegatingHandlerStub((request, cancellationToken) =>
-            {
-                var content = content1;
-
-                var response = new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent(JsonConvert.SerializeObject(content))
-                };
-
-                return Task.FromResult(response);
-            });
-
-            var client = CreateClient(handlerStub);
-            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5),
-                flaggedUnavailiable: true);
+            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5));
 
             await Assert.ThrowsAnyAsync<Exception>(async () =>
             {
@@ -589,8 +553,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             });
 
             var client = CreateClient(handlerStub);
-            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5),
-                flaggedUnavailiable: false);
+            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5));
 
 
             var result = await failureHandler.Execute(
@@ -626,49 +589,11 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             });
 
             var client = CreateClient(handlerStub);
-            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5),
-                flaggedUnavailiable: false);
+            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5));
 
 
             var result = await failureHandler.Execute(
                 () => client.TryGetClientIdAsync("blockchainType", "Address"), fallbackResult: () => dummy);
-
-            Assert.Equal(dummy, result);
-        }
-
-        [Fact]
-        public async Task Can_Return_Dummy_On_Flagged_Unabaliable()
-        {
-            #region Responses
-
-            var clientId = Guid.NewGuid();
-
-            var dummy = Guid.NewGuid();
-            var content1 = BlockchainWalletsErrorResponse.Create(
-                "msg",
-                ErrorType.None);
-
-            #endregion
-
-            var handlerStub = new DelegatingHandlerStub(async (request, cancellationToken) =>
-            {
-                var content = content1;
-
-                var response = new HttpResponseMessage(HttpStatusCode.InternalServerError)
-                {
-                    Content = new StringContent(JsonConvert.SerializeObject(content))
-                };
-
-                return response;
-            });
-
-            var client = CreateClient(handlerStub);
-            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5),
-                flaggedUnavailiable: true);
-
-
-            var result = await failureHandler.Execute(
-                () => client.TryGetClientIdAsync("blockchainType", "Address"), timeout: TimeSpan.FromMilliseconds(100), fallbackResult: () => dummy);
 
             Assert.Equal(dummy, result);
         }
@@ -717,8 +642,7 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             });
 
             var client = CreateClient(handlerStub);
-            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(1),
-                flaggedUnavailiable: false);
+            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(1));
 
 
             var result1 = await failureHandler.Execute(
