@@ -429,6 +429,321 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
             });
         }
 
+        [Fact]
+        public async Task Сan_Return_Result_On_Failure_Handler( )
+        {
+            #region Responses
+
+            var clientId = Guid.NewGuid();
+            var content1 = new ClientIdResponse{ClientId =  clientId};
+
+            #endregion
+
+            var handlerStub = new DelegatingHandlerStub((request, cancellationToken) =>
+            {
+                var content = content1;
+
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(content))
+                };
+
+                return Task.FromResult(response);
+            });
+
+            var client = CreateClient(handlerStub);
+            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5), flaggedUnavailiable: false);
+
+            var result = await failureHandler.Execute(
+                () => client.TryGetClientIdAsync("blockchainType", "Address"), timeout: TimeSpan.FromSeconds(60));
+
+            Assert.Equal(clientId, result);
+        }
+
+        [Fact]
+        public async Task Throws_Exception_On_Timeout()
+        {
+            #region Responses
+
+            var content1 = BlockchainWalletsErrorResponse.Create(
+                $"Address extension is not supported for specified blockchain type ",
+                ErrorType.None);
+
+            #endregion
+
+            var handlerStub = new DelegatingHandlerStub(async (request, cancellationToken) =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+                var content = content1;
+
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(content))
+                };
+
+                return response;
+            });
+
+            var client = CreateClient(handlerStub);
+            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5),
+                flaggedUnavailiable: false);
+
+            await Assert.ThrowsAnyAsync<Exception>(async () =>
+            {
+                await failureHandler.Execute(
+                    () => client.TryGetClientIdAsync("blockchainType", "Address"), timeout: TimeSpan.FromSeconds(1));
+            });
+        }
+
+        [Fact]
+        public async Task Throws_Exception_On_Http_Error()
+        {
+            #region Responses
+
+            var clientId = Guid.NewGuid();
+            var content1 = new ClientIdResponse { ClientId = clientId };
+
+            #endregion
+
+            var handlerStub = new DelegatingHandlerStub(async (request, cancellationToken) =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
+                var content = content1;
+
+                var response = new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(content))
+                };
+
+                return response;
+            });
+
+            var client = CreateClient(handlerStub);
+            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5),
+                flaggedUnavailiable: false);
+
+            await Assert.ThrowsAnyAsync<Exception>(async () =>
+            {
+                await failureHandler.Execute(
+                    () => client.TryGetClientIdAsync("blockchainType", "Address"));
+            });
+        }
+
+
+        [Fact]
+        public async Task Throws_Exception_On_Flagged_Unavaliable()
+        {
+            #region Responses
+
+            var clientId = Guid.NewGuid();
+            var content1 = new ClientIdResponse { ClientId = clientId };
+
+            #endregion
+
+            var handlerStub = new DelegatingHandlerStub((request, cancellationToken) =>
+            {
+                var content = content1;
+
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(content))
+                };
+
+                return Task.FromResult(response);
+            });
+
+            var client = CreateClient(handlerStub);
+            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5),
+                flaggedUnavailiable: true);
+
+            await Assert.ThrowsAnyAsync<Exception>(async () =>
+            {
+                await failureHandler.Execute(
+                    () => client.TryGetClientIdAsync("blockchainType", "Address"));
+            });
+        }
+
+        [Fact]
+        public async Task Can_Return_Dummy_On_Timeout()
+        {
+            #region Responses
+
+            var clientId = Guid.NewGuid();
+
+            var dummy = Guid.NewGuid();
+            var content1 = new ClientIdResponse { ClientId = clientId };
+
+            #endregion
+
+            var handlerStub = new DelegatingHandlerStub(async (request, cancellationToken) =>
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
+                var content = content1;
+
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(content))
+                };
+
+                return response;
+            });
+
+            var client = CreateClient(handlerStub);
+            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5),
+                flaggedUnavailiable: false);
+
+
+            var result = await failureHandler.Execute(
+                () => client.TryGetClientIdAsync("blockchainType", "Address"), timeout: TimeSpan.FromMilliseconds(100), fallbackResult: ()=> dummy);
+
+            Assert.Equal(dummy, result);
+        }
+
+        [Fact]
+        public async Task Can_Return_Dummy_On_HttpException()
+        {
+            #region Responses
+
+            var clientId = Guid.NewGuid();
+
+            var dummy = Guid.NewGuid();
+            var content1 = BlockchainWalletsErrorResponse.Create(
+                "msg",
+                ErrorType.None);
+
+            #endregion
+
+            var handlerStub = new DelegatingHandlerStub(async (request, cancellationToken) =>
+            {
+                var content = content1;
+
+                var response = new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(content))
+                };
+
+                return response;
+            });
+
+            var client = CreateClient(handlerStub);
+            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5),
+                flaggedUnavailiable: false);
+
+
+            var result = await failureHandler.Execute(
+                () => client.TryGetClientIdAsync("blockchainType", "Address"), fallbackResult: () => dummy);
+
+            Assert.Equal(dummy, result);
+        }
+
+        [Fact]
+        public async Task Can_Return_Dummy_On_Flagged_Unabaliable()
+        {
+            #region Responses
+
+            var clientId = Guid.NewGuid();
+
+            var dummy = Guid.NewGuid();
+            var content1 = BlockchainWalletsErrorResponse.Create(
+                "msg",
+                ErrorType.None);
+
+            #endregion
+
+            var handlerStub = new DelegatingHandlerStub(async (request, cancellationToken) =>
+            {
+                var content = content1;
+
+                var response = new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(content))
+                };
+
+                return response;
+            });
+
+            var client = CreateClient(handlerStub);
+            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(5),
+                flaggedUnavailiable: true);
+
+
+            var result = await failureHandler.Execute(
+                () => client.TryGetClientIdAsync("blockchainType", "Address"), timeout: TimeSpan.FromMilliseconds(100), fallbackResult: () => dummy);
+
+            Assert.Equal(dummy, result);
+        }
+
+
+        [Fact]
+        public async Task Can_Open_Circuit_On_First_Failure_And_Close_Circuit()
+        {
+            #region Responses
+
+            var actualValue = Guid.NewGuid();
+
+            var dummy = Guid.NewGuid();
+            var content1 = BlockchainWalletsErrorResponse.Create(
+                "msg",
+                ErrorType.None);
+
+            #endregion
+
+            var counter = 0;
+            var handlerStub = new DelegatingHandlerStub(async (request, cancellationToken) =>
+            {
+                if (counter <= 1)
+                {
+                    var content = content1;
+
+                    var response = new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                    {
+                        Content = new StringContent(JsonConvert.SerializeObject(content))
+                    };
+
+                    counter++;
+                    return response;
+                }
+                else
+                {
+
+                    var response = new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent(JsonConvert.SerializeObject(new ClientIdResponse { ClientId = actualValue }))
+                    };
+
+                    return response;
+                }
+
+            });
+
+            var client = CreateClient(handlerStub);
+            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromSeconds(1),
+                flaggedUnavailiable: false);
+
+
+            var result1 = await failureHandler.Execute(
+                () => client.TryGetClientIdAsync("blockchainType", "Address"), fallbackResult: () => dummy);
+
+            Assert.Equal(dummy, result1);
+
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
+
+            //circuit is still open
+            var result2 = await failureHandler.Execute(
+                () => client.TryGetClientIdAsync("blockchainType", "Address"),  fallbackResult: () => dummy);
+
+            Assert.Equal(dummy, result2);
+
+
+            await Task.Delay(TimeSpan.FromMilliseconds(1100));
+            //circuit is closed
+            var result3 = await failureHandler.Execute(
+                () => client.TryGetClientIdAsync("blockchainType", "Address"), fallbackResult: () => dummy);
+
+            Assert.Equal(actualValue, result3);
+        }
+
+
         private static BlockchainWalletsClient CreateClient(HttpMessageHandler handlerStub)
         {
             var log = new Mock<ILog>();
