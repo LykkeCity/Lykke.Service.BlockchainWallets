@@ -9,9 +9,9 @@ namespace Lykke.Service.BlockchainWallets.Client
     {
         private readonly Policy _circuitBreakPolicy;
 
-        public BlockchainWalletsFailureHandler(TimeSpan durationOfBreak, bool flaggedUnavailiable)
+        public BlockchainWalletsFailureHandler(TimeSpan durationOfBreak)
         {
-            _circuitBreakPolicy = BuildCircuitBreakerPolicy(durationOfBreak, flaggedUnavailiable);
+            _circuitBreakPolicy = BuildCircuitBreakerPolicy(durationOfBreak);
         }
 
         public async Task<T> Execute<T>(Func<Task<T>> method, TimeSpan? timeout = null, Func<T> fallbackResult = null)
@@ -48,18 +48,11 @@ namespace Lykke.Service.BlockchainWallets.Client
             return Policy.NoOpAsync<T>();
         }
 
-        private Policy BuildCircuitBreakerPolicy(TimeSpan durationOfBreak, bool flaggedUnavailiable)
+        private Policy BuildCircuitBreakerPolicy(TimeSpan durationOfBreak)
         {
-            var breaker = Policy.Handle<Exception>(FilterCircuitBreakerExceptions)
+            return Policy.Handle<Exception>(FilterCircuitBreakerExceptions)
                 .CircuitBreakerAsync(exceptionsAllowedBeforeBreaking: 1,
                     durationOfBreak: durationOfBreak);
-
-            if (flaggedUnavailiable)
-            {
-                breaker.Isolate();
-            }
-
-            return breaker;
         }
 
         private bool FilterCircuitBreakerExceptions(Exception ex)
