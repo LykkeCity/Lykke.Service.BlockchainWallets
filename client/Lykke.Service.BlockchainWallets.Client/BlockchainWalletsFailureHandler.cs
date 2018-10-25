@@ -19,7 +19,7 @@ namespace Lykke.Service.BlockchainWallets.Client
             var fallbackPolicy = BuildFallbackPolicy(fallbackResult);
             var timeoutPolicy = BuildTimeoutPolicy(timeout);
 
-            var pipeLine = fallbackPolicy.WrapAsync(timeoutPolicy.WrapAsync(_circuitBreakPolicy));
+            var pipeLine = fallbackPolicy.WrapAsync(_circuitBreakPolicy.WrapAsync(timeoutPolicy));
 
             return await pipeLine.ExecuteAsync(async () => await method());
         }

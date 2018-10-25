@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -526,6 +527,63 @@ namespace Lykke.Service.BlockchainWallets.Tests.Client
                     () => client.TryGetClientIdAsync("blockchainType", "Address"));
             });
         }
+
+        [Fact]
+        public async Task Breaks_Circuit_On_Timeout()
+        {
+            #region Responses
+
+            var dummyResult = Guid.NewGuid();
+            var actualResult = Guid.NewGuid();
+            var content1 = new ClientIdResponse { ClientId = actualResult };
+
+            #endregion
+
+            var handlerStub = new DelegatingHandlerStub(async (request, cancellationToken) =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
+                var content = content1;
+
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(content))
+                };
+
+                return response;
+            });
+
+            var client = CreateClient(handlerStub);
+            var failureHandler = new BlockchainWalletsFailureHandler(durationOfBreak: TimeSpan.FromMinutes(10));
+             
+            //call 1 - timeouts
+            var st1 = new Stopwatch();
+            st1.Start();
+            
+            var result1 = await failureHandler.Execute(
+                () => client.TryGetClientIdAsync("blockchainType", "Address"),
+                fallbackResult: () => dummyResult, 
+                timeout: TimeSpan.FromSeconds(2));
+
+            st1.Stop();
+
+            Assert.True(st1.Elapsed >= TimeSpan.FromSeconds(2));
+
+            Assert.Equal(dummyResult, result1);
+
+            //call 2 return result without timeout
+            var st2 = new Stopwatch();
+            st2.Start();
+            var result2 = await failureHandler.Execute(
+                () => client.TryGetClientIdAsync("blockchainType", "Address"), fallbackResult: () => dummyResult, timeout: TimeSpan.FromSeconds(2));
+
+            st2.Stop();
+
+            Assert.Equal(dummyResult, result2);
+
+            Assert.True(st2.Elapsed < TimeSpan.FromSeconds(2));
+
+        }
+
 
         [Fact]
         public async Task Can_Return_Dummy_On_Timeout()
