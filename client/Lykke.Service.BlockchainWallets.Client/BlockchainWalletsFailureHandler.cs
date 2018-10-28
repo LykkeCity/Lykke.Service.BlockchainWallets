@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
+using MoreLinq;
 using Polly;
 using Polly.Timeout;
 
@@ -8,10 +11,19 @@ namespace Lykke.Service.BlockchainWallets.Client
     public class BlockchainWalletsFailureHandler: IBlockchainWalletsFailureHandler
     {
         private readonly Policy _circuitBreakPolicy;
+        private readonly ISet<HttpStatusCode> _statusCodesToBreakCircuit;
 
         public BlockchainWalletsFailureHandler(TimeSpan durationOfBreak)
         {
             _circuitBreakPolicy = BuildCircuitBreakerPolicy(durationOfBreak);
+
+            _statusCodesToBreakCircuit = new[]
+            {
+                HttpStatusCode.InternalServerError,
+                HttpStatusCode.BadGateway,
+                HttpStatusCode.GatewayTimeout,
+                HttpStatusCode.ServiceUnavailable
+            }.ToHashSet();
         }
 
         public async Task<T> Execute<T>(Func<Task<T>> method, TimeSpan? timeout = null, Func<T> fallbackResult = null)
@@ -50,14 +62,25 @@ namespace Lykke.Service.BlockchainWallets.Client
 
         private Policy BuildCircuitBreakerPolicy(TimeSpan durationOfBreak)
         {
-            return Policy.Handle<Exception>(FilterCircuitBreakerExceptions)
+            return Policy.Handle<Exception>(NeedToBreakCircuit)
                 .CircuitBreakerAsync(exceptionsAllowedBeforeBreaking: 1,
                     durationOfBreak: durationOfBreak);
         }
 
-        private bool FilterCircuitBreakerExceptions(Exception ex)
+        private bool NeedToBreakCircuit(Exception ex)
         {
-            return true;
+            if (ex is TimeoutRejectedException)
+            {
+                return true;
+            }
+
+            if (ex is ErrorResponseException errorResponceEx 
+                && _statusCodesToBreakCircuit.Contains(errorResponceEx.StatusCode))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
