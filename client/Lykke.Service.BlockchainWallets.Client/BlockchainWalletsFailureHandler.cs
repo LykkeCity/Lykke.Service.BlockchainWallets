@@ -22,7 +22,8 @@ namespace Lykke.Service.BlockchainWallets.Client
                 HttpStatusCode.InternalServerError,
                 HttpStatusCode.BadGateway,
                 HttpStatusCode.GatewayTimeout,
-                HttpStatusCode.ServiceUnavailable
+                HttpStatusCode.ServiceUnavailable,
+                HttpStatusCode.RequestTimeout
             }.ToHashSet();
         }
 
