@@ -86,8 +86,7 @@ namespace Lykke.Service.BlockchainWallets.Modules
                     )
                 )
                 .As<ICqrsEngine>()
-                .SingleInstance()
-                .AutoActivate();
+                .SingleInstance();
         }
 
         private CqrsEngine CreateEngine(IComponentContext ctx, IMessagingEngine messagingEngine)
