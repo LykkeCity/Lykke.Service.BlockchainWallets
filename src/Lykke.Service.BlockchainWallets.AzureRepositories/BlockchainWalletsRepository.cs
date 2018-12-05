@@ -248,10 +248,10 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         public async Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(Guid clientId, int take, string continuationToken = null)
         {
             var indexes = await GetForClientIndicesAsync(clientId, take, continuationToken);
-            var keys = indexes.wallets.Select(x => Tuple.Create(x.WalletPartitionKey, x.WalletRowKey));
+            var keys = indexes.wallets.Select(x =>  (partitionKey: x.WalletPartitionKey, rowKey: x.WalletRowKey));
 
-            var wallets = (await _walletsTable.GetDataAsync(keys, take))
-                .Select(ConvertEntityToDto);
+            var wallets = (await keys.SelectAsync(p => _walletsTable.GetDataAsync(p.partitionKey, p.rowKey)))
+                    .Select(ConvertEntityToDto);
 
             var walletDictionay = wallets.ToDictionary(x => x.Address);
             var sortedWallets = indexes.wallets.Select(x =>
