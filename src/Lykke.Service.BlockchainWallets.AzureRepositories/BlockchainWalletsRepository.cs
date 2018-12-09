@@ -92,12 +92,14 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                 blockchainWalletsClientLatestDepositsTable);
         }
 
-        public async Task AddAsync(string blockchainType, Guid clientId, string address, CreatorType createdBy)
+        //clientLatestDepositIndexManualPartitionKey let it be null for common operations
+        public async Task AddAsync(string blockchainType, Guid clientId, string address, 
+            CreatorType createdBy, string clientLatestDepositIndexManualPartitionKey = null)
         {
             var partitionKey = BlockchainWalletEntity.GetPartitionKey(blockchainType, clientId);
             var rowKey = BlockchainWalletEntity.GetRowKey(address);
 
-            var clientLatestDepositIndexPartitionKey = GetClientLatestIndexPartitionKey(clientId);
+            var clientLatestDepositIndexPartitionKey = clientLatestDepositIndexManualPartitionKey ?? GetClientLatestIndexPartitionKey(clientId);
             var clientLatestDepositIndexRowKey = GetClientLatestIndexRowKey(blockchainType);
             var (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(blockchainType, address);
             var (clientBtIndexPartitionKey, clientBtIndexRowKey) = GetClientBlockchainTypeIndexKeys(blockchainType, clientId);
@@ -397,7 +399,8 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             return (values, indexes.ContinuationToken);
         }
 
-        private async Task<(IEnumerable<AzureIndex> Entities, string ContinuationToken)>
+        //Use only in Tools
+        internal async Task<(IEnumerable<AzureIndex> Entities, string ContinuationToken)>
             GetClientBlockchainTypeIndices(string blockchainType, Guid clientId, int take,
             string continuationToken)
         {
