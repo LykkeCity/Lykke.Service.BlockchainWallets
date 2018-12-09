@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 
@@ -13,5 +14,8 @@ namespace Lykke.Service.BlockchainWallets.Core.Repositories
         Task<bool> ExistsAsync(string blockchainType, string assetId, Guid clientId);
 
         Task<WalletDto> TryGetAsync(string blockchainType,  string address);
+
+        Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAsync(int take,
+            string continuationToken);
     }
 }

@@ -179,6 +179,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         }
 
         // NB! This method should be used only by conversion utility or in similar cases.
+        [Obsolete("Do not use it")]
         internal async Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAsync(string blockchainType, string assetId, int take, string continuationToken)
         {
             var filterCondition = TableQuery.CombineFilters
