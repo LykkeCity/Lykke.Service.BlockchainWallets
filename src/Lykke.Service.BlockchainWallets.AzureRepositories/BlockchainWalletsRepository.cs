@@ -99,10 +99,12 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             var partitionKey = BlockchainWalletEntity.GetPartitionKey(blockchainType, clientId);
             var rowKey = BlockchainWalletEntity.GetRowKey(address);
 
-            var clientLatestDepositIndexPartitionKey = clientLatestDepositIndexManualPartitionKey ?? GetClientLatestIndexPartitionKey(clientId);
+            var clientLatestDepositIndexPartitionKey = GetClientLatestIndexPartitionKey(clientId);
             var clientLatestDepositIndexRowKey = GetClientLatestIndexRowKey(blockchainType);
             var (indexPartitionKey, indexRowKey) = GetAddressIndexKeys(blockchainType, address);
             var (clientBtIndexPartitionKey, clientBtIndexRowKey) = GetClientBlockchainTypeIndexKeys(blockchainType, clientId);
+
+            clientBtIndexRowKey = clientLatestDepositIndexManualPartitionKey ?? clientBtIndexRowKey;
 
             await _addressIndexTable.InsertOrReplaceAsync(new AzureIndex(
                 indexPartitionKey,
