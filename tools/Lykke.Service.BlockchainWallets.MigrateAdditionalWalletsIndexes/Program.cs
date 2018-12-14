@@ -192,7 +192,6 @@ namespace Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes
                     var result = await walletsRepository.TryGetAsync(item.BlockchainType, item.Address);
                     if (result != null)
                     { 
-                        await walletsRepository.DeleteIfExistsAsync(item.BlockchainType, item.ClientId, item.Address);
                         alreadyExisting[item.Address] = item;
                     }
                 }
