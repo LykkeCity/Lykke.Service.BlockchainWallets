@@ -9,7 +9,7 @@ namespace Lykke.Service.BlockchainWallets.Core.Repositories
     public interface IBlockchainWalletsRepository
     {
         Task AddAsync(string blockchainType, Guid clientId, string address,
-            CreatorType createdBy, string clientLatestDepositIndexManualPartitionKey = null);
+            CreatorType createdBy, string clientLatestDepositIndexManualPartitionKey = null, bool addAsLatest = true);
 
         Task DeleteIfExistsAsync(string blockchainType, Guid clientId, string address);
 
