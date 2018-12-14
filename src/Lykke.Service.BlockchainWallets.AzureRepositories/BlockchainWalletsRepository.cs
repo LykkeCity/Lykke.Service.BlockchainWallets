@@ -94,7 +94,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
         //clientLatestDepositIndexManualPartitionKey let it be null for common operations
         public async Task AddAsync(string blockchainType, Guid clientId, string address, 
-            CreatorType createdBy, string clientLatestDepositIndexManualPartitionKey = null)
+            CreatorType createdBy, string clientLatestDepositIndexManualPartitionKey = null, bool addAsLatest = true)
         {
             var partitionKey = BlockchainWalletEntity.GetPartitionKey(blockchainType, clientId);
             var rowKey = BlockchainWalletEntity.GetRowKey(address);
@@ -120,12 +120,15 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                 rowKey
             ));
 
-            await _clientLatestDepositsIndexTable.InsertOrReplaceAsync(new AzureIndex(
-                clientLatestDepositIndexPartitionKey,
-                clientLatestDepositIndexRowKey,
-                partitionKey,
-                rowKey
-            ));
+            if (addAsLatest)
+            {
+                await _clientLatestDepositsIndexTable.InsertOrReplaceAsync(new AzureIndex(
+                    clientLatestDepositIndexPartitionKey,
+                    clientLatestDepositIndexRowKey,
+                    partitionKey,
+                    rowKey
+                ));
+            }
 
             // Wallet entity
 

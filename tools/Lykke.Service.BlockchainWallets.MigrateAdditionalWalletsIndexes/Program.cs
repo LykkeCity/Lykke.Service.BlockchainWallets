@@ -141,7 +141,8 @@ namespace Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes
                                 ClientId = y.ClientId,
                                 Address = y.Address,
                                 CreatedBy = y.CreatorType,
-                                ClientLatestDepositIndexManualPartitionKey = null
+                                ClientLatestDepositIndexManualPartitionKey = null,
+                                AddAsLatest = true
                             };
                         });
 
@@ -190,7 +191,10 @@ namespace Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes
                 {
                     var result = await walletsRepository.TryGetAsync(item.BlockchainType, item.Address);
                     if (result != null)
+                    { 
+                        await walletsRepository.DeleteIfExistsAsync(item.BlockchainType, item.ClientId, item.Address);
                         alreadyExisting[item.Address] = item;
+                    }
                 }
                 catch (Exception e)
                 {
@@ -214,7 +218,8 @@ namespace Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes
                         dto.ClientId,
                         dto.Address,
                         dto.CreatedBy == 0 ? CreatorType.LykkeWallet : dto.CreatedBy,
-                        dto.ClientLatestDepositIndexManualPartitionKey);
+                        dto.ClientLatestDepositIndexManualPartitionKey, 
+                        dto.AddAsLatest);
                 }
                 catch (Exception e)
                 {
@@ -242,5 +247,6 @@ namespace Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes
         public string Address { get; set; }
         public CreatorType CreatedBy { get; set; }
         public string ClientLatestDepositIndexManualPartitionKey { get; set; }
+        public bool AddAsLatest { get; set; }
     }
 }
