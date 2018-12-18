@@ -60,6 +60,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
             return Ok(new AddressExtensionConstantsResponse
             {
+                Separator = constants?.SeparatorExists != null ? constants.Separator.ToString() : null,
                 ProhibitedSymbolsForAddressExtension = constants?.SeparatorExists != null ? new char[] { constants.Separator } : null,
                 ProhibitedSymbolsForBaseAddress = constants?.SeparatorExists != null ? new char[] { constants.Separator } : null,
                 AddressExtensionDisplayName = constants?.AddressExtensionDisplayName,
