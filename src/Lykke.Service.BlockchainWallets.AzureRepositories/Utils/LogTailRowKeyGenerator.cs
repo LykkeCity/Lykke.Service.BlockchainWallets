@@ -13,7 +13,12 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories.Utils
     {
         public static string GenerateRowKey()
         {
-            string invertedTicks =  string.Format("{0:D19}", DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks);
+            return GenerateRowKey(DateTime.UtcNow);
+        }
+
+        public static string GenerateRowKey(DateTime dt)
+        {
+            string invertedTicks = string.Format("{0:D19}", DateTime.MaxValue.Ticks - dt.Ticks);
 
             return invertedTicks;
         }

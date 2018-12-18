@@ -33,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.TestLegacy", "tools\Lykke.Service.BlockchainWallets.TestLegacy\Lykke.Service.BlockchainWallets.TestLegacy.csproj", "{0F0D1931-2E7D-4183-B859-A36BDE54711C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Service.BlockchainWallets.BtcDepositsMigration", "tools\Lykke.Service.BlockchainWallets.BtcDepositsMigration\Lykke.Service.BlockchainWallets.BtcDepositsMigration.csproj", "{1AA1607E-0773-450B-B70E-187465DBF05A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.BtcDepositsMigration", "tools\Lykke.Service.BlockchainWallets.BtcDepositsMigration\Lykke.Service.BlockchainWallets.BtcDepositsMigration.csproj", "{1AA1607E-0773-450B-B70E-187465DBF05A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.MigrateWalletsIndexes", "tools\Lykke.Service.BlockchainWallets.MigrateWalletsIndexes\Lykke.Service.BlockchainWallets.MigrateWalletsIndexes.csproj", "{CD1E080E-50DA-47F9-94A4-6D10734A0C43}"
 EndProject
@@ -43,7 +43,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.CTests", "tests\Lykke.Service.BlockchainWallets.CTests\Lykke.Service.BlockchainWallets.CTests\Lykke.Service.BlockchainWallets.CTests.csproj", "{AA5F890F-A906-4980-AE04-C7BF04CE9D75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Service.BlockchainWallets.Tests.Common", "tests\Lykke.Service.BlockchainWallets.Tests.Common\Lykke.Service.BlockchainWallets.Tests.Common.csproj", "{0E9CCD87-193F-47DB-B97B-A80123961D93}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.Tests.Common", "tests\Lykke.Service.BlockchainWallets.Tests.Common\Lykke.Service.BlockchainWallets.Tests.Common.csproj", "{0E9CCD87-193F-47DB-B97B-A80123961D93}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes", "tools\Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes\Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes.csproj", "{9A744DB1-9903-4807-8814-3D46830CD638}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -115,6 +117,10 @@ Global
 		{0E9CCD87-193F-47DB-B97B-A80123961D93}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E9CCD87-193F-47DB-B97B-A80123961D93}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E9CCD87-193F-47DB-B97B-A80123961D93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A744DB1-9903-4807-8814-3D46830CD638}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A744DB1-9903-4807-8814-3D46830CD638}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A744DB1-9903-4807-8814-3D46830CD638}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A744DB1-9903-4807-8814-3D46830CD638}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -136,6 +142,7 @@ Global
 		{8FB795E3-7F35-402D-837B-9962EC1D520C} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
 		{AA5F890F-A906-4980-AE04-C7BF04CE9D75} = {8F9036B1-5106-4C69-B2D2-B78EE52687A0}
 		{0E9CCD87-193F-47DB-B97B-A80123961D93} = {8F9036B1-5106-4C69-B2D2-B78EE52687A0}
+		{9A744DB1-9903-4807-8814-3D46830CD638} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C8DE961A-1EFD-437E-B6AC-65490D9ADBE4}

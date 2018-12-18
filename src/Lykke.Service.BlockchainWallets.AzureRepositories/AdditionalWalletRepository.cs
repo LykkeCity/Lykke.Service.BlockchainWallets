@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AzureStorage;
@@ -133,6 +134,21 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             }
 
             return null;
+        }
+
+        public async Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAsync(int take, string continuationToken)
+        {
+            IEnumerable<AdditionalWalletEntity> entities;
+
+            (entities, continuationToken) = await _additionalWalletsTable.GetDataWithContinuationTokenAsync(take, continuationToken);
+
+            return (entities?.Select(entity => new WalletDto()
+            {
+                Address = entity.Address,
+                AssetId = entity.AssetId,
+                BlockchainType = entity.IntegrationLayerId,
+                ClientId = entity.ClientId
+            }), continuationToken);
         }
     }
 }
