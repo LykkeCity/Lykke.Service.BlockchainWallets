@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -81,6 +82,11 @@ namespace Lykke.Service.BlockchainWallets.Services
         public ImmutableDictionary<string, BlockchainApiClient>.Enumerator GetApiClientsEnumerator()
         {
             return _apiClients.GetEnumerator();
+        }
+
+        public IEnumerable<KeyValuePair<string, BlockchainApiClient>> GetApiClientsEnumerable()
+        {
+            return _apiClients.ToImmutableArray();
         }
     }
 }

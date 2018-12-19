@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
 using JetBrains.Annotations;
@@ -9,6 +10,7 @@ using Lykke.Service.BlockchainApi.Client;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.Services;
+using MoreLinq;
 
 namespace Lykke.Service.BlockchainWallets.Services
 {
@@ -16,9 +18,12 @@ namespace Lykke.Service.BlockchainWallets.Services
     public class BlockchainExtensionsService : IBlockchainExtensionsService
     {
         #region Fields
+
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
         private readonly ConcurrentDictionary<string, bool> _cacheCapabilities;
         private readonly ConcurrentDictionary<string, AddressExtensionConstantsDto> _cacheConstants;
+        private readonly Dictionary<string, bool> _cacheBlockchainAssetsReady;
+        private readonly ConcurrentDictionary<(string blockchainType, string assetId), BlockchainAssetDto> _cacheBlockchainAssets;
         private readonly ILog _log;
 
         // TODO: Add new capabilities here.
@@ -41,22 +46,29 @@ namespace Lykke.Service.BlockchainWallets.Services
 
             _cacheCapabilities = new ConcurrentDictionary<string, bool>();
             _cacheConstants = new ConcurrentDictionary<string, AddressExtensionConstantsDto>();
+            _cacheBlockchainAssets =new ConcurrentDictionary<(string blockchainType, string assetId), BlockchainAssetDto>();
 
             _blockchainConnectAttemptsDelays = new Dictionary<string, int>();
+            
         }
 
         public void FireInitializationAndForget()
         {
-            var apiCLientsEnumerator = _blockchainIntegrationService.GetApiClientsEnumerator();
+            var apiCLients = _blockchainIntegrationService.GetApiClientsEnumerable()?.ToArray();
+            var initializationTasks = new List<Task>(apiCLients.Count());
 
-            while (apiCLientsEnumerator.MoveNext())
+            apiCLients.ForEach(x =>
             {
-#pragma warning disable 4014
-                // TODO: we could collect the tasks and monitor their state by timer for more valuable error handling and logging
-                // when some of api calls fails in runtime.
-                InitializeOneAsync(apiCLientsEnumerator.Current.Key, apiCLientsEnumerator.Current.Value);
-#pragma warning restore 4014
-            }
+                var task = new Task(async () =>
+                {
+                    _cacheBlockchainAssetsReady[x.Key] = false;
+                    await InitializeOneAsync(x.Key, x.Value);
+                });
+
+                initializationTasks.Add(task);
+            });
+
+            initializationTasks.ForEach(x => x.Start());
         }
 
         private async Task InitializeOneAsync(string blockchainType, BlockchainApiClient apiClient)
@@ -101,9 +113,27 @@ namespace Lykke.Service.BlockchainWallets.Services
                         _cacheConstants.TryAdd($"{blockchainType}-Constants", constantsDto);
                     }
 
+                    await apiClient.EnumerateAllAssetsAsync(50, (asset) =>
+                    {
+                        if (asset == null)
+                            return;
+
+                        var blockchainAssetDto = new BlockchainAssetDto()
+                        {
+                            Address = asset.Address,
+                            AssetId = asset.AssetId,
+                            Accuracy = asset.Accuracy,
+                            Name = asset.Name
+                        };
+
+                        _cacheBlockchainAssets.TryAdd((blockchainType, asset.AssetId), blockchainAssetDto);
+                    });
+
                     // Exit on success
                     if (_blockchainConnectAttemptsDelays.ContainsKey(blockchainType))
                         _blockchainConnectAttemptsDelays.Remove(blockchainType);
+
+                    _cacheBlockchainAssetsReady[blockchainType] = true;
 
                     break;
                 }
@@ -150,6 +180,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         #endregion
 
         #region Public
+
         public bool? IsPublicAddressExtensionRequired(string blockchainType)
         {
             return TryGetCapability(blockchainType, "IsPublicAddressExtensionRequired");
@@ -172,6 +203,22 @@ namespace Lykke.Service.BlockchainWallets.Services
                 ? value
                 : null;
         }
+
+        public BlockchainAssetDto TryGetBlockchainAsset(string blockchainType, string assetId)
+        {
+            if (!_blockchainIntegrationService.BlockchainIsSupported(blockchainType))
+            {
+                _log.Warning($"Constants for unsupported blockchain type {blockchainType} were queried. Nothing to return.");
+                return null;
+            }
+
+            if (!_cacheBlockchainAssetsReady[blockchainType])
+                throw new
+            return _cacheBlockchainAssets.TryGetValue((blockchainType, assetId), out var value)
+                ? value
+                : null;
+        }
+
         #endregion
     }
 }
