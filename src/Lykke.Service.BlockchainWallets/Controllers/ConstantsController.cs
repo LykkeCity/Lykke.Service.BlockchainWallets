@@ -57,12 +57,13 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             }
 
             var constants = _blockchainExtensionsService.TryGetAddressExtensionConstants(blockchainType);
+            bool separatorExists = constants?.SeparatorExists ?? false;
 
             return Ok(new AddressExtensionConstantsResponse
             {
-                Separator = constants?.SeparatorExists != null ? constants.Separator.ToString() : null,
-                ProhibitedSymbolsForAddressExtension = constants?.SeparatorExists != null ? new char[] { constants.Separator } : null,
-                ProhibitedSymbolsForBaseAddress = constants?.SeparatorExists != null ? new char[] { constants.Separator } : null,
+                Separator = separatorExists ? constants.Separator.ToString() : null,
+                ProhibitedSymbolsForAddressExtension = separatorExists ? new char[] { constants.Separator } : null,
+                ProhibitedSymbolsForBaseAddress = separatorExists ? new char[] { constants.Separator } : null,
                 AddressExtensionDisplayName = constants?.AddressExtensionDisplayName,
                 BaseAddressDisplayName = !string.IsNullOrEmpty(constants?.BaseAddressDisplayName) ? constants.BaseAddressDisplayName : LykkeConstants.PublicAddressExtension.BaseAddressDisplayName,
                 TypeForDeposit = constants?.TypeForDeposit ?? AddressExtensionTypeForDeposit.NotSupported,
