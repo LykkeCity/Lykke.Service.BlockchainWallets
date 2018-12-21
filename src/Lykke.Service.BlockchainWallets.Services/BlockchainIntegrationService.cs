@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -35,21 +36,6 @@ namespace Lykke.Service.BlockchainWallets.Services
             );
         }
 
-        public async Task<bool> AssetIsSupportedAsync(string blockchainType, string assetId)
-        {
-            if (blockchainType == SpecialBlockchainTypes.FirstGenerationBlockchain)
-                return true;
-
-            var apiClient = TryGetApiClient(blockchainType);
-
-            if (apiClient != null)
-            {
-                return await apiClient.TryGetAssetAsync(assetId) != null;
-            }
-
-            return false;
-        }
-
         public bool BlockchainIsSupported(string blockchainType)
         {
             return TryGetApiClient(blockchainType) != null;
@@ -81,6 +67,11 @@ namespace Lykke.Service.BlockchainWallets.Services
         public ImmutableDictionary<string, BlockchainApiClient>.Enumerator GetApiClientsEnumerator()
         {
             return _apiClients.GetEnumerator();
+        }
+
+        public IEnumerable<KeyValuePair<string, BlockchainApiClient>> GetApiClientsEnumerable()
+        {
+            return _apiClients.ToImmutableArray();
         }
     }
 }

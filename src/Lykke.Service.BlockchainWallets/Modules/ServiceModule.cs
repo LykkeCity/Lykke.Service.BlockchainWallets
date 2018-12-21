@@ -72,6 +72,11 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .SingleInstance();
 
             builder
+                .RegisterType<BlockchainAssetService>()
+                .As<IBlockchainAssetService>()
+                .SingleInstance();
+
+            builder
                 .RegisterType<AddressParser>()
                 .As<IAddressParser>();
 
