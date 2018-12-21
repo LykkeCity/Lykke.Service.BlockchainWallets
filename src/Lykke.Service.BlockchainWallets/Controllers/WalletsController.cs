@@ -20,14 +20,17 @@ namespace Lykke.Service.BlockchainWallets.Controllers
 
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
         private readonly IWalletService _walletService;
+        private readonly IBlockchainAssetService _blockchainAssetService;
 
 
         public WalletsController(
             IBlockchainIntegrationService blockchainIntegrationService,
-            IWalletService walletService)
+            IWalletService walletService,
+            IBlockchainAssetService blockchainAssetService)
         {
             _walletService = walletService;
             _blockchainIntegrationService = blockchainIntegrationService;
+            _blockchainAssetService = blockchainAssetService;
         }
 
         /// <summary>
@@ -257,7 +260,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             {
                 if (!string.IsNullOrWhiteSpace(blockchainType) &&
                     !string.IsNullOrWhiteSpace(assetId) &&
-                    !_blockchainIntegrationService.AssetIsSupportedAsync(blockchainType, assetId).Result)
+                    !_blockchainAssetService.IsAssetSupported(blockchainType, assetId))
                     invalidInputParams.Add($"Asset [{assetId}] or/and blockchain type [{blockchainType}] is not supported.");
             }
 

@@ -9,6 +9,7 @@ using Lykke.Common.Log;
 using Lykke.Service.BlockchainApi.Client;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
+using Lykke.Service.BlockchainWallets.Core.Exceptions;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using MoreLinq;
 
@@ -47,6 +48,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             _cacheCapabilities = new ConcurrentDictionary<string, bool>();
             _cacheConstants = new ConcurrentDictionary<string, AddressExtensionConstantsDto>();
             _cacheBlockchainAssets =new ConcurrentDictionary<(string blockchainType, string assetId), BlockchainAssetDto>();
+            _cacheBlockchainAssetsReady = new Dictionary<string, bool>();
 
             _blockchainConnectAttemptsDelays = new Dictionary<string, int>();
             
@@ -212,8 +214,9 @@ namespace Lykke.Service.BlockchainWallets.Services
                 return null;
             }
 
-            if (!_cacheBlockchainAssetsReady[blockchainType])
-                throw new
+            if (!_cacheBlockchainAssetsReady.TryGetValue(blockchainType, out var _))
+                throw new CacheIsNotReadyException($"Assets cache for {blockchainType} is not yet ready");
+
             return _cacheBlockchainAssets.TryGetValue((blockchainType, assetId), out var value)
                 ? value
                 : null;

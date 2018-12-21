@@ -36,21 +36,6 @@ namespace Lykke.Service.BlockchainWallets.Services
             );
         }
 
-        public async Task<bool> AssetIsSupportedAsync(string blockchainType, string assetId)
-        {
-            if (blockchainType == SpecialBlockchainTypes.FirstGenerationBlockchain)
-                return true;
-
-            var apiClient = TryGetApiClient(blockchainType);
-
-            if (apiClient != null)
-            {
-                return await apiClient.TryGetAssetAsync(assetId) != null;
-            }
-
-            return false;
-        }
-
         public bool BlockchainIsSupported(string blockchainType)
         {
             return TryGetApiClient(blockchainType) != null;
