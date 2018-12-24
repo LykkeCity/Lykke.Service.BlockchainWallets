@@ -94,7 +94,8 @@ namespace Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes
                     appSettings.CurrentValue.BlockchainsIntegration,
                     appSettings.CurrentValue.BlockchainSignFacadeClient,
                     appSettings.CurrentValue,
-                    appSettings.CurrentValue.AssetsServiceClient));
+                    appSettings.CurrentValue.AssetsServiceClient,
+                    appSettings.CurrentValue.BlockchainWalletsService));
 
             var applicationContainer = builder.Build();
 
