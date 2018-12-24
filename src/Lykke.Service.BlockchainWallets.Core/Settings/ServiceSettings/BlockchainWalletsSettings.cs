@@ -13,5 +13,8 @@ namespace Lykke.Service.BlockchainWallets.Core.Settings.ServiceSettings
 
         [UsedImplicitly(ImplicitUseKindFlags.Assign)]
         public string SignFacadeApiKey { get; set; }
+
+        [UsedImplicitly(ImplicitUseKindFlags.Assign)]
+        public int BlockchainApiTimeoutInSeconds { get; set; }
     }
 }
