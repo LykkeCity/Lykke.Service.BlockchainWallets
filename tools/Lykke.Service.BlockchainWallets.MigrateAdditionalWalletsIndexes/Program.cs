@@ -13,14 +13,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Autofac;
-using Autofac.Extensions.DependencyInjection;
-using Lykke.Common.Log;
-using Lykke.Cqrs;
-using Lykke.Service.BlockchainWallets.Contract.Events;
-using Lykke.Service.BlockchainWallets.Core.Repositories;
-using Lykke.Service.BlockchainWallets.Core.Services;
-using Lykke.Service.BlockchainWallets.Modules;
 
 namespace Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes
 {
@@ -37,7 +29,7 @@ namespace Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes
 
             var arguments = new Dictionary<string, CommandArgument>
             {
-                {SettingsUrl, application.Argument(SettingsUrl, "Url of a BlockchainWallets service settings.")},
+                { SettingsUrl, application.Argument(SettingsUrl, "Url of a BlockchainWallets service settings.") },
             };
 
             application.HelpOption("-? | -h | --help");
@@ -82,28 +74,12 @@ namespace Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes
             }
 
             var logFactory = LogFactory.Create().AddConsole();
-            var appSettings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl);
 
-            var builder = new ContainerBuilder();
+            var settings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl).Nested(x => x.BlockchainWalletsService.Db.DataConnString);
 
-            builder.RegisterInstance(logFactory).As<ILogFactory>().SingleInstance();
-            builder
-                .RegisterModule(new CqrsModule(appSettings.CurrentValue.BlockchainWalletsService.Cqrs))
-                .RegisterModule(new CustomRepositoryModel(appSettings.Nested(x => x.BlockchainWalletsService.Db)))
-                .RegisterModule(new ServiceModule(
-                    appSettings.CurrentValue.BlockchainsIntegration,
-                    appSettings.CurrentValue.BlockchainSignFacadeClient,
-                    appSettings.CurrentValue,
-                    appSettings.CurrentValue.AssetsServiceClient,
-                    appSettings.CurrentValue.BlockchainWalletsService));
+            var walletsRepository = (BlockchainWalletsRepository)BlockchainWalletsRepository.Create(settings, logFactory);
+            var additionalWalletsRepository = AdditionalWalletRepository.Create(settings, logFactory);
 
-            var applicationContainer = builder.Build();
-
-            var cqrs = applicationContainer.Resolve<ICqrsEngine>();
-            var startApplication = applicationContainer.Resolve<IStartupManager>();
-            var walletsRepository = (BlockchainWalletsRepository)applicationContainer.Resolve<IBlockchainWalletsRepository>();
-            var additionalWalletsRepository = applicationContainer.Resolve<IAdditionalWalletRepository>();
-            startApplication.Start();
             string continuationToken = null;
 
             var progressCounter = 0;
@@ -129,6 +105,7 @@ namespace Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes
                 {
                     Console.WriteLine(e.StackTrace + " " + e.Message);
                 }
+
             } while (continuationToken != null);
 
             Console.WriteLine("Wallets has been uploaded!");
@@ -139,7 +116,7 @@ namespace Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes
                 .GroupBy(x => x.ClientId)
                 .ToDictionary(y => y.Key,
                     y => y.GroupBy(z => z.BlockchainType)
-                        .ToLookup(v => v.Key, v => v.Select(x => x)));
+                    .ToLookup(v => v.Key, v => v.Select(x => x)));
             var clientIds = groupedWallets.Select(x => x.Key);
             List<AddWallet> simpleInserts =
                 new List<AddWallet>(additionalWallets.Count);
@@ -177,14 +154,13 @@ namespace Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes
                     AzureIndex latestDto = null;
                     do
                     {
-                        var (wallets, token) =
-                            await walletsRepository.GetClientBlockchainTypeIndices(type, clientId, 100, cToken);
+                        var (wallets, token) = await walletsRepository.GetClientBlockchainTypeIndices(type, clientId, 100, cToken);
                         cToken = token;
                         latestDto = wallets?.Last();
                     } while (!string.IsNullOrEmpty(cToken));
 
 
-                    long? index = latestDto != null ? (long?) long.Parse(latestDto.RowKey) : null;
+                    long? index = latestDto != null ? (long?)long.Parse(latestDto.RowKey) : null;
                     {
                         var list = dtos.SelectMany(x => x).Select((y, ind) =>
                         {
@@ -215,7 +191,7 @@ namespace Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes
                 {
                     var result = await walletsRepository.TryGetAsync(item.BlockchainType, item.Address);
                     if (result != null)
-                    {
+                    { 
                         alreadyExisting[item.Address] = item;
                     }
                 }
@@ -224,7 +200,7 @@ namespace Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes
                     Console.WriteLine(e);
                 }
             }));
-
+            
             Task.WaitAll(tasks.ToArray());
 
             Console.WriteLine("Inserting with back date:");
@@ -241,22 +217,8 @@ namespace Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes
                         dto.ClientId,
                         dto.Address,
                         dto.CreatedBy == 0 ? CreatorType.LykkeWallet : dto.CreatedBy,
-                        dto.ClientLatestDepositIndexManualPartitionKey,
+                        dto.ClientLatestDepositIndexManualPartitionKey, 
                         dto.AddAsLatest);
-                    var @event = new WalletCreatedEvent
-                    {
-                        Address = dto.Address,
-                        BlockchainType = dto.BlockchainType,
-                        IntegrationLayerId = dto.BlockchainType,
-                        CreatedBy = dto.CreatedBy == 0 ? CreatorType.LykkeWallet : dto.CreatedBy,
-                        ClientId = dto.ClientId
-                    };
-
-                    cqrs.PublishEvent
-                    (
-                        @event,
-                        BlockchainWalletsBoundedContext.Name
-                    );
                 }
                 catch (Exception e)
                 {
