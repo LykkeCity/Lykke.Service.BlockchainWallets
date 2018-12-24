@@ -18,11 +18,13 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         public BlockchainIntegrationService(
             BlockchainsIntegrationSettings settings,
+            int timeoutFoApiInSeconds,
             ILogFactory logFactory)
         {
             if (logFactory == null)
                 throw new ArgumentNullException(nameof(logFactory));
             var log = logFactory.CreateLog(this);
+            var timeout = TimeSpan.FromSeconds(timeoutFoApiInSeconds);
 
             foreach (var blockchain in settings.Blockchains)
             {
@@ -32,7 +34,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             _apiClients = settings.Blockchains.ToImmutableDictionary
             (
                 x => x.Type,
-                y => new BlockchainApiClient(logFactory, y.ApiUrl)
+                y => new BlockchainApiClient(logFactory, y.ApiUrl, timeout, 3)
             );
         }
 

@@ -15,6 +15,7 @@ using System;
 using System.Net.Http;
 using Lykke.Common.Log;
 using Lykke.Service.BlockchainWallets.Core.FirstGeneration;
+using Lykke.Service.BlockchainWallets.Core.Settings.ServiceSettings;
 
 namespace Lykke.Service.BlockchainWallets.Modules
 {
@@ -24,17 +25,20 @@ namespace Lykke.Service.BlockchainWallets.Modules
         private readonly BlockchainSignFacadeClientSettings _blockchainSignFacadeClientSettings;
         private readonly AppSettings _appSettings;
         private readonly AssetServiceClientSettings _assetServiceSettings;
+        private readonly BlockchainWalletsSettings _blockchainWalletsSettings;
 
         public ServiceModule(
             BlockchainsIntegrationSettings blockchainsIntegrationSettings,
             BlockchainSignFacadeClientSettings blockchainSignFacadeClientSettings,
             AppSettings appSettings,
-            AssetServiceClientSettings assetServiceSettings)
+            AssetServiceClientSettings assetServiceSettings,
+            BlockchainWalletsSettings blockchainWalletsSettings)
         {
             _blockchainsIntegrationSettings = blockchainsIntegrationSettings;
             _blockchainSignFacadeClientSettings = blockchainSignFacadeClientSettings;
             _appSettings = appSettings;
             _assetServiceSettings = assetServiceSettings;
+            _blockchainWalletsSettings = blockchainWalletsSettings;
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -50,6 +54,7 @@ namespace Lykke.Service.BlockchainWallets.Modules
 
             builder
                 .RegisterType<BlockchainIntegrationService>()
+                .WithParameter("timeoutFoApiInSeconds", _blockchainWalletsSettings.BlockchainApiTimeoutInSeconds)
                 .As<IBlockchainIntegrationService>()
                 .SingleInstance();
 
