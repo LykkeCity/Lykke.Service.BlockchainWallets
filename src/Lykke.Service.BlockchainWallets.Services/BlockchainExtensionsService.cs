@@ -171,6 +171,8 @@ namespace Lykke.Service.BlockchainWallets.Services
                 _log.Warning($"Unsupported capability {capability} for blockchain type {blockchainType} was queried. Nothing to return.");
             }
 
+            ThrowOnCacheIsNotReady(blockchainType);
+
             var key = $"{blockchainType}-{capability}";
 
             if (_cacheCapabilities.TryGetValue(key, out var value))
@@ -201,6 +203,8 @@ namespace Lykke.Service.BlockchainWallets.Services
                 return null;
             }
 
+            ThrowOnCacheIsNotReady(blockchainType);
+
             return _cacheConstants.TryGetValue($"{blockchainType}-Constants", out var value)
                 ? value
                 : null;
@@ -214,12 +218,17 @@ namespace Lykke.Service.BlockchainWallets.Services
                 return null;
             }
 
-            if (!_cacheBlockchainAssetsReady.TryGetValue(blockchainType, out var _))
-                throw new CacheIsNotReadyException($"Assets cache for {blockchainType} is not yet ready");
+            ThrowOnCacheIsNotReady(blockchainType);
 
             return _cacheBlockchainAssets.TryGetValue((blockchainType, assetId), out var value)
                 ? value
                 : null;
+        }
+
+        public void ThrowOnCacheIsNotReady(string blockchainType)
+        {
+            if (!_cacheBlockchainAssetsReady.TryGetValue(blockchainType, out var isCacheReady) || !isCacheReady)
+                throw new CacheIsNotReadyException($"Assets cache for {blockchainType} is not yet ready");
         }
 
         #endregion
