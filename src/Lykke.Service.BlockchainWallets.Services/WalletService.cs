@@ -242,6 +242,8 @@ namespace Lykke.Service.BlockchainWallets.Services
 
             foreach (var wallet in wallets)
             {
+                if (!_blockchainExtensionsService.IsCacheReadyForBlockchain(wallet.BlockchainType))
+                    continue;
                 var queryResult = _blockchainExtensionsService.IsAddressMappingRequired(wallet.BlockchainType);
                 if (queryResult.HasValue && queryResult.Value)
                 {
