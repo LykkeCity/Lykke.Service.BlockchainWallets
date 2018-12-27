@@ -227,8 +227,13 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         public void ThrowOnCacheIsNotReady(string blockchainType)
         {
-            if (!_cacheBlockchainAssetsReady.TryGetValue(blockchainType, out var isCacheReady) || !isCacheReady)
+            if (!IsCacheReadyForBlockchain(blockchainType))
                 throw new CacheIsNotReadyException($"Assets cache for {blockchainType} is not yet ready");
+        }
+
+        public bool IsCacheReadyForBlockchain(string blockchainType)
+        {
+            return _cacheBlockchainAssetsReady.TryGetValue(blockchainType, out var isCacheReady) && isCacheReady;
         }
 
         #endregion
