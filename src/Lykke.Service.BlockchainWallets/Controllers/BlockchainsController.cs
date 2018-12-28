@@ -20,14 +20,17 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         private const string RouteSuffix = "{blockchainType}";
 
         private readonly IBlockchainIntegrationService _blockchainIntegrationService;
+        private readonly IBlockchainAssetService _blockchainAssetService;
         private readonly IWalletService _walletService;
 
         public BlockchainsController(
             IBlockchainIntegrationService blockchainIntegrationService,
-            IWalletService walletService)
+            IWalletService walletService,
+            IBlockchainAssetService blockchainAssetService)
         {
             _walletService = walletService;
             _blockchainIntegrationService = blockchainIntegrationService;
+            _blockchainAssetService = blockchainAssetService;
         }
 
         [HttpPost(RouteSuffix + "/clients/{clientId}/wallets")]
@@ -299,7 +302,7 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             {
                 if (!string.IsNullOrWhiteSpace(blockchainType) &&
                     !string.IsNullOrWhiteSpace(assetId) &&
-                    !_blockchainIntegrationService.AssetIsSupportedAsync(blockchainType, assetId).Result)
+                    !_blockchainAssetService.IsAssetSupported(blockchainType, assetId))
                     invalidInputParams.Add($"Asset [{assetId}] or/and blockchain type [{blockchainType}] is not supported.");
             }
 

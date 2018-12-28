@@ -32,7 +32,6 @@ namespace Lykke.Service.BlockchainWallets.Workflow.Sagas
         private async Task Handle(WalletDeletedEvent evt, ICommandSender sender)
         {
             var address = evt.Address;
-            var assetId = evt.AssetId;
             var blockchainType = evt.BlockchainType ?? evt.IntegrationLayerId;
 
             Task<bool> WalletIsSubscribedAsync(MonitoringSubscriptionType subscriptionType)

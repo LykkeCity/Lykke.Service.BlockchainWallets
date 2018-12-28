@@ -242,6 +242,8 @@ namespace Lykke.Service.BlockchainWallets.Services
 
             foreach (var wallet in wallets)
             {
+                if (!_blockchainExtensionsService.IsCacheReadyForBlockchain(wallet.BlockchainType))
+                    continue;
                 var queryResult = _blockchainExtensionsService.IsAddressMappingRequired(wallet.BlockchainType);
                 if (queryResult.HasValue && queryResult.Value)
                 {
@@ -321,10 +323,11 @@ namespace Lykke.Service.BlockchainWallets.Services
                 return null;
             }
 
+            var isAddressMappingRequired = _blockchainExtensionsService.IsAddressMappingRequired(blockchainType);
             var wallet = await _blockchainSignFacadeClient.CreateWalletAsync(blockchainType);
             address = wallet.PublicAddress;
 
-            var isAddressMappingRequired = _blockchainExtensionsService.IsAddressMappingRequired(blockchainType);
+            
             var underlyingAddress = await _addressService.GetUnderlyingAddressAsync(blockchainType, address);
 
             if (isAddressMappingRequired.HasValue && isAddressMappingRequired.Value && underlyingAddress == null)
