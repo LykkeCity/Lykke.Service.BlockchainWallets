@@ -214,6 +214,14 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             await _bcnClientCredentialsWalletTable.InsertOrReplaceAsync(byAssetAddressEntity);
         }
 
+        public async Task DeleteIfExistAsync(IBcnCredentialsRecord credsRecord)
+        {
+            var byClientEntity = FirstGenerationBlockchainWalletEntity.FromBcnClientCredentials.ByClientId.Create(credsRecord);
+            var byAssetAddressEntity = FirstGenerationBlockchainWalletEntity.FromBcnClientCredentials.ByAssetAddress.Create(credsRecord);
+            await _bcnClientCredentialsWalletTable.DeleteIfExistAsync(byClientEntity.PartitionKey, byClientEntity.RowKey);
+            await _bcnClientCredentialsWalletTable.DeleteIfExistAsync(byAssetAddressEntity.PartitionKey, byAssetAddressEntity.RowKey);
+        }
+
         public Task EnumerateBcnCredsByChunksAsync(string assetId, Func<IEnumerable<IBcnCredentialsRecord>, Task> chunks)
         {
             var partition = FirstGenerationBlockchainWalletEntity.FromBcnClientCredentials.ByAssetAddress.GeneratePartition();
