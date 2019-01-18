@@ -80,7 +80,7 @@ namespace Lykke.Service.BlockchainWallets.BchDepositsMigration
             var bcashNetwork = network == Network.Main ? BCash.Instance.Mainnet : BCash.Instance.Regtest;
 
             var logConsole = LogFactory.Create().AddConsole();
-            var settings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl);
+            var settings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl, p=>{});
 
             var walletRepo = BlockchainWalletsRepository.Create(settings.Nested(p => p.BlockchainWalletsService.Db.DataConnString),
                 logConsole);
