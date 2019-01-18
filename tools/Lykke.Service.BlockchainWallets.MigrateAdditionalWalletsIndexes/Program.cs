@@ -75,7 +75,7 @@ namespace Lykke.Service.BlockchainWallets.MigrateAdditionalWalletsIndexes
 
             var logFactory = LogFactory.Create().AddConsole();
 
-            var settings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl).Nested(x => x.BlockchainWalletsService.Db.DataConnString);
+            var settings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl, p => { }).Nested(x => x.BlockchainWalletsService.Db.DataConnString);
 
             var walletsRepository = (BlockchainWalletsRepository)BlockchainWalletsRepository.Create(settings, logFactory);
             throw new NotImplementedException();

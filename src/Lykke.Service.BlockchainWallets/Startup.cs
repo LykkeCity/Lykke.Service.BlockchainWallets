@@ -104,11 +104,7 @@ namespace Lykke.Service.BlockchainWallets
                 var builder = new ContainerBuilder();
                 var appSettings = Configuration.LoadSettings<AppSettings>();
                 var slackSettings = appSettings.CurrentValue.SlackNotifications;
-                Configuration.CheckDependenciesAsync(
-                    appSettings,
-                    slackSettings.AzureQueue.ConnectionString,
-                    slackSettings.AzureQueue.QueueName,
-                    "BlockchainWallets");
+
 
                 services.AddLykkeLogging(
                     appSettings.ConnectionString(x => x.BlockchainWalletsService.Db.LogsConnString),
