@@ -81,7 +81,7 @@ namespace Lykke.Service.BlockchainWallets.MigrateWalletsMultiplePerClient
 
             var logFactory = LogFactory.Create().AddConsole();
 
-            var settings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl);
+            var settings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl, p => { });
             var settingsRepo = settings.Nested(x => x.BlockchainWalletsService.Db.DataConnString);
 
             var builder = new ContainerBuilder();
