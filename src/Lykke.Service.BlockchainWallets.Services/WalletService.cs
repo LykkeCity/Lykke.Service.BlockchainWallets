@@ -25,7 +25,6 @@ namespace Lykke.Service.BlockchainWallets.Services
         private readonly ILog _log;
         private readonly ICqrsEngine _cqrsEngine;
         private readonly IBlockchainWalletsRepository _walletRepository;
-        private readonly IAdditionalWalletRepository _additionalWalletRepository;
         private readonly IBlockchainSignFacadeClient _blockchainSignFacadeClient;
         private readonly IAddressParser _addressParser;
         private readonly IFirstGenerationBlockchainWalletRepository _firstGenerationBlockchainWalletRepository;
@@ -37,7 +36,6 @@ namespace Lykke.Service.BlockchainWallets.Services
         public WalletService(
             ICqrsEngine cqrsEngine,
             IBlockchainWalletsRepository walletRepository,
-            IAdditionalWalletRepository additionalWalletRepository,
             IBlockchainSignFacadeClient blockchainSignFacadeClient,
             IAddressParser addressParser,
             IFirstGenerationBlockchainWalletRepository firstGenerationBlockchainWalletRepository,
@@ -49,8 +47,6 @@ namespace Lykke.Service.BlockchainWallets.Services
         {
             _cqrsEngine = cqrsEngine ?? throw new ArgumentNullException(nameof(cqrsEngine));
             _walletRepository = walletRepository ?? throw new ArgumentNullException(nameof(walletRepository));
-            _additionalWalletRepository = additionalWalletRepository ??
-                                          throw new ArgumentNullException(nameof(additionalWalletRepository));
             _blockchainSignFacadeClient = blockchainSignFacadeClient ??
                                           throw new ArgumentNullException(nameof(blockchainSignFacadeClient));
             _addressParser = addressParser ?? throw new ArgumentNullException(nameof(addressParser));
@@ -155,8 +151,6 @@ namespace Lykke.Service.BlockchainWallets.Services
         [Obsolete]
         public async Task DeleteWalletsAsync(string blockchainType, string assetId, Guid clientId)
         {
-            await DeleteAdditionalWalletsAsync(blockchainType, assetId, clientId);
-
             await DeleteDefaultWalletAsync(blockchainType, assetId, clientId);
         }
 
@@ -224,14 +218,12 @@ namespace Lykke.Service.BlockchainWallets.Services
         {
             address = (await _addressService.GetVirtualAddressAsync(blockchainType, address)) ?? address;
 
-            return (await _walletRepository.TryGetAsync(blockchainType, address))?.ClientId
-                ?? (await _additionalWalletRepository.TryGetAsync(blockchainType, address))?.ClientId;
+            return (await _walletRepository.TryGetAsync(blockchainType, address))?.ClientId;
         }
 
         public async Task<bool> WalletExistsAsync(string blockchainType, string assetId, Guid clientId)
         {
-            return await DefaultWalletExistsAsync(blockchainType, assetId, clientId)
-                   || await AdditionalWalletExistsAsync(blockchainType, assetId, clientId);
+            return await DefaultWalletExistsAsync(blockchainType, assetId, clientId);
         }
 
         public async Task<(IEnumerable<WalletWithAddressExtensionDto>, string continuationToken)> GetClientWalletsAsync(
@@ -418,12 +410,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                 CreatorType = walletDto.CreatorType
             };
         }
-
-        private async Task DeleteAdditionalWalletsAsync(string integrationLayerId, string assetId, Guid clientId)
-        {
-            await _additionalWalletRepository.DeleteAllAsync(integrationLayerId, assetId, clientId);
-        }
-
+        
         private async Task DeleteDefaultWalletAsync(string integrationLayerId, string assetId, Guid clientId)
         {
             var wallet = await _walletRepository.TryGetAsync(integrationLayerId, clientId);
@@ -445,11 +432,6 @@ namespace Lykke.Service.BlockchainWallets.Services
                 @event,
                 BlockchainWalletsBoundedContext.Name
             );
-        }
-
-        private async Task<bool> AdditionalWalletExistsAsync(string integrationLayerId, string assetId, Guid clientId)
-        {
-            return await _additionalWalletRepository.ExistsAsync(integrationLayerId, assetId, clientId);
         }
     }
 }

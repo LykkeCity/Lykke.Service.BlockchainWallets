@@ -34,11 +34,6 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .SingleInstance();
 
             builder
-                .Register(c => AdditionalWalletRepository.Create(connectionString, c.Resolve<ILogFactory>()))
-                .As<IAdditionalWalletRepository>()
-                .SingleInstance();
-
-            builder
                 .Register(c => FirstGenerationBlockchainWalletRepository.Create(_dbSettings.Nested(x => x.ClientPersonalInfoConnString), c.Resolve<ILogFactory>()))
                 .As<IFirstGenerationBlockchainWalletRepository>()
                 .SingleInstance();
