@@ -75,7 +75,6 @@ namespace Lykke.Service.BlockchainWallets.MigrateWalletsIndexes
             var settings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl).Nested(x => x.BlockchainWalletsService.Db.DataConnString);
 
             var defaultWalletsRepository = WalletRepository.Create(settings, logFactory);
-            var additionalWalletsRepository = AdditionalWalletRepository.Create(settings, logFactory);
 
             string continuationToken = null;
 
@@ -109,37 +108,12 @@ namespace Lykke.Service.BlockchainWallets.MigrateWalletsIndexes
 
             } while (continuationToken != null);
             Console.WriteLine();
-            Console.WriteLine("Drop additional address indexes");
-
-            await additionalWalletsRepository.DeleteAllAddressIndexesAsync();
 
             Console.WriteLine("Creating indexes for additional wallets...");
 
             progressCounter = 0;
-            do
-            {
-                try
-                {
-                    IEnumerable<AdditionalWalletEntity> wallets;
-                    (wallets, continuationToken) = await additionalWalletsRepository.GetAsync(100, continuationToken);
-                    foreach (var batch in wallets.Batch(batchSize))
-                    {
-                        await Task.WhenAll(batch.Select(o => additionalWalletsRepository.AddAddressIndex(o)));
-
-                        progressCounter += batchSize;
-                        Console.SetCursorPosition(0, Console.CursorTop);
-                        Console.Write($"{progressCounter} indexes created");
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.StackTrace + " " + e.Message);
-                }
-
-            } while (continuationToken != null);
-
-            Console.WriteLine();
-            Console.WriteLine("Conversion completed");
+           
+            throw new NotImplementedException();
         }
     }
 }
