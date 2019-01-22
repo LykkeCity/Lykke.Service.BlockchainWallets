@@ -96,8 +96,8 @@ namespace Lykke.Service.BlockchainWallets.BtcDepositsMigration
 
             var logFactory = LogFactory.Create().AddConsole();
 
-            var appSettings = new SettingsServiceReloadingManager<AppSettings>(bwSettingsUrl);
-            var bitcoinSettings = new SettingsServiceReloadingManager<BitcoinAppSettings>(bitcoinSettingsUrl)
+            var appSettings = new SettingsServiceReloadingManager<AppSettings>(bwSettingsUrl, p=> {});
+            var bitcoinSettings = new SettingsServiceReloadingManager<BitcoinAppSettings>(bitcoinSettingsUrl, p => { })
                 .CurrentValue.BitcoinService;
 
 
