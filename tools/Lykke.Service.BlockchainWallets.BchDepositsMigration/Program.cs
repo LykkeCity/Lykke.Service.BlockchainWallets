@@ -102,35 +102,38 @@ namespace Lykke.Service.BlockchainWallets.BchDepositsMigration
             foreach (var observableWallet in observableWallets)
             {
                 counter++;
-                Console.WriteLine($"Processing {observableWallet.Address} -- {counter} of {observableWallets.Count}");
 
                 var address = addressValidator.GetBitcoinAddress(observableWallet.Address);
-                
+
                 if (address == null)
                 {
                     throw new ArgumentException($"Unrecognized address {observableWallet.Address}",
                         nameof(observableWallet.Address));
                 }
+                
+                var oldAdrr = address.ScriptPubKey.GetDestinationAddress(network).ToString();
+                var newAddr = address.ScriptPubKey.GetDestinationAddress(bcashNetwork).ToString();
 
-                var wallet = await walletRepo.TryGetAsync(blockchainType, observableWallet.Address);
+                Console.WriteLine($"Processing {observableWallet.Address}:{oldAdrr}:{newAddr} -- {counter} of {observableWallets.Count}");
+
+                var wallet = await walletRepo.TryGetAsync(blockchainType, oldAdrr);
 
                 if (wallet == null)
                 {
                     var prevColor = Console.ForegroundColor;
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine($"Wallet not found {observableWallet.Address} -{blockchainType}");
+                    Console.WriteLine($"Wallet not found {observableWallet.Address} -{blockchainType}. Queued by {oldAdrr}");
                     Console.ForegroundColor = prevColor;
 
                     continue;
                 }
-
-                var replacedAddr = address.ScriptPubKey.GetDestinationAddress(bcashNetwork).ToString();
-                await walletRepo.AddAsync(wallet.BlockchainType, wallet.ClientId, replacedAddr, wallet.CreatorType);
+                
+                await walletRepo.AddAsync(wallet.BlockchainType, wallet.ClientId, newAddr, wallet.CreatorType);
 
                 var oldCredsRecord = new BcnCredentialsRecord
                 {
                     Address = string.Empty,
-                    AssetAddress = replacedAddr,
+                    AssetAddress = oldAdrr,
                     ClientId = wallet.ClientId.ToString(),
                     EncodedKey = string.Empty,
                     PublicKey = string.Empty,
@@ -142,7 +145,7 @@ namespace Lykke.Service.BlockchainWallets.BchDepositsMigration
                 var newCredsRecord = new BcnCredentialsRecord
                 {
                     Address = string.Empty,
-                    AssetAddress = replacedAddr,
+                    AssetAddress = newAddr,
                     ClientId = wallet.ClientId.ToString(),
                     EncodedKey = string.Empty,
                     PublicKey = string.Empty,
@@ -151,7 +154,7 @@ namespace Lykke.Service.BlockchainWallets.BchDepositsMigration
 
                 await firstGenerationBlockchainWalletRepository.InsertOrReplaceAsync(newCredsRecord);
 
-                await walletRepo.DeleteIfExistsAsync(wallet.BlockchainType, wallet.ClientId, wallet.Address);
+                await walletRepo.DeleteIfExistsAsync(wallet.BlockchainType, wallet.ClientId, oldAdrr);
             }
 
             Console.WriteLine("All done");
