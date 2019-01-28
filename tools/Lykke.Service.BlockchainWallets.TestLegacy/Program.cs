@@ -80,7 +80,7 @@ namespace Lykke.Service.BlockchainWallets.TestLegacy
             var logFactory = LogFactory.Create()
                 .AddConsole();
 
-            var appSettings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl);
+            var appSettings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl, p => { });
 
             var builder = new ContainerBuilder();
 
