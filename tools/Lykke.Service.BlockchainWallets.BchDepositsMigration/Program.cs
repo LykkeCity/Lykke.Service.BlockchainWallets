@@ -127,8 +127,6 @@ namespace Lykke.Service.BlockchainWallets.BchDepositsMigration
 
                     continue;
                 }
-                
-                await walletRepo.AddAsync(wallet.BlockchainType, wallet.ClientId, newAddr, wallet.CreatorType);
 
                 var oldCredsRecord = new BcnCredentialsRecord
                 {
@@ -140,8 +138,6 @@ namespace Lykke.Service.BlockchainWallets.BchDepositsMigration
                     AssetId = $"{blockchainType} ({wallet.AssetId})"
                 };
 
-                await firstGenerationBlockchainWalletRepository.DeleteIfExistAsync(oldCredsRecord);
-
                 var newCredsRecord = new BcnCredentialsRecord
                 {
                     Address = string.Empty,
@@ -152,9 +148,11 @@ namespace Lykke.Service.BlockchainWallets.BchDepositsMigration
                     AssetId = $"{blockchainType} ({wallet.AssetId})"
                 };
 
+                await firstGenerationBlockchainWalletRepository.DeleteIfExistAsync(oldCredsRecord);
                 await firstGenerationBlockchainWalletRepository.InsertOrReplaceAsync(newCredsRecord);
 
                 await walletRepo.DeleteIfExistsAsync(wallet.BlockchainType, wallet.ClientId, oldAdrr);
+                await walletRepo.AddAsync(wallet.BlockchainType, wallet.ClientId, newAddr, wallet.CreatorType);
             }
 
             Console.WriteLine("All done");
