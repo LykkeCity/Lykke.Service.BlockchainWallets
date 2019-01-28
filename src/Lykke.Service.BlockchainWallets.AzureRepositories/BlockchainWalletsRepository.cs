@@ -256,7 +256,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         {
             var indexes = await GetForClientIndicesAsync(clientId, take, continuationToken);
             var keys = indexes.wallets.Select(x =>  (partitionKey: x.WalletPartitionKey, rowKey: x.WalletRowKey));
-
+            var t = (await keys.SelectAsync(p => _walletsTable.GetDataAsync(p.partitionKey, p.rowKey)));
             var wallets = (await keys.SelectAsync(p => _walletsTable.GetDataAsync(p.partitionKey, p.rowKey)))
                     .Select(ConvertEntityToDto);
 
