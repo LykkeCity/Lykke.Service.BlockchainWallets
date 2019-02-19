@@ -1,23 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AzureStorage;
 using AzureStorage.Tables;
 using AzureStorage.Tables.Templates.Index;
 using Common;
-using Lykke.SettingsReader;
-using Microsoft.WindowsAzure.Storage.Table;
-using System.Linq;
-using Lykke.AzureStorage.Tables.Paging;
 using Lykke.Common.Log;
-using Lykke.Service.BlockchainWallets.AzureRepositories.Utils;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
-using Microsoft.AspNetCore.Razor.Language;
+using Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.ObsoleteAzurePepo.Utils;
+using Lykke.SettingsReader;
 
-
-namespace Lykke.Service.BlockchainWallets.AzureRepositories
+namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.ObsoleteAzurePepo
 {
     public class BlockchainWalletsRepository : IBlockchainWalletsRepository
     {
@@ -42,7 +38,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
             _clientLatestDepositsIndexTable = clientLatestDepositsIndexTable;
         }
 
-        public static IBlockchainWalletsRepository Create(IReloadingManager<string> connectionString, ILogFactory logFactory)
+        public static BlockchainWalletsRepository Create(IReloadingManager<string> connectionString, ILogFactory logFactory)
         {
             const string tableName = "BlockchainWallets";
             const string archiveTableName = "BlockchainWalletsArchive";
@@ -297,7 +293,12 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
                 : null;
         }
 
-        public async Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(int take, string continuationToken)
+        public Task EnsureIndexesCreatedAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public async Task<(IEnumerable<(WalletDto wallet, bool isPrimary)> Wallets, string ContinuationToken)> GetAllAsync(int take, string continuationToken)
         {
             IEnumerable<BlockchainWalletEntity> entities;
 
@@ -305,7 +306,15 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
 
             var wallets = entities.Select(ConvertEntityToDto);
 
-            return (wallets, continuationToken);
+            return (await wallets.SelectAsync(async wallet =>
+            {
+                var clientLatestDepositIndexPartitionKey = GetClientLatestIndexPartitionKey(wallet .ClientId);
+                var clientLatestDepositIndexRowKey = GetClientLatestIndexRowKey(wallet .BlockchainType);
+
+                var latestDeposit = await _clientLatestDepositsIndexTable.GetDataAsync(clientLatestDepositIndexPartitionKey,
+                    clientLatestDepositIndexRowKey);
+                return (wallet: wallet , isPrimary: wallet.Address == latestDeposit?.PrimaryRowKey);
+            }), continuationToken);
         }
 
         #region Keys

@@ -15,6 +15,7 @@ using AzureStorage.Tables;
 using Lykke.Common.Log;
 using Lykke.Cqrs;
 using Lykke.Service.BlockchainWallets.AzureRepositories;
+using Lykke.Service.BlockchainWallets.AzureRepositories.Entities;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Contract.Events;
 using Lykke.Service.BlockchainWallets.Core.DTOs;

@@ -112,6 +112,17 @@ namespace Lykke.Service.BlockchainWallets.Workflow.Sagas
                     BlockchainWalletsBoundedContext.Name
                 );
             }
+
+            sender.SendCommand
+            (
+                new DeleteWalletBackupCommand
+                {
+                    Address = address,
+                    BlockchainType = blockchainType,
+                    ClientId = evt.ClientId
+                },
+                BlockchainWalletsBoundedContext.Name
+            );
         }
     }
 }

@@ -181,7 +181,8 @@ namespace Lykke.Service.BlockchainWallets.BtcDepositsMigration
 
             await ImportWalletToSignFacade(blockchainSignFacade, privateKey, address);
 
-            await walletRepository.AddAsync(BlockchainType,  clientId, address, CreatorType.LykkeWallet);
+            var isPrimary = true;
+            await walletRepository.AddAsync(BlockchainType,  clientId, address, CreatorType.LykkeWallet, addAsLatest: isPrimary);
             var @event = new WalletCreatedEvent
             {
                 Address = address,
@@ -189,7 +190,8 @@ namespace Lykke.Service.BlockchainWallets.BtcDepositsMigration
                 BlockchainType = BlockchainType,
                 IntegrationLayerId = BlockchainType,
                 ClientId = clientId,
-                CreatedBy = CreatorType.LykkeWallet
+                CreatedBy = CreatorType.LykkeWallet,
+                IsPrimary = isPrimary
             };
             cqrs.PublishEvent(@event, BlockchainWalletsBoundedContext.Name);
         }

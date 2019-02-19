@@ -1,10 +1,9 @@
 ﻿using System;
 using Common;
 using Lykke.AzureStorage.Tables;
-using Lykke.Service.BlockchainWallets.AzureRepositories.Utils;
 using Lykke.Service.BlockchainWallets.Contract;
 
-namespace Lykke.Service.BlockchainWallets.AzureRepositories
+namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.ObsoleteAzurePepo
 {
     public class BlockchainWalletEntity : AzureTableEntity
     {

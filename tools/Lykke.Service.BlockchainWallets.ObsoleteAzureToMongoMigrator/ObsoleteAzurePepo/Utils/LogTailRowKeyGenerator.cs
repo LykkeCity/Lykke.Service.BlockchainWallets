@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Lykke.Service.BlockchainWallets.AzureRepositories.Utils
+namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.ObsoleteAzurePepo.Utils
 {
     /// <summary>
     /// Log tail pattern:
