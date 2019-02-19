@@ -210,6 +210,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
             await CreateSupportClientIdPrimaryWalletsQueryAsync();
             await CreateSupportAddressQueryAsync();
             await CreateConsistencyClientAddressIndex();
+            await CreateSinglePrimaryWalletPerClientConsistencyIndex();
         }
 
         private async Task CreateSupportClientIdPrimaryWalletsQueryAsync()
@@ -245,6 +246,20 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
 
             await _collection.Indexes.CreateOneAsync(new CreateIndexModel<WalletMongoEntity>(combined,
                 new CreateIndexOptions { Background = true, Unique = true}));
+        }
+
+        private async Task CreateSinglePrimaryWalletPerClientConsistencyIndex()
+        {
+            var isPrimary = Builders<WalletMongoEntity>.IndexKeys.Descending(p => p.IsPrimary);
+            var clientAsc = Builders<WalletMongoEntity>.IndexKeys.Ascending(p => p.ClientId);
+            var blockchainTypeAsc = Builders<WalletMongoEntity>.IndexKeys.Ascending(p => p.BlockchainType);
+
+            var combined = Builders<WalletMongoEntity>.IndexKeys.Combine(isPrimary, blockchainTypeAsc, clientAsc);
+
+            await _collection.Indexes.CreateOneAsync(new CreateIndexModel<WalletMongoEntity>(combined,
+                new CreateIndexOptions<WalletMongoEntity> { Background = true,
+                    Unique = true,
+                    PartialFilterExpression = Builders<WalletMongoEntity>.Filter.Eq(p => p.IsPrimary, true)}));
         }
 
         #endregion

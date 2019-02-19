@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Lykke.Logs;
 using Lykke.Logs.Loggers.LykkeConsole;
 using Lykke.Service.BlockchainWallets.AzureRepositories.Backup;
 using Lykke.Service.BlockchainWallets.Core.Settings;
 using Lykke.Service.BlockchainWallets.MongoRepositories.Wallets;
+using Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.Helpers;
 using Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.ObsoleteAzurePepo;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.CommandLineUtils;
@@ -78,6 +80,9 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
             var backupStorage =
                 BlockchainWalletsBackupRepository.Create(
                     appSettings.Nested(p => p.BlockchainWalletsService.Db.DataConnString), logfactory);
+            
+            Console.WriteLine("Ensuring indexes created");
+            await walletMongoRepo.EnsureIndexesCreatedAsync();
 
             const int take = 50;
             string continuationToken = null;
@@ -86,18 +91,17 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
             do
             {
                 var queryResult = await obsoleteRepo.GetAllAsync(take, continuationToken);
-
-                foreach (var item in queryResult.Wallets)
+                await queryResult.Wallets.ForEachAsyncSemaphore(16,async item =>
                 {
-                    counter++;
+                    Interlocked.Increment(ref counter);
                     Console.WriteLine($"Processing {item.wallet.ClientId}-{item.wallet.BlockchainType}-{item.wallet.Address} {counter} of unknown");
-                    
+
                     await walletMongoRepo.AddAsync(item.wallet.BlockchainType, item.wallet.ClientId, item.wallet.Address,
                         item.wallet.CreatorType, addAsLatest: item.isPrimary);
 
                     await backupStorage.AddAsync(item.wallet.BlockchainType, item.wallet.ClientId, item.wallet.Address,
                         item.wallet.CreatorType, item.isPrimary);
-                }
+                });
 
                 continuationToken = queryResult.ContinuationToken;
             } while (continuationToken != null);
