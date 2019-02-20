@@ -84,27 +84,41 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
             Console.WriteLine("Ensuring indexes created");
             await walletMongoRepo.EnsureIndexesCreatedAsync();
 
-            const int take = 50;
+            const int take = 1000;
             string continuationToken = null;
 
             var counter = 0;
+
+            var throttler = new SemaphoreSlim(8);
+            var tasks = new List<Task>();
             do
             {
+
+                await throttler.WaitAsync();
                 var queryResult = await obsoleteRepo.GetAllAsync(take, continuationToken);
-                await queryResult.Wallets.ForEachAsyncSemaphore(16,async item =>
+
+                tasks.Add(Task.Run(async () =>
                 {
-                    Interlocked.Increment(ref counter);
-                    Console.WriteLine($"Processing {item.wallet.ClientId}-{item.wallet.BlockchainType}-{item.wallet.Address} {counter} of unknown");
+                    try
+                    {
+                        Interlocked.Add(ref counter, queryResult.Wallets.Count());
 
-                    await walletMongoRepo.AddAsync(item.wallet.BlockchainType, item.wallet.ClientId, item.wallet.Address,
-                        item.wallet.CreatorType, addAsLatest: item.isPrimary);
+                        Console.WriteLine($"Processing {counter} of unknown");
 
-                    await backupStorage.AddAsync(item.wallet.BlockchainType, item.wallet.ClientId, item.wallet.Address,
-                        item.wallet.CreatorType, item.isPrimary);
-                });
-
+                        await walletMongoRepo.InsertBatchAsync(queryResult.Wallets.Select(p =>
+                            (blockchainType: p.wallet.BlockchainType, clientId: p.wallet.ClientId, address: p.wallet.Address,
+                                createdBy: p.wallet.CreatorType, addAsLatest: p.isPrimary)));
+                    }
+                    finally
+                    {
+                        throttler.Release();
+                    }
+                }));
+                
                 continuationToken = queryResult.ContinuationToken;
             } while (continuationToken != null);
+
+            await Task.WhenAll(tasks);
         }
     }
 }
