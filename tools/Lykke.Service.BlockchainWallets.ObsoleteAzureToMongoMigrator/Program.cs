@@ -5,11 +5,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Lykke.Logs;
 using Lykke.Logs.Loggers.LykkeConsole;
-using Lykke.Service.BlockchainWallets.AzureRepositories.Backup;
+using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.Settings;
 using Lykke.Service.BlockchainWallets.MongoRepositories.Wallets;
-using Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.Helpers;
+using Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.Cqrs;
 using Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.ObsoleteAzurePepo;
+using Lykke.Service.BlockchainWallets.Workflow.Commands;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.CommandLineUtils;
 
@@ -77,11 +78,13 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
 
             var obsoleteRepo = BlockchainWalletsRepository.Create(appSettings.Nested(p => p.BlockchainWalletsService.Db.DataConnString), logfactory);
 
-            var backupStorage =
-                BlockchainWalletsBackupRepository.Create(
-                    appSettings.Nested(p => p.BlockchainWalletsService.Db.DataConnString), logfactory);
-            
-            Console.WriteLine("Ensuring indexes created");
+            var cqrsEngine =
+                CqrsBuilder.CreateCqrsEngine(
+                    appSettings.CurrentValue.BlockchainWalletsService.Cqrs.RabbitConnectionString, logfactory);
+
+            cqrsEngine.Start();
+
+            Console.WriteLine($"[{DateTime.UtcNow}] Ensuring indexes created");
             await walletMongoRepo.EnsureIndexesCreatedAsync();
 
             const int take = 1000;
@@ -91,6 +94,7 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
 
             var throttler = new SemaphoreSlim(8);
             var tasks = new List<Task>();
+            
             do
             {
 
@@ -103,11 +107,37 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
                     {
                         Interlocked.Add(ref counter, queryResult.Wallets.Count());
 
-                        Console.WriteLine($"Processing {counter} of unknown");
 
-                        await walletMongoRepo.InsertBatchAsync(queryResult.Wallets.Select(p =>
-                            (blockchainType: p.wallet.BlockchainType, clientId: p.wallet.ClientId, address: p.wallet.Address,
+                        var insInMongo = walletMongoRepo.InsertBatchAsync(queryResult.Wallets.Select(p =>
+                            (blockchainType: p.wallet.BlockchainType, clientId: p.wallet.ClientId,
+                                address: p.wallet.Address,
                                 createdBy: p.wallet.CreatorType, addAsLatest: p.isPrimary)));
+
+                        foreach (var item in queryResult.Wallets)
+                        {
+                            cqrsEngine.SendCommand(new CreateWalletBackupCommand
+                                {
+                                    ClientId = item.wallet.ClientId,
+                                    Address = item.wallet.Address,
+                                    AssetId = item.wallet.AssetId,
+                                    BlockchainType = item.wallet.BlockchainType,
+                                    IsPrimary = item.isPrimary,
+                                    CreatedBy = item.wallet.CreatorType
+                                },
+                                BlockchainWalletsBoundedContext.Name,
+                                BlockchainWalletsBoundedContext.Name);
+                        }
+
+                        await insInMongo;
+                        
+                        Console.WriteLine($"[{DateTime.UtcNow}] Processed {counter} of unknown");
+                    }
+                    catch (Exception e)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine(e.ToString());
+
+                        throw;
                     }
                     finally
                     {

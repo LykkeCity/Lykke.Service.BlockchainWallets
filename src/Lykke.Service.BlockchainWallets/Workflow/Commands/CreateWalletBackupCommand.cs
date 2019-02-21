@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Lykke.Service.BlockchainWallets.Contract;
 using MessagePack;
 
 namespace Lykke.Service.BlockchainWallets.Workflow.Commands
 {
+    [MessagePackObject]
     public class CreateWalletBackupCommand
     {
         [Key(0)]

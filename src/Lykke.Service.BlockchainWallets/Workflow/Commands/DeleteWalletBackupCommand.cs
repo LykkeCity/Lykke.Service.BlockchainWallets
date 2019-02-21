@@ -1,9 +1,9 @@
 ﻿using System;
-using Lykke.Service.BlockchainWallets.Contract;
 using MessagePack;
 
 namespace Lykke.Service.BlockchainWallets.Workflow.Commands
 {
+    [MessagePackObject]
     public class DeleteWalletBackupCommand
     {
         [Key(0)]
