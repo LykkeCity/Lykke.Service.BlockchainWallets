@@ -94,20 +94,18 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
 
             var throttler = new SemaphoreSlim(8);
             var tasks = new List<Task>();
-            
+
+            var disrupt = new CancellationTokenSource();
             do
             {
 
-                await throttler.WaitAsync();
+                await throttler.WaitAsync(disrupt.Token);
                 var queryResult = await obsoleteRepo.GetAllAsync(take, continuationToken);
 
                 tasks.Add(Task.Run(async () =>
                 {
                     try
                     {
-                        Interlocked.Add(ref counter, queryResult.Wallets.Count());
-
-
                         var insInMongo = walletMongoRepo.InsertBatchAsync(queryResult.Wallets.Select(p =>
                             (blockchainType: p.wallet.BlockchainType, clientId: p.wallet.ClientId,
                                 address: p.wallet.Address,
@@ -129,21 +127,21 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
                         }
 
                         await insInMongo;
-                        
+
+                        Interlocked.Add(ref counter, queryResult.Wallets.Count());
                         Console.WriteLine($"[{DateTime.UtcNow}] Processed {counter} of unknown");
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine(e.ToString());
-
+                        disrupt.Cancel();
+                        
                         throw;
                     }
                     finally
                     {
                         throttler.Release();
                     }
-                }));
+                }, disrupt.Token));
                 
                 continuationToken = queryResult.ContinuationToken;
             } while (continuationToken != null);
