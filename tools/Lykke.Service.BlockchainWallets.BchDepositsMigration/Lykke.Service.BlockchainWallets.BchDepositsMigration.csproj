@@ -1,20 +1,22 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-    <AssemblyName>Lykke.Service.BlockchainWallets.MigrateWalletsMultiplePerClient</AssemblyName>
     <Version>1.0.1</Version>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Lykke.AzureStorage" Version="8.10.0" />
-    <PackageReference Include="Lykke.Logs" Version="6.0.0" />
+    <PackageReference Include="Lykke.Common" Version="7.0.3" />
+    <PackageReference Include="Lykke.Logs" Version="7.2.1" />
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
+    <PackageReference Include="NBitcoin" Version="4.1.1.75" />
+    <PackageReference Include="NBitcoin.Altcoins" Version="1.0.1.32" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Lykke.Service.BlockchainWallets.AzureRepositories\Lykke.Service.BlockchainWallets.AzureRepositories.csproj" />
     <ProjectReference Include="..\..\src\Lykke.Service.BlockchainWallets.Core\Lykke.Service.BlockchainWallets.Core.csproj" />
-    <ProjectReference Include="..\..\src\Lykke.Service.BlockchainWallets\Lykke.Service.BlockchainWallets.csproj" />
+    <ProjectReference Include="..\..\src\Lykke.Service.BlockchainWallets.Services\Lykke.Service.BlockchainWallets.Services.csproj" />
   </ItemGroup>
-
 </Project>
