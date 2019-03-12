@@ -78,42 +78,46 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
 
             var obsoleteRepo = BlockchainWalletsRepository.Create(appSettings.Nested(p => p.BlockchainWalletsService.Db.DataConnString), logfactory);
 
-            var cqrsEngine =
+            using (var cqrsEngine =
                 CqrsBuilder.CreateCqrsEngine(
-                    appSettings.CurrentValue.BlockchainWalletsService.Cqrs.RabbitConnectionString, logfactory);
-
-            cqrsEngine.Start();
-
-            Console.WriteLine($"[{DateTime.UtcNow}] Ensuring indexes created");
-            await walletMongoRepo.EnsureIndexesCreatedAsync();
-
-            const int take = 1000;
-            string continuationToken = null;
-
-            var counter = 0;
-
-            var throttler = new SemaphoreSlim(8);
-            var tasks = new List<Task>();
-
-            var disrupt = new CancellationTokenSource();
-            do
+                    appSettings.CurrentValue.BlockchainWalletsService.Cqrs.RabbitConnectionString, logfactory))
             {
+                cqrsEngine.Start();
 
-                await throttler.WaitAsync(disrupt.Token);
-                var queryResult = await obsoleteRepo.GetAllAsync(take, continuationToken);
+                Console.WriteLine($"[{DateTime.UtcNow}] Ensuring indexes created");
+                await walletMongoRepo.EnsureIndexesCreatedAsync();
 
-                tasks.Add(Task.Run(async () =>
+                const int take = 1000;
+                string continuationToken = null;
+
+                var counter = 0;
+
+                var throttler = new SemaphoreSlim(8);
+                var tasks = new List<Task>();
+
+                var disrupt = new CancellationTokenSource();
+                do
                 {
-                    try
-                    {
-                        var insInMongo = walletMongoRepo.InsertBatchAsync(queryResult.Wallets.Select(p =>
-                            (blockchainType: p.wallet.BlockchainType, clientId: p.wallet.ClientId,
-                                address: p.wallet.Address,
-                                createdBy: p.wallet.CreatorType, addAsLatest: p.isPrimary)));
 
-                        foreach (var item in queryResult.Wallets)
+                    await throttler.WaitAsync(disrupt.Token);
+                    var queryResult = await obsoleteRepo.GetAllAsync(take, continuationToken);
+
+                    tasks.Add(Task.Run(async () =>
+                    {
+                        try
                         {
-                            cqrsEngine.SendCommand(new CreateWalletBackupCommand
+                            disrupt.Token.ThrowIfCancellationRequested();
+
+                            var insInMongo = walletMongoRepo.InsertBatchAsync(queryResult.Wallets.Select(p =>
+                                (blockchainType: p.wallet.BlockchainType, clientId: p.wallet.ClientId,
+                                    address: p.wallet.Address,
+                                    createdBy: p.wallet.CreatorType, addAsLatest: p.isPrimary)));
+
+                            foreach (var item in queryResult.Wallets)
+                            {
+                                disrupt.Token.ThrowIfCancellationRequested();
+
+                                cqrsEngine.SendCommand(new CreateWalletBackupCommand
                                 {
                                     ClientId = item.wallet.ClientId,
                                     Address = item.wallet.Address,
@@ -122,35 +126,33 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
                                     IsPrimary = item.isPrimary,
                                     CreatedBy = item.wallet.CreatorType
                                 },
-                                BlockchainWalletsBoundedContext.Name,
-                                BlockchainWalletsBoundedContext.Name);
+                                    BlockchainWalletsBoundedContext.Name,
+                                    BlockchainWalletsBoundedContext.Name);
+                            }
+
+                            await insInMongo;
+
+
+                            var captured = Interlocked.Add(ref counter, queryResult.Wallets.Count());
+                            Console.WriteLine($"[{DateTime.UtcNow}] Processed  {captured} of unknown");
                         }
+                        catch (Exception)
+                        {
+                            disrupt.Cancel();
 
-                        await insInMongo;
+                            throw;
+                        }
+                        finally
+                        {
+                            throttler.Release();
+                        }
+                    }, disrupt.Token));
 
+                    continuationToken = queryResult.ContinuationToken;
+                } while (continuationToken != null);
 
-                        var captured = Interlocked.Add(ref counter, queryResult.Wallets.Count());
-                        Console.WriteLine($"[{DateTime.UtcNow}] Processing  {captured} of unknown");
-                    }
-                    catch (Exception)
-                    {
-                        disrupt.Cancel();
-                        
-                        throw;
-                    }
-                    finally
-                    {
-                        throttler.Release();
-                    }
-                }, disrupt.Token));
-                
-                continuationToken = queryResult.ContinuationToken;
-            } while (continuationToken != null);
-
-            await Task.WhenAll(tasks);
-
-            Console.WriteLine("Disposing cqrs engine");
-            cqrsEngine.Dispose();
+                await Task.WhenAll(tasks);
+            }
         }
     }
 }
