@@ -33,17 +33,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.TestLegacy", "tools\Lykke.Service.BlockchainWallets.TestLegacy\Lykke.Service.BlockchainWallets.TestLegacy.csproj", "{0F0D1931-2E7D-4183-B859-A36BDE54711C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.BtcDepositsMigration", "tools\Lykke.Service.BlockchainWallets.BtcDepositsMigration\Lykke.Service.BlockchainWallets.BtcDepositsMigration.csproj", "{1AA1607E-0773-450B-B70E-187465DBF05A}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.MigrateAddressStorage", "Lykke.Service.BlockchainWallets.MigrateAddressStorage\Lykke.Service.BlockchainWallets.MigrateAddressStorage.csproj", "{8E5886C7-D438-4E63-97FC-F82273E80F40}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.MigrateWalletsMultiplePerClient", "tools\Lykke.Service.BlockchainWallets.MigrateWalletsMultiplePerClient\Lykke.Service.BlockchainWallets.MigrateWalletsMultiplePerClient.csproj", "{8FB795E3-7F35-402D-837B-9962EC1D520C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.CTests", "tests\Lykke.Service.BlockchainWallets.CTests\Lykke.Service.BlockchainWallets.CTests\Lykke.Service.BlockchainWallets.CTests.csproj", "{AA5F890F-A906-4980-AE04-C7BF04CE9D75}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.Tests.Common", "tests\Lykke.Service.BlockchainWallets.Tests.Common\Lykke.Service.BlockchainWallets.Tests.Common.csproj", "{0E9CCD87-193F-47DB-B97B-A80123961D93}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.BchDepositsMigration", "tools\Lykke.Service.BlockchainWallets.BchDepositsMigration\Lykke.Service.BlockchainWallets.BchDepositsMigration.csproj", "{0AF385E3-6697-4B5C-A5D3-733D8AE806D4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.MongoRepositories", "src\Lykke.Service.BlockchainWallets.MongoRepositories\Lykke.Service.BlockchainWallets.MongoRepositories.csproj", "{B8E7E161-1B02-44A9-BEE3-472CDADC45F6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.MongoIndexesBuilder", "tools\Lykke.Service.BlockchainWallets.MongoIndexesBuilder\Lykke.Service.BlockchainWallets.MongoIndexesBuilder.csproj", "{97D581E0-FC44-47FA-8C24-C6850F8ACEB9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator", "tools\Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator\Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.csproj", "{2C404E83-E90E-46F8-936D-DC456D95612E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Service.BlockchainWallets.RestoreBackupToPrimaryStorage", "tools\Lykke.Service.BlockchainWallets.RestoreBackupToPrimaryStorage\Lykke.Service.BlockchainWallets.RestoreBackupToPrimaryStorage.csproj", "{24893F15-F4FC-4D48-9566-0535E0181D35}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,18 +91,6 @@ Global
 		{0F0D1931-2E7D-4183-B859-A36BDE54711C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F0D1931-2E7D-4183-B859-A36BDE54711C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F0D1931-2E7D-4183-B859-A36BDE54711C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1AA1607E-0773-450B-B70E-187465DBF05A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1AA1607E-0773-450B-B70E-187465DBF05A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1AA1607E-0773-450B-B70E-187465DBF05A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1AA1607E-0773-450B-B70E-187465DBF05A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8E5886C7-D438-4E63-97FC-F82273E80F40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8E5886C7-D438-4E63-97FC-F82273E80F40}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8E5886C7-D438-4E63-97FC-F82273E80F40}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8E5886C7-D438-4E63-97FC-F82273E80F40}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8FB795E3-7F35-402D-837B-9962EC1D520C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8FB795E3-7F35-402D-837B-9962EC1D520C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8FB795E3-7F35-402D-837B-9962EC1D520C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8FB795E3-7F35-402D-837B-9962EC1D520C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AA5F890F-A906-4980-AE04-C7BF04CE9D75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AA5F890F-A906-4980-AE04-C7BF04CE9D75}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA5F890F-A906-4980-AE04-C7BF04CE9D75}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -111,10 +99,22 @@ Global
 		{0E9CCD87-193F-47DB-B97B-A80123961D93}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E9CCD87-193F-47DB-B97B-A80123961D93}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E9CCD87-193F-47DB-B97B-A80123961D93}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0AF385E3-6697-4B5C-A5D3-733D8AE806D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0AF385E3-6697-4B5C-A5D3-733D8AE806D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0AF385E3-6697-4B5C-A5D3-733D8AE806D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0AF385E3-6697-4B5C-A5D3-733D8AE806D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8E7E161-1B02-44A9-BEE3-472CDADC45F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8E7E161-1B02-44A9-BEE3-472CDADC45F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8E7E161-1B02-44A9-BEE3-472CDADC45F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8E7E161-1B02-44A9-BEE3-472CDADC45F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97D581E0-FC44-47FA-8C24-C6850F8ACEB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97D581E0-FC44-47FA-8C24-C6850F8ACEB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97D581E0-FC44-47FA-8C24-C6850F8ACEB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97D581E0-FC44-47FA-8C24-C6850F8ACEB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C404E83-E90E-46F8-936D-DC456D95612E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C404E83-E90E-46F8-936D-DC456D95612E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C404E83-E90E-46F8-936D-DC456D95612E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C404E83-E90E-46F8-936D-DC456D95612E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24893F15-F4FC-4D48-9566-0535E0181D35}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24893F15-F4FC-4D48-9566-0535E0181D35}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24893F15-F4FC-4D48-9566-0535E0181D35}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24893F15-F4FC-4D48-9566-0535E0181D35}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -130,12 +130,12 @@ Global
 		{1F03C3AF-2246-4B51-A355-F0FC041881A8} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
 		{B1EB0F1D-0F4B-4883-9697-78796960CF05} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
 		{0F0D1931-2E7D-4183-B859-A36BDE54711C} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
-		{1AA1607E-0773-450B-B70E-187465DBF05A} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
-		{8E5886C7-D438-4E63-97FC-F82273E80F40} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
-		{8FB795E3-7F35-402D-837B-9962EC1D520C} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
 		{AA5F890F-A906-4980-AE04-C7BF04CE9D75} = {8F9036B1-5106-4C69-B2D2-B78EE52687A0}
 		{0E9CCD87-193F-47DB-B97B-A80123961D93} = {8F9036B1-5106-4C69-B2D2-B78EE52687A0}
-		{0AF385E3-6697-4B5C-A5D3-733D8AE806D4} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
+		{B8E7E161-1B02-44A9-BEE3-472CDADC45F6} = {209B4491-E6D2-4439-ACE5-C895A44E768A}
+		{97D581E0-FC44-47FA-8C24-C6850F8ACEB9} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
+		{2C404E83-E90E-46F8-936D-DC456D95612E} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
+		{24893F15-F4FC-4D48-9566-0535E0181D35} = {99C358B9-1CAD-4D77-A93B-93EE02E3C984}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C8DE961A-1EFD-437E-B6AC-65490D9ADBE4}

@@ -2,11 +2,13 @@
 using Common.Log;
 using Lykke.Common.Log;
 using Lykke.Service.BlockchainWallets.AzureRepositories;
+using Lykke.Service.BlockchainWallets.AzureRepositories.Backup;
 using Lykke.Service.BlockchainWallets.AzureRepositories.FirstGeneration;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.Service.BlockchainWallets.Core.Repositories.FirstGeneration;
 using Lykke.Service.BlockchainWallets.Core.Settings.ServiceSettings;
 using Lykke.SettingsReader;
+using Lykke.Service.BlockchainWallets.MongoRepositories.Wallets;
 
 namespace Lykke.Service.BlockchainWallets.Modules
 {
@@ -29,8 +31,15 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .SingleInstance();
 
             builder
-                .Register(c => BlockchainWalletsRepository.Create(connectionString, c.Resolve<ILogFactory>()))
+                .Register(c => BlockchainWalletMongoRepository.Create(_dbSettings.CurrentValue.Mongo.ConnString, _dbSettings.CurrentValue.Mongo.DbName,
+                    c.Resolve<ILogFactory>()))
                 .As<IBlockchainWalletsRepository>()
+                .SingleInstance();
+
+
+            builder
+                .Register(c => BlockchainWalletsBackupRepository.Create(connectionString, c.Resolve<ILogFactory>()))
+                .As<IBlockchainWalletsBackupRepository>()
                 .SingleInstance();
 
             builder

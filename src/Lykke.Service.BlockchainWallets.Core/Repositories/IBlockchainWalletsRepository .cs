@@ -26,5 +26,7 @@ namespace Lykke.Service.BlockchainWallets.Core.Repositories
         Task<WalletDto> TryGetAsync(string blockchainType, string address);
 
         Task<WalletDto> TryGetAsync(string blockchainType, Guid clientId);
+
+        Task EnsureIndexesCreatedAsync();
     }
 }
