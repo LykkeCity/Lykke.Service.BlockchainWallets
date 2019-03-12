@@ -15,7 +15,7 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.Cqrs
 {
     public static class CqrsBuilder
     {
-        public static ICqrsEngine CreateCqrsEngine(string connectionString, ILogFactory logFactory)
+        public static CqrsEngine CreateCqrsEngine(string connectionString, ILogFactory logFactory)
         {
             var rabbitMqSettings = new ConnectionFactory
             {

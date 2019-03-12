@@ -128,8 +128,9 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
 
                         await insInMongo;
 
-                        Interlocked.Add(ref counter, queryResult.Wallets.Count());
-                        Console.WriteLine($"[{DateTime.UtcNow}] Processed {counter} of unknown");
+
+                        var captured = Interlocked.Add(ref counter, queryResult.Wallets.Count());
+                        Console.WriteLine($"[{DateTime.UtcNow}] Processing  {captured} of unknown");
                     }
                     catch (Exception)
                     {
@@ -147,6 +148,9 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
             } while (continuationToken != null);
 
             await Task.WhenAll(tasks);
+
+            Console.WriteLine("Disposing cqrs engine");
+            cqrsEngine.Dispose();
         }
     }
 }
