@@ -28,6 +28,8 @@ namespace Lykke.Service.BlockchainWallets.Core.Repositories
 
         Task InsertOrReplaceAsync(IBcnCredentialsRecord credsRecord);
 
+        Task DeleteIfExistAsync(IBcnCredentialsRecord credsRecord);
+
         Task EnumerateBcnCredsByChunksAsync(string assetId, Func<IEnumerable<IBcnCredentialsRecord>, Task> chunks);
     }
 }
