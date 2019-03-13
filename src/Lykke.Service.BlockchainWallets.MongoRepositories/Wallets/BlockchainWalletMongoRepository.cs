@@ -36,12 +36,12 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
                 logFactory);
         }
         
-        public async Task InsertBatchAsync(IEnumerable<(string blockchainType, Guid clientId, string address, CreatorType createdBy, bool addAsLatest)> wallets)
+        public async Task InsertBatchAsync(IEnumerable<(string blockchainType, Guid clientId, string address, CreatorType createdBy, bool isPrimary)> wallets)
         {
             await _collection.InsertManyAsync(wallets.Select(w=> new WalletMongoEntity
             {
                 ClientId = w.clientId,
-                IsPrimary = w.addAsLatest,
+                IsPrimary = w.isPrimary,
                 Id = ObjectId.GenerateNewId(DateTime.UtcNow),
                 Address = w.address,
                 BlockchainType = w.blockchainType,
@@ -52,7 +52,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
         }
 
         public async Task AddAsync(string blockchainType, Guid clientId, string address, CreatorType createdBy,
-            string clientLatestDepositIndexManualPartitionKey = null, bool addAsLatest = true)
+            string clientLatestDepositIndexManualPartitionKey = null, bool isPrimary = true)
         {
             var now = DateTime.UtcNow;
 
@@ -62,7 +62,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
 
             var entityId = existedId != ObjectId.Empty ? existedId : ObjectId.GenerateNewId(now);
 
-            if (addAsLatest)
+            if (isPrimary)
             {
                 var primarywalletsIds = (await _collection.WrapQueryAsync(_log,
                         query => query
@@ -97,7 +97,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
                     Address = address,
                     BlockchainType = blockchainType,
                     CreatorType = createdBy.ToDomain(),
-                    IsPrimary = addAsLatest,
+                    IsPrimary = isPrimary,
                     Id = entityId,
                     Inserted = now,
                     Updated = now
@@ -111,20 +111,28 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
                     p.Address == address && p.ClientId == clientId && p.BlockchainType == blockchainType)))
                 .SingleOrDefault();
 
-            if (entityToDelete?.IsPrimary ?? false)
+            if (entityToDelete != null)
             {
-                var nextWallet = (await _collection.WrapQueryAsync(_log,
-                    query => query.Where(p => p.ClientId == clientId && p.BlockchainType == blockchainType)
-                        .OrderByDescending(p => p.Inserted).Take(1))).SingleOrDefault();
-
-                if (nextWallet != null)
+                await CommandExtensions.WrapCommandAsync(async () =>
                 {
-                    await CommandExtensions.WrapCommandAsync(async () =>
+                    await _collection.DeleteOneAsync(Builders<WalletMongoEntity>.Filter.Eq(p => p.Id, entityToDelete.Id));
+                }, _log);
+
+                if (entityToDelete.IsPrimary)
+                {
+                    var nextWallet = (await _collection.WrapQueryAsync(_log,
+                        query => query.Where(p => p.ClientId == clientId && p.BlockchainType == blockchainType)
+                            .OrderByDescending(p => p.Inserted).Take(1))).SingleOrDefault();
+
+                    if (nextWallet != null)
                     {
-                        await _collection.UpdateOneAsync(
-                            Builders<WalletMongoEntity>.Filter.Eq(p => p.Id, nextWallet.Id),
-                            Builders<WalletMongoEntity>.Update.Set(p => p.IsPrimary, true));
-                    }, _log);
+                        await CommandExtensions.WrapCommandAsync(async () =>
+                        {
+                            await _collection.UpdateOneAsync(
+                                Builders<WalletMongoEntity>.Filter.Eq(p => p.Id, nextWallet.Id),
+                                Builders<WalletMongoEntity>.Update.Set(p => p.IsPrimary, true));
+                        }, _log);
+                    }
                 }
             }
         }
@@ -136,7 +144,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
 
         public async Task<bool> ExistsAsync(string blockchainType, Guid clientId)
         {
-            return (await TryGetAsync(blockchainType, clientId)) != null;
+            return (await TryGetPrimaryAsync(blockchainType, clientId)) != null;
         }
 
         public Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(string blockchainType, 
@@ -148,7 +156,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
                 query.Where(p => p.ClientId == clientId && p.BlockchainType == blockchainType), take, continuationToken);
         }
 
-        public Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(Guid clientId, 
+        public Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllPrimaryAsync(Guid clientId, 
             int take, 
             string continuationToken = null)
         {
@@ -173,7 +181,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
                 ? null
                 : new ContinuationTokenModel
                 {
-                    Skip = skip + take
+                    Skip = skip + entities.Count
                 }.Serialize();
             
             return (entities.Select(ConvertEntityToDto), resultedContinuationToken);
@@ -193,7 +201,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
             return null;
         }
 
-        public async Task<WalletDto> TryGetAsync(string blockchainType, Guid clientId)
+        public async Task<WalletDto> TryGetPrimaryAsync(string blockchainType, Guid clientId)
         {
             var queryResult = (await _collection.WrapQueryAsync(_log,
                     query => query.Where(p => p.ClientId == clientId && p.IsPrimary && p.BlockchainType == blockchainType)))

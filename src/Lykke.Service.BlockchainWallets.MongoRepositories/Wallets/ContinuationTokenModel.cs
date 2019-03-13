@@ -11,12 +11,15 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
 
         public string Serialize()
         {
-            return this.ToJson().ToBase64();
+            return Skip.ToString();
         }
 
         public static ContinuationTokenModel Deserialize(string source)
         {
-            return source.Base64ToString().DeserializeJson<ContinuationTokenModel>();
+            return new ContinuationTokenModel
+            {
+                Skip = int.Parse(source)
+            };
         }
     }
 }

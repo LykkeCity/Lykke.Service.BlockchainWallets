@@ -157,7 +157,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         public async Task<WalletWithAddressExtensionDto> TryGetDefaultAddressAsync(string blockchainType,
             string assetId, Guid clientId)
         {
-            var wallet = await _walletRepository.TryGetAsync(blockchainType, clientId);
+            var wallet = await _walletRepository.TryGetPrimaryAsync(blockchainType, clientId);
 
             if (wallet != null)
             {
@@ -230,7 +230,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             Guid clientId, int take, string continuationToken)
         {
             var finalWallets = new List<WalletWithAddressExtensionDto>();
-            var (wallets, token) = await _walletRepository.GetAllAsync(clientId, take, continuationToken);
+            var (wallets, token) = await _walletRepository.GetAllPrimaryAsync(clientId, take, continuationToken);
 
             foreach (var wallet in wallets)
             {
@@ -414,7 +414,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         
         private async Task DeleteDefaultWalletAsync(string integrationLayerId, string assetId, Guid clientId)
         {
-            var wallet = await _walletRepository.TryGetAsync(integrationLayerId, clientId);
+            var wallet = await _walletRepository.TryGetPrimaryAsync(integrationLayerId, clientId);
 
             await _walletRepository.DeleteIfExistsAsync(integrationLayerId, clientId, wallet.Address);
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lykke.Common.Log;
 using Lykke.Logs;
 using Lykke.Logs.Loggers.LykkeConsole;
 using Lykke.Service.BlockchainWallets.AzureRepositories.Backup;
@@ -64,7 +65,7 @@ namespace Lykke.Service.BlockchainWallets.RestoreBackupToPrimaryStorage
 
         private static async Task Execute(string settingsUrl)
         {
-            var logFactory = LogFactory.Create().AddConsole();
+            var logFactory = LogFactory.Create().AddUnbufferedConsole();
             var appSettings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl, p => { });
 
             var walletMongoRepo = BlockchainWalletMongoRepository.Create(
@@ -76,6 +77,7 @@ namespace Lykke.Service.BlockchainWallets.RestoreBackupToPrimaryStorage
                 BlockchainWalletsBackupRepository.Create(
                     appSettings.Nested(p => p.BlockchainWalletsService.Db.DataConnString), logFactory);
 
+            var log = logFactory.CreateLog(nameof(Program));
 
             var take = 50;
             string continuationToken = null;
@@ -84,14 +86,14 @@ namespace Lykke.Service.BlockchainWallets.RestoreBackupToPrimaryStorage
             {
                 var queryResult = await backupStorage.GetDataWithContinuationTokenAsync(take, continuationToken);
 
-                foreach (var walletData in queryResult.Entities)
-                {
-                    counter++;
-                    Console.WriteLine($"Processing {walletData.clientId}-{walletData.integrationLayerId}-{walletData.address} {counter} of unknown");
+                counter += queryResult.Entities.Count();
 
-                    await walletMongoRepo.AddAsync(walletData.integrationLayerId, walletData.clientId, walletData.address,
-                        walletData.createdBy, addAsLatest: walletData.isPrimary);
-                }
+                log.Info($"Processing {counter} of unknown");
+
+                await walletMongoRepo.InsertBatchAsync(queryResult.Entities.Select(p =>
+                    (blockchainType: p.integrationLayerId, clientId: p.clientId,
+                        address: p.address,
+                        createdBy: p.createdBy, isPrimary: p.isPrimary)));
 
                 continuationToken = queryResult.ContinuationToken;
             } while (continuationToken != null);

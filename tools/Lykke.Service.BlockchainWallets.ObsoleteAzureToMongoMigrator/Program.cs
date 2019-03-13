@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Lykke.Common.Log;
 using Lykke.Logs;
 using Lykke.Logs.Loggers.LykkeConsole;
 using Lykke.Service.BlockchainWallets.Contract;
@@ -69,7 +70,8 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
         private static async Task Execute(string settingsUrl)
         {
             var appSettings = new SettingsServiceReloadingManager<AppSettings>(settingsUrl, p => { });
-            var logfactory = LogFactory.Create().AddConsole();
+            var logfactory = LogFactory.Create().AddUnbufferedConsole();
+            var log = logfactory.CreateLog(nameof(Program));
 
             var walletMongoRepo = BlockchainWalletMongoRepository.Create(
                 appSettings.CurrentValue.BlockchainWalletsService.Db.Mongo.ConnString,
@@ -84,7 +86,7 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
             {
                 cqrsEngine.Start();
 
-                Console.WriteLine($"[{DateTime.UtcNow}] Ensuring indexes created");
+                log.Info($"[{DateTime.UtcNow}] Ensuring indexes created");
                 await walletMongoRepo.EnsureIndexesCreatedAsync();
 
                 const int take = 1000;
@@ -111,7 +113,7 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
                             var insInMongo = walletMongoRepo.InsertBatchAsync(queryResult.Wallets.Select(p =>
                                 (blockchainType: p.wallet.BlockchainType, clientId: p.wallet.ClientId,
                                     address: p.wallet.Address,
-                                    createdBy: p.wallet.CreatorType, addAsLatest: p.isPrimary)));
+                                    createdBy: p.wallet.CreatorType, isPrimary: p.isPrimary)));
 
                             foreach (var item in queryResult.Wallets)
                             {
@@ -134,7 +136,7 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
 
 
                             var captured = Interlocked.Add(ref counter, queryResult.Wallets.Count());
-                            Console.WriteLine($"[{DateTime.UtcNow}] Processed  {captured} of unknown");
+                            log.Info($"[{DateTime.UtcNow}] Processed  {captured} of unknown");
                         }
                         catch (Exception)
                         {
