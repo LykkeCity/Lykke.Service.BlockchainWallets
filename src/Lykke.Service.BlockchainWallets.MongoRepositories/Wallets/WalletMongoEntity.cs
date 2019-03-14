@@ -1,4 +1,5 @@
 ﻿using System;
+using Lykke.Service.BlockchainWallets.Contract;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -21,14 +22,32 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
         [BsonElement("crtr")]
         public CreatorTypeValues CreatorType { get; set; }
 
-        [BsonElement("prmr")]
-        public bool IsPrimary { get; set; }
-
         [BsonElement("ins")]
         public DateTime Inserted { get; set; }
 
         [BsonElement("upd")]
         public DateTime Updated { get; set; }
+
+        public static WalletMongoEntity Create(
+            ObjectId id,
+            string blockchainType, 
+            Guid clientId, 
+            string address,
+            CreatorTypeValues creatorType, 
+            DateTime inserted,
+            DateTime updated)
+        {
+            return new WalletMongoEntity
+            {
+                ClientId = clientId,
+                Address = address,
+                BlockchainType = blockchainType,
+                Id = id,
+                CreatorType = creatorType,
+                Inserted = inserted,
+                Updated = updated
+            };
+        }
 
         public enum CreatorTypeValues
         {
