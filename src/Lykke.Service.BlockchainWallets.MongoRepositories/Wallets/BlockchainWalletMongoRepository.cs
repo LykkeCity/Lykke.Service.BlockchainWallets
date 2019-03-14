@@ -173,8 +173,11 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
 
             if (entityToDelete != null)
             {
-                var primary = await TryGetPrimaryAsync(blockchainType, clientId);
-                if (primary.Address == address)
+                var primary = (await _primaryWalletsCollection.WrapQueryAsync(_log,
+                        query => query.Where(p => p.ClientId == clientId && p.BlockchainType == blockchainType)))
+                    .SingleOrDefault();
+
+                if (primary?.Address == address)
                 {
                     var nextWallet = (await _allWalletsCollection.WrapQueryAsync(_log,
                         query => query.Where(p => p.ClientId == clientId && p.Address != address && p.BlockchainType == blockchainType)
@@ -186,6 +189,18 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
                     {
                         await InsertOrUpdatePrimaryWalletAsync(nextWallet.BlockchainType, nextWallet.ClientId, nextWallet.Address,
                             nextWallet.CreatorType);
+                    }
+                    else
+                    {
+                        await CommandExtensions.WrapCommandAsync(async () =>
+                        {
+                            var res = await _primaryWalletsCollection.DeleteOneAsync(p => p.Id == primary.Id && p.Updated == primary.Updated);
+
+                            if (res.DeletedCount != 1)
+                            {
+                                throw new MongoOptimisticConcurrencyException();
+                            }
+                        }, _log);
                     }
                 }
 
