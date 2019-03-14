@@ -45,7 +45,8 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
         {
             var now = DateTime.UtcNow;
 
-            var insGeneral =  _allWalletsCollection.InsertManyAsync(wallets.Select(w =>
+            var enumerated = wallets as (string blockchainType, Guid clientId, string address, CreatorType createdBy, bool isPrimary)[] ?? wallets.ToArray();
+            var insGeneral =  _allWalletsCollection.InsertManyAsync(enumerated.Select(w =>
                 WalletMongoEntity.Create(ObjectId.GenerateNewId(now), 
                     blockchainType: w.blockchainType,
                     clientId: w.clientId, 
@@ -54,7 +55,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
                     inserted: now,
                     updated: now)));
 
-            var insPrimary = _primaryWalletsCollection.InsertManyAsync(wallets
+            var insPrimary = _primaryWalletsCollection.InsertManyAsync(enumerated
                 .Where(p => p.isPrimary)
                 .Select(w => WalletMongoEntity.Create(ObjectId.GenerateNewId(now), 
                     blockchainType: w.blockchainType,
