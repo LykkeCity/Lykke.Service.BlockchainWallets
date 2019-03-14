@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
-using Lykke.AzureStorage;
 using Lykke.Common.Log;
 using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
