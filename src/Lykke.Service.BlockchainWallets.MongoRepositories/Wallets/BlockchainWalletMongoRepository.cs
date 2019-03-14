@@ -43,24 +43,26 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
         
         public async Task InsertBatchAsync(IEnumerable<(string blockchainType, Guid clientId, string address, CreatorType createdBy, bool isPrimary)> wallets)
         {
+            var now = DateTime.UtcNow;
+
             var insGeneral =  _allWalletsCollection.InsertManyAsync(wallets.Select(w =>
-                WalletMongoEntity.Create(ObjectId.GenerateNewId(DateTime.UtcNow), 
+                WalletMongoEntity.Create(ObjectId.GenerateNewId(now), 
                     blockchainType: w.blockchainType,
                     clientId: w.clientId, 
                     address: w.address, 
                     creatorType: w.createdBy.ToDomain(),
-                    inserted: DateTime.UtcNow,
-                    updated: DateTime.UtcNow)));
+                    inserted: now,
+                    updated: now)));
 
             var insPrimary = _primaryWalletsCollection.InsertManyAsync(wallets
                 .Where(p => p.isPrimary)
-                .Select(w => WalletMongoEntity.Create(ObjectId.GenerateNewId(DateTime.UtcNow), 
+                .Select(w => WalletMongoEntity.Create(ObjectId.GenerateNewId(now), 
                     blockchainType: w.blockchainType,
                     clientId: w.clientId,
                     address: w.address, 
                     creatorType: w.createdBy.ToDomain(),
-                    inserted: DateTime.UtcNow, 
-                    updated: DateTime.UtcNow)));
+                    inserted: now, 
+                    updated: now)));
 
             await Task.WhenAll(insGeneral, insPrimary);
         }
