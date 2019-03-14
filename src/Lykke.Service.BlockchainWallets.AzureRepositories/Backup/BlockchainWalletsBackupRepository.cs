@@ -105,11 +105,11 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories.Backup
                         Address = nextWallet.Address
                     });
                 }
-            }
 
-            await _isPrimaryIndexStorage.DeleteIfExistAsync(BlockchainWalletsBackupIsPrimaryIndex.GetPartitionKey(clientId),
-                BlockchainWalletsBackupIsPrimaryIndex.GetRowKey(integrationLayerId), 
-                p => p.Address == address);
+                await _isPrimaryIndexStorage.DeleteIfExistAsync(BlockchainWalletsBackupIsPrimaryIndex.GetPartitionKey(clientId),
+                    BlockchainWalletsBackupIsPrimaryIndex.GetRowKey(integrationLayerId),
+                    p => p.Address == address);
+            }
 
             await _isDeletedStorage.InsertOrReplaceAsync(new BlockchainWalletsArchiveIndex
             {

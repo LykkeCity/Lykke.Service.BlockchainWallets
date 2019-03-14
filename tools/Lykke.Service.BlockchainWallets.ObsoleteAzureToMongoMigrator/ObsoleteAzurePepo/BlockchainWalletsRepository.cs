@@ -223,7 +223,7 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.ObsoleteA
 
         public async Task<bool> ExistsAsync(string blockchainType, Guid clientId)
         {
-            return await TryGetAsync(blockchainType, clientId) != null;
+            return await TryGetPrimaryAsync(blockchainType, clientId) != null;
         }
 
         public async Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(string blockchainType, Guid clientId, int take, string continuationToken = null)
@@ -248,7 +248,7 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.ObsoleteA
             return (sortedWallets, indexes.continuationToken);
         }
 
-        public async Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(Guid clientId, int take, string continuationToken = null)
+        public async Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllPrimaryAsync(Guid clientId, int take, string continuationToken = null)
         {
             var indexes = await GetForClientIndicesAsync(clientId, take, continuationToken);
             var keys = indexes.wallets.Select(x =>  (partitionKey: x.WalletPartitionKey, rowKey: x.WalletRowKey));
@@ -281,7 +281,7 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.ObsoleteA
                 : null;
         }
 
-        public async Task<WalletDto> TryGetAsync(string blockchainType, Guid clientId)
+        public async Task<WalletDto> TryGetPrimaryAsync(string blockchainType, Guid clientId)
         {
             var (partitionKey, rowKey) = GetClientBlockchainTypeIndexKeys(blockchainType, clientId);
             var indexes = await _clientBlockchainTypeIndexTable.GetDataWithContinuationTokenAsync(partitionKey, 10, null);

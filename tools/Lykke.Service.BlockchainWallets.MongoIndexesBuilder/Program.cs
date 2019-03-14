@@ -68,7 +68,7 @@ namespace Lykke.Service.BlockchainWallets.MongoIndexesBuilder
             var walletMongoRepo = BlockchainWalletMongoRepository.Create(
                 appSettings.CurrentValue.BlockchainWalletsService.Db.Mongo.ConnString,
                 appSettings.CurrentValue.BlockchainWalletsService.Db.Mongo.DbName,
-                LogFactory.Create().AddConsole());
+                LogFactory.Create().AddUnbufferedConsole());
 
             await walletMongoRepo.EnsureIndexesCreatedAsync();
         }
