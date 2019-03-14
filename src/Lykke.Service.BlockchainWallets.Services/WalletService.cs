@@ -91,7 +91,8 @@ namespace Lykke.Service.BlockchainWallets.Services
                         $"Failed to get UnderlyingAddress for blockchainType={blockchainType} and address={address}");
                 }
 
-                await _walletRepository.AddAsync(blockchainType, clientId, address, CreatorType.LykkeWallet);
+                await AddWalletWithRetries(blockchainType, clientId, address, CreatorType.LykkeWallet);
+
                 var @event = new WalletCreatedEvent
                 {
                     Address = address,
@@ -140,6 +141,40 @@ namespace Lykke.Service.BlockchainWallets.Services
                 ClientId = clientId,
                 BaseAddress = address
             };
+        }
+
+        private async Task AddWalletWithRetries(string blockchainType, Guid clientId, string address, CreatorType creator, int maxRetries = 1000)
+        {
+            var retryCounter = 0;
+            var completed = false;
+            do
+            {
+                try
+                {
+                    await _walletRepository.AddAsync(blockchainType, clientId, address, creator);
+                    completed = true;
+                }
+                catch (OptimisticConcurrencyException)
+                {
+                    retryCounter++;
+
+                    _log.Warning("Optimistic concurrency exception during wallet saving",
+                        context: new
+                        {
+                            blockchainType,
+                            clientId,
+                            address,
+                            creator,
+                            retryCounter,
+                            maxRetries
+                        });
+                }
+            } while (!completed && retryCounter <= maxRetries);
+
+            if (!completed)
+            {
+                throw new OptimisticConcurrencyException();
+            }
         }
 
         [Obsolete]
@@ -328,7 +363,8 @@ namespace Lykke.Service.BlockchainWallets.Services
                     $"Failed to get UnderlyingAddress for blockchainType={blockchainType} and address={address}");
             }
 
-            await _walletRepository.AddAsync(blockchainType, clientId, address, createdBy);
+            await AddWalletWithRetries(blockchainType, clientId, address, createdBy);
+
             var @event = new WalletCreatedEvent
             {
                 Address = address,
