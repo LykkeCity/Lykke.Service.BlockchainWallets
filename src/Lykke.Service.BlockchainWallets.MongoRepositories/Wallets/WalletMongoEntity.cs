@@ -28,6 +28,9 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
         [BsonElement("upd")]
         public DateTime Updated { get; set; }
 
+        [BsonElement("vers")]
+        public int Version { get; set; }
+
         public static WalletMongoEntity Create(
             ObjectId id,
             string blockchainType, 
@@ -45,7 +48,8 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
                 Id = id,
                 CreatorType = creatorType,
                 Inserted = inserted,
-                Updated = updated
+                Updated = updated,
+                Version = 0
             };
         }
 
