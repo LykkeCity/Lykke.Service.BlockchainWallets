@@ -86,8 +86,11 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
             {
                 cqrsEngine.Start();
 
-                log.Info($"[{DateTime.UtcNow}] Ensuring indexes created");
+                log.Info("Ensuring indexes created");
+
                 await walletMongoRepo.EnsureIndexesCreatedAsync();
+
+                log.Info("Ensuring indexes created complete");
 
                 const int take = 1000;
                 string continuationToken = null;
@@ -136,7 +139,7 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
 
 
                             var captured = Interlocked.Add(ref counter, queryResult.Wallets.Count());
-                            log.Info($"[{DateTime.UtcNow}] Processed  {captured} of unknown");
+                            log.Info($"Processed  {captured} of unknown");
                         }
                         catch (Exception)
                         {
