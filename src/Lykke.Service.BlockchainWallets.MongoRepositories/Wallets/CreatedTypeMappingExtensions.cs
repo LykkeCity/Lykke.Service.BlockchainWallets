@@ -1,18 +1,18 @@
 ﻿using System;
-using Lykke.Service.BlockchainWallets;
+using Lykke.Service.BlockchainWallets.MongoRepositories.Wallets.Entities;
 
 namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
 {
-    public static class CreatedTypeMappingExtensions
+    internal static class CreatedTypeMappingExtensions
     {
-        public static Contract.CreatorType FromDomain(this WalletMongoEntity.CreatorTypeValues source)
+        internal static Contract.CreatorType FromDomain(this CreatorType source)
         {
             switch (source)
             {
-                case WalletMongoEntity.CreatorTypeValues.LykkePay:
+                case CreatorType.LykkePay:
                     return Contract.CreatorType.LykkePay;
 
-                case WalletMongoEntity.CreatorTypeValues.LykkeWallet:
+                case CreatorType.LykkeWallet:
                     return Contract.CreatorType.LykkeWallet;
 
                 default:
@@ -20,15 +20,15 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
             }
         }
 
-        public static WalletMongoEntity.CreatorTypeValues ToDomain(this Contract.CreatorType source)
+        internal static CreatorType ToDomain(this Contract.CreatorType source)
         {
             switch (source)
             {
                 case Contract.CreatorType.LykkePay:
-                    return WalletMongoEntity.CreatorTypeValues.LykkePay;
+                    return CreatorType.LykkePay;
 
                 case Contract.CreatorType.LykkeWallet:
-                    return WalletMongoEntity.CreatorTypeValues.LykkeWallet;
+                    return CreatorType.LykkeWallet;
 
                 default:
                     throw new ArgumentException($"Unknown switch {source}", nameof(source));
