@@ -10,7 +10,7 @@ namespace Lykke.Service.BlockchainWallets.Core.Repositories
         Task AddAsync(string integrationLayerId, Guid clientId, string address,
             CreatorType createdBy, bool isPrimary);
 
-        Task<(IEnumerable<(string integrationLayerId, Guid clientId, string address, CreatorType createdBy, bool isPrimary)>
+        Task<(IReadOnlyCollection<(string integrationLayerId, Guid clientId, string address, CreatorType createdBy, bool isPrimary)>
                 Entities, string ContinuationToken)>
             GetDataWithContinuationTokenAsync(int take,
                 string continuationToken);
