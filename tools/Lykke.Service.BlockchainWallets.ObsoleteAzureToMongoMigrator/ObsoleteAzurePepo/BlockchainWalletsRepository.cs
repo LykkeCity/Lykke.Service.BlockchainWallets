@@ -226,7 +226,7 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.ObsoleteA
             return await TryGetPrimaryAsync(blockchainType, clientId) != null;
         }
 
-        public async Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(string blockchainType, Guid clientId, int take, string continuationToken = null)
+        public async Task<(IReadOnlyCollection<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(string blockchainType, Guid clientId, int take, string continuationToken = null)
         {
             var indexes = await GetForClientAndBlockchainTypeIndicesAsync(blockchainType, clientId, take, continuationToken);
             var keys = indexes.wallets.Select(x => Tuple.Create(x.WalletPartitionKey, x.WalletRowKey));
@@ -245,10 +245,10 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.ObsoleteA
                 return null;
             }).Where(x => x != null);
 
-            return (sortedWallets, indexes.continuationToken);
+            return (sortedWallets.ToList(), indexes.continuationToken);
         }
 
-        public async Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllPrimaryAsync(Guid clientId, int take, string continuationToken = null)
+        public async Task<(IReadOnlyCollection<WalletDto> Wallets, string ContinuationToken)> GetAllPrimaryAsync(Guid clientId, int take, string continuationToken = null)
         {
             var indexes = await GetForClientIndicesAsync(clientId, take, continuationToken);
             var keys = indexes.wallets.Select(x =>  (partitionKey: x.WalletPartitionKey, rowKey: x.WalletRowKey));
@@ -267,7 +267,7 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.ObsoleteA
                 return null;
             }).Where(x => x != null);
 
-            return (sortedWallets, indexes.continuationToken);
+            return (sortedWallets.ToList(), indexes.continuationToken);
         }
 
         public async Task<WalletDto> TryGetAsync(string blockchainType, string address)

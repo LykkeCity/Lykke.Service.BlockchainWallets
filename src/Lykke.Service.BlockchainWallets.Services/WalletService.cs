@@ -15,6 +15,7 @@ using Lykke.Service.BlockchainWallets.Core.FirstGeneration;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Services.FirstGeneration;
+using Polly;
 
 
 namespace Lykke.Service.BlockchainWallets.Services
@@ -145,19 +146,9 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         private async Task AddWalletWithRetries(string blockchainType, Guid clientId, string address, CreatorType creator, int maxRetries = 1000)
         {
-            var retryCounter = 0;
-            var completed = false;
-            do
-            {
-                try
+            await Policy.Handle<OptimisticConcurrencyException>()
+                .RetryAsync(maxRetries, onRetry: (ex, retryCounter) =>
                 {
-                    await _walletRepository.AddAsync(blockchainType, clientId, address, creator);
-                    completed = true;
-                }
-                catch (OptimisticConcurrencyException)
-                {
-                    retryCounter++;
-
                     _log.Warning("Optimistic concurrency exception during wallet saving",
                         context: new
                         {
@@ -168,13 +159,8 @@ namespace Lykke.Service.BlockchainWallets.Services
                             retryCounter,
                             maxRetries
                         });
-                }
-            } while (!completed && retryCounter <= maxRetries);
-
-            if (!completed)
-            {
-                throw new OptimisticConcurrencyException();
-            }
+                })
+                .ExecuteAsync( () => _walletRepository.AddAsync(blockchainType, clientId, address, creator));
         }
 
         [Obsolete]
