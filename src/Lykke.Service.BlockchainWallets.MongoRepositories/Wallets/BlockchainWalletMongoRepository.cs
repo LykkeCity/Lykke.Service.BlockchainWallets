@@ -147,7 +147,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
                     }
                     catch (MongoWriteException e) when (e.WriteError.Code == DuplicateUniqueIndexErrorCode)
                     {
-                        throw new OptimisticConcurrencyException();
+                        throw new OptimisticConcurrencyException(e);
                     }
                 }, _log);
             }
