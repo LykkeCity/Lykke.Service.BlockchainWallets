@@ -71,7 +71,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories.Backup
             }
         }
 
-        public async Task<(IEnumerable<(string integrationLayerId, Guid clientId, string address, CreatorType createdBy, bool isPrimary)> Entities, string ContinuationToken)>
+        public async Task<(IReadOnlyCollection<(string integrationLayerId, Guid clientId, string address, CreatorType createdBy, bool isPrimary)> Entities, string ContinuationToken)>
             GetDataWithContinuationTokenAsync(int take, string continuationToken)
         {
             var queryResult = await _storage.GetDataWithContinuationTokenAsync(take, continuationToken);
@@ -83,7 +83,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories.Backup
                 isPrimary: await IsPrimaryWallet(p.ClientId, p.IntegrationLayerId, p.Address),
                 IsDeleted: await IsDeleted(p.ClientId, p.IntegrationLayerId, p.Address)));
 
-            return (mapped.Where(p=>!p.IsDeleted).Select(p=> (p.integrationLayerId, p.clientId, p.address, p.createdBy, p.isPrimary)), 
+            return (mapped.Where(p => !p.IsDeleted).Select(p=> (p.integrationLayerId, p.clientId, p.address, p.createdBy, p.isPrimary)).ToList(), 
                 queryResult.ContinuationToken);
         }
 
