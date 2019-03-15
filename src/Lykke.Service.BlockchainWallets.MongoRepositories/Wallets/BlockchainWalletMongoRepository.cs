@@ -4,26 +4,27 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Common.Log;
-using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.DTOs;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.Service.BlockchainWallets.MongoRepositories.Mongo.Command;
 using Lykke.Service.BlockchainWallets.MongoRepositories.Mongo.Query;
+using Lykke.Service.BlockchainWallets.MongoRepositories.Wallets.Entities;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
+using CreatorType = Lykke.Service.BlockchainWallets.Contract.CreatorType;
 
 namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
 {
     public class BlockchainWalletMongoRepository:IBlockchainWalletsRepository
     {
         private readonly IMongoCollection<WalletMongoEntity> _allWalletsCollection;
-        private readonly IMongoCollection<WalletMongoEntity> _primaryWalletsCollection;
+        private readonly IMongoCollection<PrimaryWalletMongoEntity> _primaryWalletsCollection;
         private readonly ILog _log;
         private const int DuplicateUniqueIndexErrorCode = 11000;
 
         private BlockchainWalletMongoRepository(IMongoCollection<WalletMongoEntity> allWalletsCollection,
-            IMongoCollection<WalletMongoEntity> primaryWalletsCollection,
+            IMongoCollection<PrimaryWalletMongoEntity> primaryWalletsCollection,
             ILogFactory logFactory)
         {
             _allWalletsCollection = allWalletsCollection;
@@ -37,7 +38,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
             var db = client.GetDatabase(dbName);
             
             return new BlockchainWalletMongoRepository(db.GetCollection<WalletMongoEntity>("blockchain-wallets"), 
-                db.GetCollection<WalletMongoEntity>("primary-blockchain-wallets"),
+                db.GetCollection<PrimaryWalletMongoEntity>("primary-blockchain-wallets"),
                 logFactory);
         }
         
@@ -58,7 +59,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
 
             var insPrimary = _primaryWalletsCollection.InsertManyAsync(enumerated
                 .Where(p => p.isPrimary)
-                .Select(w => WalletMongoEntity.Create(ObjectId.GenerateNewId(now), 
+                .Select(w => PrimaryWalletMongoEntity.Create(ObjectId.GenerateNewId(now), 
                     blockchainType: w.blockchainType,
                     clientId: w.clientId,
                     address: w.address, 
@@ -72,18 +73,18 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
         public async Task AddAsync(string blockchainType, Guid clientId, string address, CreatorType createdBy,
             string clientLatestDepositIndexManualPartitionKey = null, bool isPrimary = true)
         {
-            await InsertIfNotExistWalletAsync(blockchainType, clientId, address, createdBy.ToDomain());
+            var wallet = await InsertIfNotExistWalletAsync(blockchainType, clientId, address, createdBy.ToDomain());
 
             if (isPrimary)
             {
-                await InsertOrUpdatePrimaryWalletAsync(blockchainType, clientId, address, createdBy.ToDomain());
+                await MakePrimaryAsync(wallet);
             }
         }
 
-        private async Task InsertIfNotExistWalletAsync(string blockchainType, 
+        private async Task<WalletMongoEntity> InsertIfNotExistWalletAsync(string blockchainType, 
             Guid clientId, 
-            string address, 
-            WalletMongoEntity.CreatorTypeValues creatorType)
+            string address,
+            Entities.CreatorType creatorType)
         {
             var now = DateTime.UtcNow;
 
@@ -114,31 +115,43 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
                         });
                 }
             }, _log);
+
+            return entity;
         }
 
-        private async Task InsertOrUpdatePrimaryWalletAsync(string blockchainType,
-            Guid clientId,
-            string address,
-            WalletMongoEntity.CreatorTypeValues creatorType)
+        private async Task MakePrimaryAsync(WalletMongoEntity wallet, PrimaryWalletMongoEntity lastKnown = null)
         {
-            var now = DateTime.UtcNow;
-
-            var existed = (await _primaryWalletsCollection.WrapQueryAsync(_log,
-                    query => query.Where(p => p.ClientId == clientId  && p.BlockchainType == blockchainType)
-                        .Select(p => new { p.Id, p.Version })))
-                .SingleOrDefault();
-            
-            if (existed == null)
+            await CommandExtensions.WrapCommandAsync(async () =>
             {
-                var entity = WalletMongoEntity.Create(
+                var res = await _allWalletsCollection.UpdateOneAsync(p => p.Id == wallet.Id && p.Version == wallet.Version,
+                    Builders<WalletMongoEntity>.Update.Inc(p => p.Version, 1));
+
+                if (res.ModifiedCount != 1)
+                {
+                    throw new OptimisticConcurrencyException();
+                }
+            }, _log);
+
+            if (lastKnown == null)
+            {
+                lastKnown = (await _primaryWalletsCollection.WrapQueryAsync(_log,
+                        query => query.Where(p => p.ClientId == wallet.ClientId && p.BlockchainType == wallet.BlockchainType)))
+                    .SingleOrDefault();
+            }
+
+            var now = DateTime.UtcNow;
+            
+            if (lastKnown == null)
+            {
+                var entity = PrimaryWalletMongoEntity.Create(
                     id: ObjectId.GenerateNewId(now),
-                    blockchainType: blockchainType,
-                    clientId: clientId,
-                    address: address,
-                    creatorType: creatorType,
+                    blockchainType: wallet.BlockchainType,
+                    clientId: wallet.ClientId,
+                    address: wallet.Address,
+                    creatorType: wallet.CreatorType,
                     inserted: now,
                     updated: now);
-
+            
                 await CommandExtensions.WrapCommandAsync(async () =>
                 {
                     try
@@ -153,14 +166,17 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
             }
             else
             {
-                var upd = Builders<WalletMongoEntity>.Update.Set(p => p.Address, address)
-                    .Set(p => p.CreatorType, creatorType)
+                var upd = Builders<PrimaryWalletMongoEntity>.Update
+                    .Set(p => p.Address, wallet.Address)
+                    .Set(p => p.CreatorType, wallet.CreatorType)
                     .Set(p => p.Updated, now)
                     .Inc(p => p.Version, 1);
 
                 await CommandExtensions.WrapCommandAsync(async () =>
                 {
-                    var res = await _primaryWalletsCollection.UpdateOneAsync(p => p.Id == existed.Id && p.Version == existed.Version, upd);
+                    var res = await _primaryWalletsCollection.UpdateOneAsync(
+                        p => p.Id == lastKnown.Id && p.Version == lastKnown.Version, 
+                        upd);
 
                     if (res.MatchedCount != 1)
                     {
@@ -192,19 +208,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
 
                     if (nextWallet != null)
                     {
-                        await CommandExtensions.WrapCommandAsync(async () =>
-                        {
-                            var res = await _allWalletsCollection.UpdateOneAsync(p => p.Id == nextWallet.Id && p.Version == nextWallet.Version,
-                                Builders<WalletMongoEntity>.Update.Inc(p => p.Version, 1));
-
-                            if (res.ModifiedCount != 1)
-                            {
-                                throw new OptimisticConcurrencyException();
-                            }
-                        }, _log);
-
-                        await InsertOrUpdatePrimaryWalletAsync(nextWallet.BlockchainType, nextWallet.ClientId, nextWallet.Address,
-                            nextWallet.CreatorType);
+                        await MakePrimaryAsync(nextWallet, primary);
                     }
                     else
                     {
@@ -264,11 +268,11 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
                 continuationToken);
         }
 
-        private async Task<(IReadOnlyCollection<WalletDto> Wallets, string ContinuationToken)> GetDataWithContinuationTokenAsync(
-                IMongoCollection<WalletMongoEntity> collection,
-                Func<IMongoQueryable<WalletMongoEntity>, IMongoQueryable<WalletMongoEntity>> queryBuilder, 
+        private async Task<(IReadOnlyCollection<WalletDto> Wallets, string ContinuationToken)> GetDataWithContinuationTokenAsync<T>(
+                IMongoCollection<T> collection,
+                Func<IMongoQueryable<T>, IMongoQueryable<T>> queryBuilder, 
                 int take, 
-                string continuationToken)
+                string continuationToken) where  T:IWallet
         {
             var skip = 0;
             if (!string.IsNullOrEmpty(continuationToken))
@@ -285,7 +289,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
                     Skip = skip + entities.Count
                 }.Serialize();
             
-            return (entities.Select(ConvertEntityToDto).ToList(), resultedContinuationToken);
+            return (entities.Select(p => ConvertEntityToDto(p)).ToList(), resultedContinuationToken);
         }
 
         public async Task<WalletDto> TryGetAsync(string blockchainType, string address)
@@ -316,7 +320,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
             return null;
         }
 
-        private static WalletDto ConvertEntityToDto(WalletMongoEntity entity)
+        private static WalletDto ConvertEntityToDto(IWallet entity)
         {
             return new WalletDto
             {
@@ -331,43 +335,43 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
 
         public async Task EnsureIndexesCreatedAsync()
         {
-            await CreateAddressBlockchainTypeIndex(_allWalletsCollection, unique: true);
-            await CreateClientIdAddressIndex(_allWalletsCollection, unique: true);
-            await CreateClientIdBlockchainTypeIndex(_primaryWalletsCollection, unique: true);
+            await CreateAddressBlockchainTypeIndex();
+            await CreateClientIdAddressIndex();
+            await CreateClientIdBlockchainTypeIndex();
         }
         
-        private async Task CreateAddressBlockchainTypeIndex(IMongoCollection<WalletMongoEntity> collection, bool unique)
+        private async Task CreateAddressBlockchainTypeIndex()
         {
             var addressAsc = Builders<WalletMongoEntity>.IndexKeys.Ascending(p => p.Address);
             var blockchainTypeAsc = Builders<WalletMongoEntity>.IndexKeys.Ascending(p => p.BlockchainType);
 
             var combined = Builders<WalletMongoEntity>.IndexKeys.Combine(addressAsc, blockchainTypeAsc);
 
-            await collection.Indexes.CreateOneAsync(new CreateIndexModel<WalletMongoEntity>(combined,
-                new CreateIndexOptions { Background = true, Unique = unique }));
+            await _allWalletsCollection.Indexes.CreateOneAsync(new CreateIndexModel<WalletMongoEntity>(combined,
+                new CreateIndexOptions { Background = true, Unique = true }));
         }
 
-        private async Task CreateClientIdAddressIndex(IMongoCollection<WalletMongoEntity> collection, bool unique)
+        private async Task CreateClientIdAddressIndex()
         {
             var clientAsc = Builders<WalletMongoEntity>.IndexKeys.Ascending(p => p.ClientId);
-            var addressAsc = Builders<WalletMongoEntity>.IndexKeys.Ascending(p => p.Address);
             var blockchainTypeAsc = Builders<WalletMongoEntity>.IndexKeys.Ascending(p => p.BlockchainType);
+            var addressAsc = Builders<WalletMongoEntity>.IndexKeys.Ascending(p => p.Address);
 
             var combined = Builders<WalletMongoEntity>.IndexKeys.Combine(clientAsc, blockchainTypeAsc, addressAsc);
 
-            await collection.Indexes.CreateOneAsync(new CreateIndexModel<WalletMongoEntity>(combined,
-                new CreateIndexOptions { Background = true, Unique = unique }));
+            await _allWalletsCollection.Indexes.CreateOneAsync(new CreateIndexModel<WalletMongoEntity>(combined,
+                new CreateIndexOptions { Background = true, Unique = true }));
         }
 
-        private async Task CreateClientIdBlockchainTypeIndex(IMongoCollection<WalletMongoEntity> collection, bool unique)
+        private async Task CreateClientIdBlockchainTypeIndex()
         {
-            var clientAsc = Builders<WalletMongoEntity>.IndexKeys.Ascending(p => p.ClientId);
-            var blockchainTypeAsc = Builders<WalletMongoEntity>.IndexKeys.Ascending(p => p.BlockchainType);
+            var clientAsc = Builders<PrimaryWalletMongoEntity>.IndexKeys.Ascending(p => p.ClientId);
+            var blockchainTypeAsc = Builders<PrimaryWalletMongoEntity>.IndexKeys.Ascending(p => p.BlockchainType);
 
-            var combined = Builders<WalletMongoEntity>.IndexKeys.Combine(clientAsc, blockchainTypeAsc);
+            var combined = Builders<PrimaryWalletMongoEntity>.IndexKeys.Combine(clientAsc, blockchainTypeAsc);
 
-            await collection.Indexes.CreateOneAsync(new CreateIndexModel<WalletMongoEntity>(combined,
-                new CreateIndexOptions<WalletMongoEntity> { Background = true, Unique = unique }));
+            await _primaryWalletsCollection.Indexes.CreateOneAsync(new CreateIndexModel<PrimaryWalletMongoEntity>(combined,
+                new CreateIndexOptions<PrimaryWalletMongoEntity> { Background = true, Unique = true }));
         }
 
         #endregion

@@ -1,11 +1,10 @@
 ﻿using System;
-using Lykke.Service.BlockchainWallets.Contract;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
+namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets.Entities
 {
-    public class WalletMongoEntity
+    internal class PrimaryWalletMongoEntity: IWallet
     {
         [BsonId]
         public ObjectId Id { get; set; }
@@ -20,7 +19,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
         public string Address { get; set; }
 
         [BsonElement("crtr")]
-        public CreatorTypeValues CreatorType { get; set; }
+        public CreatorType CreatorType { get; set; }
 
         [BsonElement("ins")]
         public DateTime Inserted { get; set; }
@@ -31,16 +30,16 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
         [BsonElement("vers")]
         public int Version { get; set; }
 
-        public static WalletMongoEntity Create(
+        public static PrimaryWalletMongoEntity Create(
             ObjectId id,
             string blockchainType, 
             Guid clientId, 
             string address,
-            CreatorTypeValues creatorType, 
+            CreatorType creatorType, 
             DateTime inserted,
             DateTime updated)
         {
-            return new WalletMongoEntity
+            return new PrimaryWalletMongoEntity
             {
                 ClientId = clientId,
                 Address = address,
@@ -51,12 +50,6 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
                 Updated = updated,
                 Version = 0
             };
-        }
-
-        public enum CreatorTypeValues
-        {
-            LykkeWallet = 1,
-            LykkePay = 2
         }
     }
 }
