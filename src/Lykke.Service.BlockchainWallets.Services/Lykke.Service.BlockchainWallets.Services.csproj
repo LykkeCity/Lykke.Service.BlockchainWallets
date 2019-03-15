@@ -17,6 +17,7 @@
     <PackageReference Include="NBitcoin" Version="3.0.0.71" />
     <PackageReference Include="Nethereum.Signer" Version="2.5.1" />
     <PackageReference Include="Nethereum.Util" Version="2.5.1" />
+    <PackageReference Include="Polly" Version="6.1.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\contract\Lykke.Service.BlockchainWallets.Contract\Lykke.Service.BlockchainWallets.Contract.csproj" />

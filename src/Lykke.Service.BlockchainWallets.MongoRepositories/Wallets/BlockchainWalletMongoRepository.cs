@@ -45,7 +45,8 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
         {
             var now = DateTime.UtcNow;
 
-            var enumerated = wallets as (string blockchainType, Guid clientId, string address, CreatorType createdBy, bool isPrimary)[] ?? wallets.ToArray();
+            var enumerated = wallets as IReadOnlyCollection<(string blockchainType, Guid clientId, string address, CreatorType createdBy, bool isPrimary)> ?? wallets.ToList();
+
             var insGeneral =  _allWalletsCollection.InsertManyAsync(enumerated.Select(w =>
                 WalletMongoEntity.Create(ObjectId.GenerateNewId(now), 
                     blockchainType: w.blockchainType,
@@ -225,7 +226,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
             return (await TryGetPrimaryAsync(blockchainType, clientId)) != null;
         }
 
-        public Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(string blockchainType, 
+        public Task<(IReadOnlyCollection<WalletDto> Wallets, string ContinuationToken)> GetAllAsync(string blockchainType, 
             Guid clientId,
             int take,
             string continuationToken = null)
@@ -236,7 +237,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
                 continuationToken);
         }
 
-        public Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetAllPrimaryAsync(Guid clientId, 
+        public Task<(IReadOnlyCollection<WalletDto> Wallets, string ContinuationToken)> GetAllPrimaryAsync(Guid clientId, 
             int take, 
             string continuationToken = null)
         {
@@ -246,7 +247,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
                 continuationToken);
         }
 
-        private async Task<(IEnumerable<WalletDto> Wallets, string ContinuationToken)> GetDataWithContinuationTokenAsync(
+        private async Task<(IReadOnlyCollection<WalletDto> Wallets, string ContinuationToken)> GetDataWithContinuationTokenAsync(
                 IMongoCollection<WalletMongoEntity> collection,
                 Func<IMongoQueryable<WalletMongoEntity>, IMongoQueryable<WalletMongoEntity>> queryBuilder, 
                 int take, 
@@ -267,7 +268,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
                     Skip = skip + entities.Count
                 }.Serialize();
             
-            return (entities.Select(ConvertEntityToDto), resultedContinuationToken);
+            return (entities.Select(ConvertEntityToDto).ToList(), resultedContinuationToken);
         }
 
         public async Task<WalletDto> TryGetAsync(string blockchainType, string address)
