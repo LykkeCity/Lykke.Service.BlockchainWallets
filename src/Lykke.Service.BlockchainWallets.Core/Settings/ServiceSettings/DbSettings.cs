@@ -13,5 +13,8 @@ namespace Lykke.Service.BlockchainWallets.Core.Settings.ServiceSettings
 
         [UsedImplicitly(ImplicitUseKindFlags.Assign)]
         public string LogsConnString { get; set; }
+
+        [UsedImplicitly(ImplicitUseKindFlags.Assign)]
+        public MongoConnectionSettings Mongo { get; set; }
     }
 }

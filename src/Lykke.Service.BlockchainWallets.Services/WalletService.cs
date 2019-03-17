@@ -15,6 +15,7 @@ using Lykke.Service.BlockchainWallets.Core.FirstGeneration;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Services.FirstGeneration;
+using Polly;
 
 
 namespace Lykke.Service.BlockchainWallets.Services
@@ -91,7 +92,8 @@ namespace Lykke.Service.BlockchainWallets.Services
                         $"Failed to get UnderlyingAddress for blockchainType={blockchainType} and address={address}");
                 }
 
-                await _walletRepository.AddAsync(blockchainType, clientId, address, CreatorType.LykkeWallet);
+                await AddWalletWithRetries(blockchainType, clientId, address, CreatorType.LykkeWallet);
+
                 var @event = new WalletCreatedEvent
                 {
                     Address = address,
@@ -142,6 +144,25 @@ namespace Lykke.Service.BlockchainWallets.Services
             };
         }
 
+        private async Task AddWalletWithRetries(string blockchainType, Guid clientId, string address, CreatorType creator, int maxRetries = 1000)
+        {
+            await Policy.Handle<OptimisticConcurrencyException>()
+                .RetryAsync(maxRetries, onRetry: (ex, retryCounter) =>
+                {
+                    _log.Warning("Optimistic concurrency exception during wallet saving",
+                        context: new
+                        {
+                            blockchainType,
+                            clientId,
+                            address,
+                            creator,
+                            retryCounter,
+                            maxRetries
+                        });
+                })
+                .ExecuteAsync( () => _walletRepository.AddAsync(blockchainType, clientId, address, creator));
+        }
+
         [Obsolete]
         public async Task<bool> DefaultWalletExistsAsync(string integrationLayerId, string assetId, Guid clientId)
         {
@@ -157,7 +178,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         public async Task<WalletWithAddressExtensionDto> TryGetDefaultAddressAsync(string blockchainType,
             string assetId, Guid clientId)
         {
-            var wallet = await _walletRepository.TryGetAsync(blockchainType, clientId);
+            var wallet = await _walletRepository.TryGetPrimaryAsync(blockchainType, clientId);
 
             if (wallet != null)
             {
@@ -230,7 +251,7 @@ namespace Lykke.Service.BlockchainWallets.Services
             Guid clientId, int take, string continuationToken)
         {
             var finalWallets = new List<WalletWithAddressExtensionDto>();
-            var (wallets, token) = await _walletRepository.GetAllAsync(clientId, take, continuationToken);
+            var (wallets, token) = await _walletRepository.GetAllPrimaryAsync(clientId, take, continuationToken);
 
             foreach (var wallet in wallets)
             {
@@ -328,7 +349,8 @@ namespace Lykke.Service.BlockchainWallets.Services
                     $"Failed to get UnderlyingAddress for blockchainType={blockchainType} and address={address}");
             }
 
-            await _walletRepository.AddAsync(blockchainType, clientId, address, createdBy);
+            await AddWalletWithRetries(blockchainType, clientId, address, createdBy);
+
             var @event = new WalletCreatedEvent
             {
                 Address = address,
@@ -414,7 +436,7 @@ namespace Lykke.Service.BlockchainWallets.Services
         
         private async Task DeleteDefaultWalletAsync(string integrationLayerId, string assetId, Guid clientId)
         {
-            var wallet = await _walletRepository.TryGetAsync(integrationLayerId, clientId);
+            var wallet = await _walletRepository.TryGetPrimaryAsync(integrationLayerId, clientId);
 
             await _walletRepository.DeleteIfExistsAsync(integrationLayerId, clientId, wallet.Address);
 

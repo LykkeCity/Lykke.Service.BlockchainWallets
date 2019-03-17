@@ -25,7 +25,7 @@
     <PackageReference Include="Lykke.Common" Version="7.0.3" />
     <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.10.1" />
     <PackageReference Include="Lykke.Logs" Version="5.2.0" />
-    <PackageReference Include="Lykke.Messaging" Version="6.0.1" />
+    <PackageReference Include="Lykke.Messaging" Version="6.2.0" />
     <PackageReference Include="Lykke.Messaging.RabbitMq" Version="2.1.0" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="4.4.0" />
     <PackageReference Include="Lykke.Service.Session" Version="1.0.33" />
@@ -46,6 +46,7 @@
     <ProjectReference Include="..\..\contract\Lykke.Service.BlockchainWallets.Contract\Lykke.Service.BlockchainWallets.Contract.csproj" />
     <ProjectReference Include="..\Lykke.Service.BlockchainWallets.AzureRepositories\Lykke.Service.BlockchainWallets.AzureRepositories.csproj" />
     <ProjectReference Include="..\Lykke.Service.BlockchainWallets.Core\Lykke.Service.BlockchainWallets.Core.csproj" />
+    <ProjectReference Include="..\Lykke.Service.BlockchainWallets.MongoRepositories\Lykke.Service.BlockchainWallets.MongoRepositories.csproj" />
     <ProjectReference Include="..\Lykke.Service.BlockchainWallets.Services\Lykke.Service.BlockchainWallets.Services.csproj" />
   </ItemGroup>
   <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">

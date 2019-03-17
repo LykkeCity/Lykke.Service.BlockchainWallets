@@ -67,6 +67,12 @@ namespace Lykke.Service.BlockchainWallets.Modules
             builder
                 .RegisterType<EndTransactionHistoryMonitoringCommandHandler>();
 
+            builder
+                .RegisterType<DeleteWalletBackupCommandHandler>();
+
+            builder
+                .RegisterType<CreateWalletBackupCommandHandler>();
+
             // Sagas
 
             builder
@@ -116,11 +122,21 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .On(defaultRoute)
                 .WithCommandsHandler<EndBalanceMonitoringCommandHandler>()
 
+                .ListeningCommands(typeof(DeleteWalletBackupCommand))
+                .On(defaultRoute)
+                .WithCommandsHandler<DeleteWalletBackupCommandHandler>()
+
+                .ListeningCommands(typeof(CreateWalletBackupCommand))
+                .On(defaultRoute)
+                .WithCommandsHandler<CreateWalletBackupCommandHandler>()
+
                 .PublishingCommands(
                     typeof(BeginBalanceMonitoringCommand),
                     typeof(BeginTransactionHistoryMonitoringCommand),
                     typeof(EndBalanceMonitoringCommand),
-                    typeof(EndTransactionHistoryMonitoringCommand))
+                    typeof(EndTransactionHistoryMonitoringCommand),
+                    typeof(CreateWalletBackupCommand),
+                    typeof(DeleteWalletBackupCommand))
                 .To(BlockchainWalletsBoundedContext.Name)
                 .With(defaultRoute)
 
@@ -139,7 +155,8 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .On(defaultRoute)
                 .PublishingCommands(
                     typeof(BeginBalanceMonitoringCommand),
-                    typeof(BeginTransactionHistoryMonitoringCommand))
+                    typeof(BeginTransactionHistoryMonitoringCommand),
+                    typeof(CreateWalletBackupCommand))
                 .To(BlockchainWalletsBoundedContext.Name)
                 .With(defaultPipeline)
 
@@ -153,7 +170,8 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .On(defaultRoute)
                 .PublishingCommands(
                     typeof(EndBalanceMonitoringCommand),
-                    typeof(EndTransactionHistoryMonitoringCommand))
+                    typeof(EndTransactionHistoryMonitoringCommand),
+                    typeof(DeleteWalletBackupCommand))
                 .To(BlockchainWalletsBoundedContext.Name)
                 .With(defaultPipeline)
 
