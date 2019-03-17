@@ -48,24 +48,28 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
 
             var enumerated = wallets as IReadOnlyCollection<(string blockchainType, Guid clientId, string address, CreatorType createdBy, bool isPrimary)> ?? wallets.ToList();
 
-            var insGeneral =  _allWalletsCollection.InsertManyAsync(enumerated.Select(w =>
-                WalletMongoEntity.Create(ObjectId.GenerateNewId(now), 
-                    blockchainType: w.blockchainType,
-                    clientId: w.clientId, 
-                    address: w.address, 
-                    creatorType: w.createdBy.ToDomain(),
-                    inserted: now,
-                    updated: now)));
-
-            var insPrimary = _primaryWalletsCollection.InsertManyAsync(enumerated
-                .Where(p => p.isPrimary)
-                .Select(w => PrimaryWalletMongoEntity.Create(ObjectId.GenerateNewId(now), 
+            var allWallets = enumerated.Select(w =>
+                WalletMongoEntity.Create(ObjectId.GenerateNewId(now),
                     blockchainType: w.blockchainType,
                     clientId: w.clientId,
-                    address: w.address, 
+                    address: w.address,
                     creatorType: w.createdBy.ToDomain(),
-                    inserted: now, 
-                    updated: now)));
+                    inserted: now,
+                    updated: now)).ToList();
+
+            var insGeneral = allWallets.Any() ? _allWalletsCollection.InsertManyAsync(allWallets) : Task.CompletedTask;
+
+            var primaryWallets = enumerated
+                .Where(p => p.isPrimary)
+                .Select(w => PrimaryWalletMongoEntity.Create(ObjectId.GenerateNewId(now),
+                    blockchainType: w.blockchainType,
+                    clientId: w.clientId,
+                    address: w.address,
+                    creatorType: w.createdBy.ToDomain(),
+                    inserted: now,
+                    updated: now)).ToList();
+
+            var insPrimary = primaryWallets.Any() ? _primaryWalletsCollection.InsertManyAsync(primaryWallets) : Task.CompletedTask;
 
             await Task.WhenAll(insGeneral, insPrimary);
         }
