@@ -141,8 +141,9 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
                             var captured = Interlocked.Add(ref counter, queryResult.Wallets.Count());
                             log.Info($"Processed  {captured} of unknown");
                         }
-                        catch (Exception)
+                        catch (Exception e)
                         {
+                            log.Error(e);
                             disrupt.Cancel();
 
                             throw;
