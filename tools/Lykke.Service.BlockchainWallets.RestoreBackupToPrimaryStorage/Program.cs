@@ -79,7 +79,7 @@ namespace Lykke.Service.BlockchainWallets.RestoreBackupToPrimaryStorage
 
             var log = logFactory.CreateLog(nameof(Program));
 
-            var take = 50;
+            var take = 1000;
             string continuationToken = null;
             var counter = 0;
             do
