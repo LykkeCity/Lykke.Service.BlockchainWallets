@@ -32,6 +32,17 @@ namespace Lykke.Service.BlockchainWallets.Workflow.Sagas
             var assetId = evt.AssetId;
             var blockchainType = evt.BlockchainType ?? evt.IntegrationLayerId;
 
+            sender.SendCommand(new  CreateWalletBackupCommand
+                {
+                    ClientId = evt.ClientId,
+                    Address = evt.Address,
+                    BlockchainType = evt.BlockchainType,
+                    IsPrimary = evt.IsPrimary,
+                    AssetId = evt.AssetId,
+                    CreatedBy = evt.CreatedBy
+                },
+                BlockchainWalletsBoundedContext.Name);
+
             Task<bool> WalletIsSubscribedAsync(MonitoringSubscriptionType subscriptionType)
             {
                 return _monitoringSubscriptionRepository.WalletIsSubscribedAsync
