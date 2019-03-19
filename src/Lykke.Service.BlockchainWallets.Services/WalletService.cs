@@ -92,6 +92,7 @@ namespace Lykke.Service.BlockchainWallets.Services
                         $"Failed to get UnderlyingAddress for blockchainType={blockchainType} and address={address}");
                 }
 
+                var creator = CreatorType.LykkeWallet;
                 await AddWalletWithRetries(blockchainType, clientId, address, CreatorType.LykkeWallet);
 
                 var @event = new WalletCreatedEvent
@@ -100,7 +101,9 @@ namespace Lykke.Service.BlockchainWallets.Services
                     AssetId = assetId,
                     BlockchainType = blockchainType,
                     IntegrationLayerId = blockchainType,
-                    ClientId = clientId
+                    ClientId = clientId,
+                    IsPrimary = true,
+                    CreatedBy = creator
                 };
 
                 await _firstGenerationBlockchainWalletRepository.InsertOrReplaceAsync(new BcnCredentialsRecord
@@ -356,7 +359,8 @@ namespace Lykke.Service.BlockchainWallets.Services
                 BlockchainType = blockchainType,
                 IntegrationLayerId = blockchainType,
                 CreatedBy = createdBy,
-                ClientId = clientId
+                ClientId = clientId,
+                IsPrimary = true
             };
 
             _cqrsEngine.PublishEvent
