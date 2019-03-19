@@ -1,10 +1,11 @@
 ﻿using System;
+using Lykke.AzureStorage.Tables;
 using Lykke.Service.BlockchainWallets.Contract;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Lykke.Service.BlockchainWallets.AzureRepositories.Backup
 {
-    internal class BlockchainWalletBackupEntity:TableEntity
+    internal class BlockchainWalletBackupEntity: AzureTableEntity
     {
         public static string GetPartitionKey(Guid clientId)
         {
