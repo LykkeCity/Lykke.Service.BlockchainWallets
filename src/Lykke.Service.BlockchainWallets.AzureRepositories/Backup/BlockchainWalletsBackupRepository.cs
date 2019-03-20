@@ -81,7 +81,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories.Backup
                 address: p.Address,
                 createdBy: p.CreatedBy,
                 isPrimary: await IsPrimaryWallet(p.ClientId, p.IntegrationLayerId, p.Address),
-                IsDeleted: await IsDeleted(p.ClientId, p.IntegrationLayerId, p.Address)));
+                IsDeleted: await IsDeleted(p.ClientId, p.Address, p.IntegrationLayerId )));
 
             return (mapped.Where(p => !p.IsDeleted).Select(p=> (p.integrationLayerId, p.clientId, p.address, p.createdBy, p.isPrimary)).ToList(), 
                 queryResult.ContinuationToken);
