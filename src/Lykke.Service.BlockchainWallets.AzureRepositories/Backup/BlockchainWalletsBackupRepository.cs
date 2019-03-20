@@ -91,10 +91,19 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories.Backup
         {
             if (await IsPrimaryWallet(clientId, integrationLayerId, address))
             {
-                var nextWallet = (await _storage.GetDataAsync(BlockchainWalletBackupEntity.GetPartitionKey(clientId)))
+                var allClientWallets = (await _storage.GetDataAsync(BlockchainWalletBackupEntity.GetPartitionKey(clientId)))
                     .Where(p => p.IntegrationLayerId == integrationLayerId && p.Address != address)
-                    .OrderByDescending(p => p.Timestamp.UtcDateTime)
-                    .FirstOrDefault();
+                    .OrderByDescending(p => p.Timestamp.UtcDateTime);
+
+                BlockchainWalletBackupEntity nextWallet = null;
+                foreach (var wallet in allClientWallets)
+                {
+                    if (!await IsDeleted(wallet.ClientId, wallet.Address, wallet.IntegrationLayerId))
+                    {
+                        nextWallet = wallet;
+                    }
+                    break;
+                }
 
                 if (nextWallet != null)
                 {
