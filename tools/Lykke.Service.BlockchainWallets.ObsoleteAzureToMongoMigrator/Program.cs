@@ -135,7 +135,15 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
 
                                 if (item.isPrimary)
                                 {
-                                    //TODO publish is primary cmd
+                                    cqrsEngine.SendCommand(new SetPrimaryWalletBackupCommand
+                                        {
+                                            ClientId = item.wallet.ClientId,
+                                            Address = item.wallet.Address,
+                                            BlockchainType = item.wallet.BlockchainType,
+                                            Version = 0
+                                        },
+                                        BlockchainWalletsBoundedContext.Name,
+                                        BlockchainWalletsBoundedContext.Name);
                                 }
                             }
 

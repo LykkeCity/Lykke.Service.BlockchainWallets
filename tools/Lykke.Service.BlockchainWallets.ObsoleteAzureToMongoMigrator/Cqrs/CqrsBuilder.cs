@@ -60,7 +60,11 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.Cqrs
                     .PublishingCommands(typeof(CreateWalletBackupCommand))
                     .To(BlockchainWalletsBoundedContext.Name)
                     .With("commands")
-                    
+
+
+                    .PublishingCommands(typeof(SetPrimaryWalletBackupCommand))
+                    .To(BlockchainWalletsBoundedContext.Name)
+                    .With("commands")
             };
 
             return new CqrsEngine
