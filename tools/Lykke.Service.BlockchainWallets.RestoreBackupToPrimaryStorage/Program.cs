@@ -21,7 +21,7 @@ namespace Lykke.Service.BlockchainWallets.RestoreBackupToPrimaryStorage
         {
             var application = new CommandLineApplication
             {
-                Description = "Resores backup storage to mongo primary"
+                Description = "Restores backup azure storage to mongodb"
             };
 
             var arguments = new Dictionary<string, CommandArgument>
@@ -91,7 +91,7 @@ namespace Lykke.Service.BlockchainWallets.RestoreBackupToPrimaryStorage
                 log.Info($"Processing {counter} of unknown");
 
                 await walletMongoRepo.InsertBatchAsync(queryResult.Entities.Select(p =>
-                    (blockchainType: p.integrationLayerId, clientId: p.clientId,
+                    (blockchainType: p.blockchainType, clientId: p.clientId,
                         address: p.address,
                         createdBy: p.createdBy, isPrimary: p.isPrimary)));
 

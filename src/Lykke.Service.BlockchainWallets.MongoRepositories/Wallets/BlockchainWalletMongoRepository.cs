@@ -74,15 +74,16 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
             await Task.WhenAll(insGeneral, insPrimary);
         }
 
-        public async Task AddAsync(string blockchainType, Guid clientId, string address, CreatorType createdBy,
-            string clientLatestDepositIndexManualPartitionKey = null, bool isPrimary = true)
+        public async Task<ChangedPrimaryWalletDto> AddAsync(string blockchainType, Guid clientId, string address, CreatorType createdBy, bool isPrimary = true)
         {
             var wallet = await InsertIfNotExistWalletAsync(blockchainType, clientId, address, createdBy.ToDomain());
 
             if (isPrimary)
             {
-                await MakePrimaryAsync(wallet);
+                return await MakePrimaryAsync(wallet);
             }
+
+            return null;
         }
 
         private async Task<WalletMongoEntity> InsertIfNotExistWalletAsync(string blockchainType, 
@@ -123,7 +124,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
             return entity;
         }
 
-        private async Task MakePrimaryAsync(WalletMongoEntity wallet, PrimaryWalletMongoEntity lastKnown = null)
+        private async Task<ChangedPrimaryWalletDto> MakePrimaryAsync(WalletMongoEntity wallet, PrimaryWalletMongoEntity lastKnown = null)
         {
             await CommandExtensions.WrapCommandAsync(async () =>
             {
@@ -167,6 +168,14 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
                         throw new OptimisticConcurrencyException(e);
                     }
                 }, _log);
+
+                return new ChangedPrimaryWalletDto
+                {
+                    ClientId = wallet.ClientId,
+                    Address = wallet.Address,
+                    BlockchainType = wallet.BlockchainType,
+                    Version = entity.Version
+                };
             }
             else
             {
@@ -187,14 +196,24 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
                         throw new OptimisticConcurrencyException();
                     }
                 }, _log);
+
+                return new ChangedPrimaryWalletDto
+                {
+                    ClientId = wallet.ClientId,
+                    Address = wallet.Address,
+                    BlockchainType = wallet.BlockchainType,
+                    Version = lastKnown.Version +1
+                };
             }
         }
 
-        public async Task DeleteIfExistsAsync(string blockchainType, Guid clientId, string address)
+        public async Task<ChangedPrimaryWalletDto> DeleteIfExistsAsync(string blockchainType, Guid clientId, string address)
         {
             var entityToDelete = (await _allWalletsCollection.WrapQueryAsync(_log,
                     query => query.Where(p => p.ClientId == clientId && p.BlockchainType == blockchainType && p.Address == address )))
                 .SingleOrDefault();
+
+            ChangedPrimaryWalletDto result = null;
 
             if (entityToDelete != null)
             {
@@ -212,7 +231,7 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
 
                     if (nextWallet != null)
                     {
-                        await MakePrimaryAsync(nextWallet, primary);
+                        result = await MakePrimaryAsync(nextWallet, primary);
                     }
                     else
                     {
@@ -239,6 +258,8 @@ namespace Lykke.Service.BlockchainWallets.MongoRepositories.Wallets
 
                 }, _log);
             }
+
+            return result;
         }
 
         public async Task<bool> ExistsAsync(string blockchainType, string address)

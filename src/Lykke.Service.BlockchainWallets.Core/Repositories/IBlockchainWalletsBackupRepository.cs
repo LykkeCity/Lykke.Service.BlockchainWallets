@@ -7,14 +7,15 @@ namespace Lykke.Service.BlockchainWallets.Core.Repositories
 {
     public interface IBlockchainWalletsBackupRepository
     {
-        Task AddAsync(string integrationLayerId, Guid clientId, string address,
-            CreatorType createdBy, bool isPrimary);
+        Task AddAsync(string blockchainType, Guid clientId, string address,
+            CreatorType createdBy);
 
-        Task<(IReadOnlyCollection<(string integrationLayerId, Guid clientId, string address, CreatorType createdBy, bool isPrimary)>
+        Task<(IReadOnlyCollection<(string blockchainType, Guid clientId, string address, CreatorType createdBy, bool isPrimary)>
                 Entities, string ContinuationToken)>
             GetDataWithContinuationTokenAsync(int take,
                 string continuationToken);
 
-        Task DeleteIfExistAsync(string integrationLayerId, Guid clientId, string address);
+        Task SetPrimaryWalletAsync(string blockchainType, Guid clientId, string address, int version);
+        Task DeleteIfExistAsync(string blockchainType, Guid clientId, string address);
     }
 }

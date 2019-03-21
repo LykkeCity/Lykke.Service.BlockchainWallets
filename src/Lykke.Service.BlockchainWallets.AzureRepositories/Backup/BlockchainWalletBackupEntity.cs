@@ -12,14 +12,14 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories.Backup
             return clientId.ToString();
         }
 
-        public static string GetRowKey(string address, string integrationLayerId)
+        public static string GetRowKey(string address, string blockchainType)
         {
-            return $"{integrationLayerId}_{address}";
+            return $"{blockchainType}_{address}";
         }
 
         public string Address { get; set; }
 
-        public string IntegrationLayerId { get; set; }
+        public string BlockchainType { get; set; }
 
         public Guid ClientId { get; set; }
 

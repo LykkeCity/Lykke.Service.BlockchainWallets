@@ -15,7 +15,7 @@ using Lykke.SettingsReader;
 
 namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator.ObsoleteAzurePepo
 {
-    public class BlockchainWalletsRepository : IBlockchainWalletsRepository
+    public class BlockchainWalletsRepository
     {
         private const int _batchSize = 50;
         private readonly INoSQLTableStorage<AzureIndex> _addressIndexTable;

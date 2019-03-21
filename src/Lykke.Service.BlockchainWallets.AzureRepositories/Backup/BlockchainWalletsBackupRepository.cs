@@ -15,11 +15,11 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories.Backup
     public class BlockchainWalletsBackupRepository: IBlockchainWalletsBackupRepository
     {
         private readonly INoSQLTableStorage<BlockchainWalletBackupEntity> _storage;
-        private readonly INoSQLTableStorage<BlockchainWalletsBackupIsPrimaryIndex> _isPrimaryIndexStorage;
+        private readonly INoSQLTableStorage<BlockchainWalletsBackupIsPrimaryChangesIndex> _isPrimaryIndexStorage;
         private readonly INoSQLTableStorage<BlockchainWalletsArchiveIndex> _isDeletedStorage;
 
         private BlockchainWalletsBackupRepository(INoSQLTableStorage<BlockchainWalletBackupEntity> storage,
-            INoSQLTableStorage<BlockchainWalletsBackupIsPrimaryIndex> isPrimaryStorage,
+            INoSQLTableStorage<BlockchainWalletsBackupIsPrimaryChangesIndex> isPrimaryStorage,
             INoSQLTableStorage<BlockchainWalletsArchiveIndex> isDeletedStorage)
         {
             _storage = storage;
@@ -33,101 +33,82 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories.Backup
             return new BlockchainWalletsBackupRepository(AzureTableStorage<BlockchainWalletBackupEntity>.Create
             (
                 connectionString,
-                "BlockchainWalletsBackupV2",
+                "BlockchainWalletsBackupV3",
                 logFactory
-            ), AzureTableStorage<BlockchainWalletsBackupIsPrimaryIndex>.Create
+            ), AzureTableStorage<BlockchainWalletsBackupIsPrimaryChangesIndex>.Create
             (
                 connectionString,
-                "BlockchainWalletsBackupV2IsPrimaryIndex",
+                "BlockchainWalletsBackupV3IsPrimaryChangesIndex",
                 logFactory
             ), AzureTableStorage<BlockchainWalletsArchiveIndex>.Create
             (
                 connectionString,
-                "BlockchainWalletsBackupV2ArchiveIndex",
+                "BlockchainWalletsBackupV3ArchiveIndex",
                 logFactory
             ));
         }
 
-        public async Task AddAsync(string integrationLayerId, Guid clientId, string address, CreatorType createdBy, bool isPrimary)
+        public async Task AddAsync(string blockchainType, Guid clientId, string address, CreatorType createdBy)
         {
             await _storage.InsertOrReplaceAsync(new BlockchainWalletBackupEntity
             {
                 ClientId = clientId,
                 Address = address,
                 PartitionKey = BlockchainWalletBackupEntity.GetPartitionKey(clientId),
-                RowKey = BlockchainWalletBackupEntity.GetRowKey(address, integrationLayerId),
+                RowKey = BlockchainWalletBackupEntity.GetRowKey(address, blockchainType),
                 CreatedBy = createdBy,
-                IntegrationLayerId = integrationLayerId,
+                BlockchainType = blockchainType,
             });
-
-            if (isPrimary)
-            {
-                await _isPrimaryIndexStorage.InsertOrReplaceAsync(new BlockchainWalletsBackupIsPrimaryIndex
-                {
-                    PartitionKey = BlockchainWalletsBackupIsPrimaryIndex.GetPartitionKey(clientId),
-                    RowKey = BlockchainWalletsBackupIsPrimaryIndex.GetRowKey(integrationLayerId),
-                    Address = address
-                });
-            }
         }
 
-        public async Task<(IReadOnlyCollection<(string integrationLayerId, Guid clientId, string address, CreatorType createdBy, bool isPrimary)> Entities, string ContinuationToken)>
+        public async Task<(IReadOnlyCollection<(string blockchainType, Guid clientId, string address, CreatorType createdBy, bool isPrimary)> Entities, string ContinuationToken)>
             GetDataWithContinuationTokenAsync(int take, string continuationToken)
         {
             var queryResult = await _storage.GetDataWithContinuationTokenAsync(take, continuationToken);
 
-            var mapped = await queryResult.Entities.SelectAsync(async p => (integrationLayerId: p.IntegrationLayerId,
+            var mapped = await queryResult.Entities.SelectAsync(async p => (blockchainType: p.BlockchainType,
                 clientId: p.ClientId,
                 address: p.Address,
                 createdBy: p.CreatedBy,
-                isPrimary: await IsPrimaryWallet(p.ClientId, p.IntegrationLayerId, p.Address),
-                IsDeleted: await IsDeleted(p.ClientId, p.Address, p.IntegrationLayerId )));
+                isPrimary: await IsPrimaryWallet(p.ClientId, p.BlockchainType, p.Address),
+                IsDeleted: await IsDeleted(p.ClientId, p.Address, p.BlockchainType)));
 
-            return (mapped.Where(p => !p.IsDeleted).Select(p=> (p.integrationLayerId, p.clientId, p.address, p.createdBy, p.isPrimary)).ToList(), 
+            return (mapped.Where(p => !p.IsDeleted).Select(p=> (p.blockchainType, p.clientId, p.address, p.createdBy, p.isPrimary)).ToList(), 
                 queryResult.ContinuationToken);
         }
 
-        public async Task DeleteIfExistAsync(string integrationLayerId, Guid clientId, string address)
+        public async Task SetPrimaryWalletAsync(string blockchainType, Guid clientId, string address, int version)
         {
-            if (await IsPrimaryWallet(clientId, integrationLayerId, address))
+            await _isPrimaryIndexStorage.InsertOrReplaceAsync(new BlockchainWalletsBackupIsPrimaryChangesIndex
             {
-                var nextWallet = (await _storage.GetDataAsync(BlockchainWalletBackupEntity.GetPartitionKey(clientId)))
-                    .Where(p => p.IntegrationLayerId == integrationLayerId && p.Address != address)
-                    .OrderByDescending(p => p.Timestamp.UtcDateTime)
-                    .FirstOrDefault();
+                Address = address,
+                Version = version,
+                PartitionKey = BlockchainWalletsBackupIsPrimaryChangesIndex.GetPartitionKey(clientId, blockchainType),
+                RowKey = BlockchainWalletsBackupIsPrimaryChangesIndex.GetRowKey(version)
+            }, replaceCondition: p => false);
+        }
 
-                if (nextWallet != null)
-                {
-                    await _isPrimaryIndexStorage.InsertOrReplaceAsync(new BlockchainWalletsBackupIsPrimaryIndex
-                    {
-                        PartitionKey = BlockchainWalletsBackupIsPrimaryIndex.GetPartitionKey(clientId),
-                        RowKey = BlockchainWalletsBackupIsPrimaryIndex.GetRowKey(integrationLayerId),
-                        Address = nextWallet.Address
-                    });
-                }
-
-                await _isPrimaryIndexStorage.DeleteIfExistAsync(BlockchainWalletsBackupIsPrimaryIndex.GetPartitionKey(clientId),
-                    BlockchainWalletsBackupIsPrimaryIndex.GetRowKey(integrationLayerId),
-                    p => p.Address == address);
-            }
-
+        public async Task DeleteIfExistAsync(string blockchainType, Guid clientId, string address)
+        {
             await _isDeletedStorage.InsertOrReplaceAsync(new BlockchainWalletsArchiveIndex
             {
                 PartitionKey = BlockchainWalletsArchiveIndex.GetPartitionKey(clientId),
-                RowKey = BlockchainWalletsArchiveIndex.GetRowKey(address, integrationLayerId)
+                RowKey = BlockchainWalletsArchiveIndex.GetRowKey(address, blockchainType)
             });
         }
 
-        private async Task<bool> IsPrimaryWallet(Guid clientId, string integrationLayerId, string address)
+        private async Task<bool> IsPrimaryWallet(Guid clientId, string blockchainType, string address)
         {
-            return (await _isPrimaryIndexStorage.GetDataAsync(BlockchainWalletsBackupIsPrimaryIndex.GetPartitionKey(clientId),
-                       BlockchainWalletsBackupIsPrimaryIndex.GetRowKey(integrationLayerId)))?.Address == address;
+            var lastPrimary = await _isPrimaryIndexStorage.GetTopRecordAsync(
+                BlockchainWalletsBackupIsPrimaryChangesIndex.GetPartitionKey(clientId, blockchainType));
+
+            return lastPrimary?.Address == address;
         }
 
-        private async Task<bool> IsDeleted(Guid clientId, string address, string integrationLayerId)
+        private async Task<bool> IsDeleted(Guid clientId, string address, string blockchainType)
         {
             return await _isDeletedStorage.GetDataAsync(BlockchainWalletsArchiveIndex.GetPartitionKey(clientId),
-                       BlockchainWalletsArchiveIndex.GetRowKey(address, integrationLayerId)) != null;
+                       BlockchainWalletsArchiveIndex.GetRowKey(address, blockchainType)) != null;
         }
     }
 }

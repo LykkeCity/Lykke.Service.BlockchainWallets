@@ -15,6 +15,7 @@ using Lykke.Service.BlockchainWallets.Core.FirstGeneration;
 using Lykke.Service.BlockchainWallets.Core.Repositories;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Services.FirstGeneration;
+using Microsoft.Rest;
 using Polly;
 
 
@@ -93,9 +94,9 @@ namespace Lykke.Service.BlockchainWallets.Services
                 }
 
                 var creator = CreatorType.LykkeWallet;
-                await AddWalletWithRetries(blockchainType, clientId, address, CreatorType.LykkeWallet);
+                var changedPrimaryWallet = await AddWalletWithRetries(blockchainType, clientId, address, CreatorType.LykkeWallet);
 
-                var @event = new WalletCreatedEvent
+                var walletCreatedEvent = new WalletCreatedEvent
                 {
                     Address = address,
                     AssetId = assetId,
@@ -105,6 +106,11 @@ namespace Lykke.Service.BlockchainWallets.Services
                     IsPrimary = true,
                     CreatedBy = creator
                 };
+
+                if (changedPrimaryWallet != null)
+                {
+
+                }
 
                 await _firstGenerationBlockchainWalletRepository.InsertOrReplaceAsync(new BcnCredentialsRecord
                 {
@@ -118,9 +124,24 @@ namespace Lykke.Service.BlockchainWallets.Services
 
                 _cqrsEngine.PublishEvent
                 (
-                    @event,
+                    walletCreatedEvent,
                     BlockchainWalletsBoundedContext.Name
                 );
+
+                if (changedPrimaryWallet != null)
+                {
+                    _cqrsEngine.PublishEvent
+                    (
+                        new PrimaryWalletChangedEvent
+                        {
+                            Address = changedPrimaryWallet.Address,
+                            ClientId = changedPrimaryWallet.ClientId,
+                            Version = changedPrimaryWallet.Version,
+                            BlockchainType = changedPrimaryWallet.BlockchainType
+                        },
+                        BlockchainWalletsBoundedContext.Name
+                    );
+                }
 
                 return ConvertWalletToWalletWithAddressExtension
                 (
@@ -147,9 +168,9 @@ namespace Lykke.Service.BlockchainWallets.Services
             };
         }
 
-        private async Task AddWalletWithRetries(string blockchainType, Guid clientId, string address, CreatorType creator, int maxRetries = 1000)
+        private async Task<ChangedPrimaryWalletDto> AddWalletWithRetries(string blockchainType, Guid clientId, string address, CreatorType creator, int maxRetries = 1000)
         {
-            await Policy.Handle<OptimisticConcurrencyException>()
+            return await Policy.Handle<OptimisticConcurrencyException>()
                 .RetryAsync(maxRetries, onRetry: (ex, retryCounter) =>
                 {
                     _log.Warning("Optimistic concurrency exception during wallet saving",
@@ -352,9 +373,9 @@ namespace Lykke.Service.BlockchainWallets.Services
                     $"Failed to get UnderlyingAddress for blockchainType={blockchainType} and address={address}");
             }
 
-            await AddWalletWithRetries(blockchainType, clientId, address, createdBy);
+            var changedPrimaryWallet =  await AddWalletWithRetries(blockchainType, clientId, address, createdBy);
 
-            var @event = new WalletCreatedEvent
+            var walletCreatedEvent = new WalletCreatedEvent
             {
                 Address = address,
                 BlockchainType = blockchainType,
@@ -366,9 +387,24 @@ namespace Lykke.Service.BlockchainWallets.Services
 
             _cqrsEngine.PublishEvent
             (
-                @event,
+                walletCreatedEvent,
                 BlockchainWalletsBoundedContext.Name
             );
+
+            if (changedPrimaryWallet != null)
+            {
+                _cqrsEngine.PublishEvent
+                (
+                    new PrimaryWalletChangedEvent
+                    {
+                        Address = changedPrimaryWallet.Address,
+                        ClientId = changedPrimaryWallet.ClientId,
+                        Version = changedPrimaryWallet.Version,
+                        BlockchainType = changedPrimaryWallet.BlockchainType
+                    },
+                    BlockchainWalletsBoundedContext.Name
+                );
+            }
 
             return ConvertWalletToWalletWithAddressExtension
             (
@@ -400,9 +436,9 @@ namespace Lykke.Service.BlockchainWallets.Services
 
         public async Task DeleteWalletsAsync(string blockchainType, Guid clientId, string address)
         {
-            await _walletRepository.DeleteIfExistsAsync(blockchainType, clientId, address);
+            var changedPrimaryWallet = await _walletRepository.DeleteIfExistsAsync(blockchainType, clientId, address);
 
-            var @event = new WalletArchivedEvent()
+            var walletArchivedEvent = new WalletArchivedEvent()
             {
                 Address = address,
                 BlockchainType = blockchainType,
@@ -411,9 +447,24 @@ namespace Lykke.Service.BlockchainWallets.Services
 
             _cqrsEngine.PublishEvent
             (
-                @event,
+                walletArchivedEvent,
                 BlockchainWalletsBoundedContext.Name
             );
+
+            if (changedPrimaryWallet != null)
+            {
+                _cqrsEngine.PublishEvent
+                (
+                    new PrimaryWalletChangedEvent
+                    {
+                        Address = changedPrimaryWallet.Address,
+                        ClientId = changedPrimaryWallet.ClientId,
+                        Version = changedPrimaryWallet.Version,
+                        BlockchainType = changedPrimaryWallet.BlockchainType
+                    },
+                    BlockchainWalletsBoundedContext.Name
+                );
+            }
         }
 
         #endregion

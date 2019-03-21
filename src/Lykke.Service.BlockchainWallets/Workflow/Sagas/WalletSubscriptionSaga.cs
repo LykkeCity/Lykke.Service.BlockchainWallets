@@ -37,7 +37,6 @@ namespace Lykke.Service.BlockchainWallets.Workflow.Sagas
                     ClientId = evt.ClientId,
                     Address = evt.Address,
                     BlockchainType = evt.BlockchainType,
-                    IsPrimary = evt.IsPrimary,
                     AssetId = evt.AssetId,
                     CreatedBy = evt.CreatedBy
                 },

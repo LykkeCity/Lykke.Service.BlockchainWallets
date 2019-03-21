@@ -73,6 +73,9 @@ namespace Lykke.Service.BlockchainWallets.Modules
             builder
                 .RegisterType<CreateWalletBackupCommandHandler>();
 
+            builder
+                .RegisterType<SetPrimaryWalletBackupCommandHandler>(); 
+
             // Sagas
 
             builder
@@ -80,6 +83,9 @@ namespace Lykke.Service.BlockchainWallets.Modules
 
             builder
                 .RegisterType<WalletUnsubscriptionSaga>();
+
+            builder
+                .RegisterType<PrimaryWalletHandlingSaga>();
 
             // Create engine
             builder.Register(ctx => CreateEngine(
@@ -129,6 +135,14 @@ namespace Lykke.Service.BlockchainWallets.Modules
                 .ListeningCommands(typeof(CreateWalletBackupCommand))
                 .On(defaultRoute)
                 .WithCommandsHandler<CreateWalletBackupCommandHandler>()
+                
+                .ListeningCommands(typeof(CreateWalletBackupCommand))
+                .On(defaultRoute)
+                .WithCommandsHandler<CreateWalletBackupCommandHandler>()
+
+                .ListeningCommands(typeof(SetPrimaryWalletBackupCommand))
+                .On(defaultRoute)
+                .WithCommandsHandler<SetPrimaryWalletBackupCommandHandler>()
 
                 .PublishingCommands(
                     typeof(BeginBalanceMonitoringCommand),
@@ -136,14 +150,16 @@ namespace Lykke.Service.BlockchainWallets.Modules
                     typeof(EndBalanceMonitoringCommand),
                     typeof(EndTransactionHistoryMonitoringCommand),
                     typeof(CreateWalletBackupCommand),
-                    typeof(DeleteWalletBackupCommand))
+                    typeof(DeleteWalletBackupCommand),
+                    typeof(SetPrimaryWalletBackupCommand))
                 .To(BlockchainWalletsBoundedContext.Name)
                 .With(defaultRoute)
 
                 .PublishingEvents(
                     typeof(WalletArchivedEvent),
                     typeof(WalletCreatedEvent),
-                    typeof(WalletDeletedEvent))
+                    typeof(WalletDeletedEvent),
+                    typeof(PrimaryWalletChangedEvent))
                 .With(BlockchainWalletsBoundedContext.EventsRoute)
 
                 .ProcessingOptions(defaultRoute).MultiThreaded(8).QueueCapacity(1024),
@@ -172,6 +188,18 @@ namespace Lykke.Service.BlockchainWallets.Modules
                     typeof(EndBalanceMonitoringCommand),
                     typeof(EndTransactionHistoryMonitoringCommand),
                     typeof(DeleteWalletBackupCommand))
+                .To(BlockchainWalletsBoundedContext.Name)
+                .With(defaultPipeline)
+
+                .ProcessingOptions(defaultRoute).MultiThreaded(8).QueueCapacity(1024),
+
+            Register.Saga<PrimaryWalletHandlingSaga>($"{BlockchainWalletsBoundedContext.Name}.primary-walled-handling-saga")
+                .ListeningEvents(
+                    typeof(PrimaryWalletChangedEvent))
+                .From(BlockchainWalletsBoundedContext.Name)
+                .On(defaultRoute)
+                .PublishingCommands(
+                    typeof(SetPrimaryWalletBackupCommand))
                 .To(BlockchainWalletsBoundedContext.Name)
                 .With(defaultPipeline)
 

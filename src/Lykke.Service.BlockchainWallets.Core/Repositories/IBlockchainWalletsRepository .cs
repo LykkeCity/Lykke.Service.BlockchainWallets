@@ -8,10 +8,10 @@ namespace Lykke.Service.BlockchainWallets.Core.Repositories
 {
     public interface IBlockchainWalletsRepository
     {
-        Task AddAsync(string blockchainType, Guid clientId, string address,
-            CreatorType createdBy, string clientLatestDepositIndexManualPartitionKey = null, bool addAsLatest = true);
+        Task<ChangedPrimaryWalletDto> AddAsync(string blockchainType, Guid clientId, string address,
+            CreatorType createdBy, bool addAsLatest = true);
 
-        Task DeleteIfExistsAsync(string blockchainType, Guid clientId, string address);
+        Task<ChangedPrimaryWalletDto> DeleteIfExistsAsync(string blockchainType, Guid clientId, string address);
 
         Task<bool> ExistsAsync(string blockchainType, string address);
 

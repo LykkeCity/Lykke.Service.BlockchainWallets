@@ -128,11 +128,15 @@ namespace Lykke.Service.BlockchainWallets.ObsoleteAzureToMongoMigrator
                                     Address = item.wallet.Address,
                                     AssetId = item.wallet.AssetId,
                                     BlockchainType = item.wallet.BlockchainType,
-                                    IsPrimary = item.isPrimary,
                                     CreatedBy = item.wallet.CreatorType
                                 },
                                     BlockchainWalletsBoundedContext.Name,
                                     BlockchainWalletsBoundedContext.Name);
+
+                                if (item.isPrimary)
+                                {
+                                    //TODO publish is primary cmd
+                                }
                             }
 
                             await insInMongo;
