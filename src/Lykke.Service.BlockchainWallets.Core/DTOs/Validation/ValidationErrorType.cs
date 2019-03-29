@@ -2,14 +2,14 @@
 {
     public enum ValidationErrorType
     {
-        None,
+        //None,
         AddressIsNotValid,
         FieldIsNotValid,
-        LessThanMinCashout,
+        //LessThanMinCashout,
         HotwalletTargetProhibited,
         BlackListedAddress,
-        DepositAddressNotFound,
-        CashoutToSelfAddress,
+        //DepositAddressNotFound,
+        //CashoutToSelfAddress,
         Error
     }
 }

@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Common;
+﻿using Common;
 using JetBrains.Annotations;
 using Lykke.Service.Assets.Client;
-using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.BlockchainApi.Client;
 using Lykke.Service.BlockchainWallets.Contract;
-using Lykke.Service.BlockchainWallets.Core;
 using Lykke.Service.BlockchainWallets.Core.DTOs.Validation;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Services.Validation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lykke.Service.BlockchainWallets.Services.Validation
 {
