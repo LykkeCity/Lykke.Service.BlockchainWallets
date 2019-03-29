@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Threading.Tasks;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Lykke.Common.Log;
 using Lykke.Service.BlockchainApi.Client;
-using Lykke.Service.BlockchainWallets.Contract;
 using Lykke.Service.BlockchainWallets.Core.Services;
 using Lykke.Service.BlockchainWallets.Core.Settings.BlockchainIntegrationSettings;
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace Lykke.Service.BlockchainWallets.Services
 {
@@ -15,6 +13,7 @@ namespace Lykke.Service.BlockchainWallets.Services
     public class BlockchainIntegrationService : IBlockchainIntegrationService
     {
         private readonly ImmutableDictionary<string, BlockchainApiClient> _apiClients;
+        private readonly ImmutableDictionary<string, BlockchainSettings> _blockchainSettings;
 
         public BlockchainIntegrationService(
             BlockchainsIntegrationSettings settings,
@@ -30,6 +29,14 @@ namespace Lykke.Service.BlockchainWallets.Services
             {
                 log.Info($"Registering blockchain: {blockchain.Type} -> \r\nAPI: {blockchain.ApiUrl}\r\nHW: {blockchain.HotWalletAddress}");
             }
+
+            _blockchainSettings = settings.Blockchains.ToImmutableDictionary(x => x.Type,
+                y => new BlockchainSettings()
+                {
+                    Type = y.Type,
+                    ApiUrl = y.ApiUrl,
+                    HotWalletAddress = y.HotWalletAddress,
+                });
 
             _apiClients = settings.Blockchains.ToImmutableDictionary
             (
@@ -64,6 +71,22 @@ namespace Lykke.Service.BlockchainWallets.Services
             }
 
             return apiClient;
+        }
+
+        public BlockchainSettings GetSettings(string blockchainType)
+        {
+            if (string.IsNullOrEmpty(blockchainType))
+            {
+                throw new ArgumentException("Should not be null or empty", nameof(blockchainType));
+            }
+
+            _blockchainSettings.TryGetValue(blockchainType, out var settings);
+            if (settings == null)
+            {
+                throw new NotSupportedException($"Blockchain type [{blockchainType}] is not supported.");
+            }
+
+            return settings;
         }
 
         public ImmutableDictionary<string, BlockchainApiClient>.Enumerator GetApiClientsEnumerator()
