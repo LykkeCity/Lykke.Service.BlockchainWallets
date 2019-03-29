@@ -15,7 +15,9 @@ using System;
 using System.Net.Http;
 using Lykke.Common.Log;
 using Lykke.Service.BlockchainWallets.Core.FirstGeneration;
+using Lykke.Service.BlockchainWallets.Core.Services.Validation;
 using Lykke.Service.BlockchainWallets.Core.Settings.ServiceSettings;
+using Lykke.Service.BlockchainWallets.Services.Validation;
 
 namespace Lykke.Service.BlockchainWallets.Modules
 {
@@ -93,6 +95,13 @@ namespace Lykke.Service.BlockchainWallets.Modules
             builder
                 .RegisterType<StartupManager>()
                 .As<IStartupManager>();
+
+            builder.RegisterType<ValidationService>()
+                .As<IValidationService>().SingleInstance();
+
+            builder.RegisterType<BlackListService>()
+                .As<IBlackListService>()
+                .SingleInstance();
 
             #region FirstGenerationServices
 
