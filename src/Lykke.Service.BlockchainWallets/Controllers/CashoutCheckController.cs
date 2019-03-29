@@ -1,13 +1,13 @@
-﻿using Lykke.Service.BlockchainWallets.Contract.Models;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
+using Lykke.Service.BlockchainWallets.Contract.Models;
 using Lykke.Service.BlockchainWallets.Core.DTOs.Validation;
 using Lykke.Service.BlockchainWallets.Core.Services.Validation;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 using ValidationErrorType = Lykke.Service.BlockchainWallets.Contract.Models.ValidationErrorType;
 
-namespace Lykke.Service.BlockchainCashoutPreconditionsCheck.Controllers
+namespace Lykke.Service.BlockchainWallets.Controllers
 {
     [Route("/api/blockchains")]
     public class CashoutCheckController : Controller
@@ -20,9 +20,9 @@ namespace Lykke.Service.BlockchainCashoutPreconditionsCheck.Controllers
         }
 
         [HttpGet("{blockchainType}/cashout-destinations/{address}/allowability")]
-        public async Task<IActionResult> CheckCashoutDestinationAsync(
-            [Required][FromQuery] string blockchainType,
-            [Required][FromQuery] string address)
+        public async Task<IActionResult> CheckCashoutDestinationAllowabilityAsync(
+            [Required][FromRoute] string blockchainType,
+            [Required][FromRoute] string address)
         {
             var cashoutModel = new CashoutModel()
             {

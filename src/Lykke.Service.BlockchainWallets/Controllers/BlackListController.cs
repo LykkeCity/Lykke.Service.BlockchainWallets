@@ -1,22 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using Lykke.Service.BlockchainWallets.Contract.Models;
+﻿using Lykke.Service.BlockchainWallets.Contract.Models;
 using Lykke.Service.BlockchainWallets.Contract.Models.BlackLists;
 using Lykke.Service.BlockchainWallets.Core.DTOs.Validation;
 using Lykke.Service.BlockchainWallets.Core.Services.Validation;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.SwaggerGen;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lykke.Service.BlockchainWallets.Controllers
 {
+    [Route("api/blockchains/{blockchainType}/black-addresses")]
     public class BlackListController : Controller
     {
-        private static readonly char[] _charactersToTrim = new char[] { ' ', '\t' };
+        private static readonly char[] CharactersToTrim = new char[] { ' ', '\t' };
         private readonly IBlackListService _blackListService;
 
         public BlackListController(IBlackListService blackListService)
@@ -28,10 +24,12 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         /// is address black listed
         /// </summary>
         /// <returns></returns>
-        [HttpGet("{blockchainType}/{blockedAddress}/is-blocked")]
-        public async Task<IActionResult> IsBlockedAsync([FromRoute][Required] string blockchainType, [FromRoute][Required] string blockedAddress)
+        [HttpGet("{address}/is-blocked")]
+        public async Task<IActionResult> IsBlockedAsync(
+            [FromRoute][Required] string blockchainType, 
+            [FromRoute][Required] string address)
         {
-            var isBlocked = await _blackListService.IsBlockedAsync(blockchainType, Trim(blockedAddress));
+            var isBlocked = await _blackListService.IsBlockedAsync(blockchainType, Trim(address));
 
             return Ok(new IsBlockedResponse()
             {
@@ -43,10 +41,12 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         /// is address black listed
         /// </summary>
         /// <returns></returns>
-        [HttpGet("{blockchainType}/{blockedAddress}")]
-        public async Task<IActionResult> GetBlackListAsync([FromRoute][Required] string blockchainType, [FromRoute][Required] string blockedAddress)
+        [HttpGet("{address}")]
+        public async Task<IActionResult> GetBlackListAsync(
+            [FromRoute][Required] string blockchainType, 
+            [FromRoute][Required] string address)
         {
-            var model = await _blackListService.TryGetAsync(blockchainType, Trim(blockedAddress));
+            var model = await _blackListService.TryGetAsync(blockchainType, Trim(address));
 
             if (model == null)
                 return NoContent();
@@ -58,8 +58,11 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         /// Take blocked addresses for specific blockchainType
         /// </summary>
         /// <returns></returns>
-        [HttpGet("{blockchainType}")]
-        public async Task<IActionResult> GetAllAsync([FromRoute][Required] string blockchainType, [FromQuery] int take, [FromQuery] string continuationToken)
+        [HttpGet]
+        public async Task<IActionResult> GetAllAsync(
+            [FromRoute][Required] string blockchainType, 
+            [FromQuery] int take, 
+            [FromQuery] string continuationToken)
         {
             if (take <= 0)
                 return BadRequest
@@ -80,10 +83,10 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         /// Add black listed address
         /// </summary>
         /// <returns></returns>
-        [HttpPost]
-        public async Task<IActionResult> AddBlockedAddressAsync([FromBody] BlackListRequest request)
+        [HttpPost("{address}")]
+        public async Task<IActionResult> AddBlockedAddressAsync(BlackListRequest request)
         {
-            string blockedAddress = Trim(request.BlockedAddress);
+            string blockedAddress = Trim(request.Address);
 
             BlackListModel model = new BlackListModel(request.BlockchainType, blockedAddress, request.IsCaseSensitive);
 
@@ -96,10 +99,10 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         /// Add black listed address
         /// </summary>
         /// <returns></returns>
-        [HttpPut]
-        public async Task<IActionResult> UpdateBlockedAddressAsync([FromBody] BlackListRequest request)
+        [HttpPut("{address}")]
+        public async Task<IActionResult> UpdateBlockedAddressAsync(BlackListRequest request)
         {
-            string blockedAddress = Trim(request.BlockedAddress);
+            string blockedAddress = Trim(request.Address);
 
             BlackListModel model = new BlackListModel(request.BlockchainType, blockedAddress, request.IsCaseSensitive);
 
@@ -112,17 +115,19 @@ namespace Lykke.Service.BlockchainWallets.Controllers
         /// Delete black listed address
         /// </summary>
         /// <returns></returns>
-        [HttpDelete("{blockchainType}/{blockedAddress}")]
-        public async Task<IActionResult> DeleteBlockedAddressAsync([FromRoute][Required] string blockchainType, [FromRoute][Required] string blockedAddress)
+        [HttpDelete("{address}")]
+        public async Task<IActionResult> DeleteBlockedAddressAsync(
+            [FromRoute][Required] string blockchainType, 
+            [FromRoute][Required] string address)
         {
-            await _blackListService.DeleteAsync(blockchainType, Trim(blockedAddress));
+            await _blackListService.DeleteAsync(blockchainType, Trim(address));
 
             return Ok();
         }
 
         private string Trim(string address)
         {
-            return address?.Trim(_charactersToTrim);
+            return address?.Trim(CharactersToTrim);
         }
 
         private BlackListResponse Map(BlackListModel blackListModel)

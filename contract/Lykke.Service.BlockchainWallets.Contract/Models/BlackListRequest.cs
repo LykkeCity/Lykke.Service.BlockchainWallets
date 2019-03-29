@@ -1,11 +1,15 @@
-﻿namespace Lykke.Service.BlockchainWallets.Contract.Models
+﻿using Microsoft.AspNetCore.Mvc;
+namespace Lykke.Service.BlockchainWallets.Contract.Models
 {
     public class BlackListRequest
     {
+        [FromRoute(Name = "blockchainType")]
         public string BlockchainType { get; set; }
 
-        public string BlockedAddress { get; set; }
+        [FromRoute(Name = "address")]
+        public string Address { get; set; }
 
+        [FromQuery(Name = "isCaseSensitive")]
         public bool IsCaseSensitive { get; set; }
     }
 }

@@ -15,6 +15,8 @@ using Lykke.Common.Log;
 using Common;
 using Lykke.Service.BlockchainWallets.Client.ClientGenerator;
 using Lykke.Service.BlockchainWallets.Client.DelegatingMessageHandlers;
+using Lykke.Service.BlockchainWallets.Contract.Models.BlackLists;
+using Microsoft.AspNetCore.Mvc;
 
 
 namespace Lykke.Service.BlockchainWallets.Client
@@ -387,8 +389,145 @@ namespace Lykke.Service.BlockchainWallets.Client
 
         #endregion
 
+        #region Validation_And_Black_Lists
+
+        /// <summary>
+        /// This method is used to update black list record.
+        /// </summary>
+        /// <param name="updateModel"></param>
+        /// <returns></returns>
+        public async Task UpdateBlackListAsync(BlackListRequest updateModel)
+        {
+            ValidateInputParameters(updateModel);
+
+            await _apiRunner.RunWithRetriesAsync(() => _api.UpdateBlackListAsync
+            (
+                updateModel.BlockchainType, updateModel.Address, updateModel.IsCaseSensitive
+            ));
+        }
+
+        /// <summary>
+        /// This method is used to add address into the black list.
+        /// </summary>
+        /// <param name="createModel"></param>
+        /// <returns></returns>
+        public async Task CreateBlackListAsync(BlackListRequest createModel)
+        {
+            ValidateInputParameters(createModel);
+
+            await _apiRunner.RunWithRetriesAsync(() => _api.CreateBlackListAsync
+            (
+                createModel.BlockchainType, createModel.Address, createModel.IsCaseSensitive
+            ));
+        }
+
+        /// <summary>
+        /// Delete record by address.
+        /// </summary>
+        /// <param name="blockchainType"></param>
+        /// <param name="address"></param>
+        /// <returns></returns>
+        public async Task DeleteBlackListAsync(string blockchainType, string address)
+        {
+            ValidateBlockchainTypeAndAddress(blockchainType, address);
+
+            await _apiRunner.RunWithRetriesAsync(() => _api.DeleteBlackListAsync
+            (
+                blockchainType, address
+            ));
+        }
+
+        /// <summary>
+        /// Get black list record if exists
+        /// </summary>
+        /// <param name="blockchainType"></param>
+        /// <param name="address"></param>
+        /// <returns></returns>
+        public async Task<BlackListResponse> GetBlackListAsync(string blockchainType, string address)
+        {
+            ValidateBlockchainTypeAndAddress(blockchainType, address);
+
+            var response = await _apiRunner.RunWithRetriesAsync(() => _api.GetBlackListAsync
+            (
+                blockchainType, address
+            ));
+
+            return response;
+        }
+
+        /// <summary>
+        /// Enumerate through black address of specified blockchain type.
+        /// </summary>
+        /// <param name="blockchainType"></param>
+        /// <param name="take"></param>
+        /// <param name="continuationToken"></param>
+        /// <returns></returns>
+        public async Task<BlackListEnumerationResponse> GetBlackListsAsync(string blockchainType,
+            [FromQuery] int take,
+            [FromQuery] string continuationToken)
+        {
+            if (take <=0 )
+                throw new ArgumentException("Should be bigger than 0", nameof(take));
+
+            ValidateInputParameters(blockchainType);
+
+            var response = await _apiRunner.RunWithRetriesAsync(() => _api.GetBlackListsAsync
+            (
+                blockchainType, take, continuationToken
+            ));
+
+            return response;
+        }
+
+        /// <summary>
+        /// Retrieves info whether address is in black list or not
+        /// </summary>
+        /// <param name="blockchainType"></param>
+        /// <param name="address"></param>
+        /// <returns></returns>
+        public async Task<IsBlockedResponse> IsBlockedAsync(string blockchainType, string address)
+        {
+            ValidateBlockchainTypeAndAddress(blockchainType, address);
+
+            var response = await _apiRunner.RunWithRetriesAsync(() => _api.IsBlockedAsync
+            (
+                blockchainType, address
+            ));
+
+            return response;
+        }
+
+        /// <summary>
+        /// Validate cashout destination address
+        /// </summary>
+        /// <param name="blockchainType"></param>
+        /// <param name="address"></param>
+        /// <returns></returns>
+        public async Task<CashoutValidityResult> CashoutCheckAsync(string blockchainType, string address)
+        {
+            ValidateBlockchainTypeAndAddress(blockchainType, address);
+
+            var response = await _apiRunner.RunWithRetriesAsync(() => _api.CashoutCheckAsync
+            (
+                blockchainType, address
+            ));
+
+            return response;
+        }
+
+        #endregion
 
         #region Private Methods
+
+        private static void ValidateInputParameters(BlackListRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException((nameof(request)));
+            }
+
+            ValidateBlockchainTypeAndAddress(request.BlockchainType, request.Address);
+        }
 
         private static void ValidateInputParameters(string blockchainType)
         {
