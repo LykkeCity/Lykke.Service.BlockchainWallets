@@ -503,13 +503,24 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <param name="blockchainType"></param>
         /// <param name="address"></param>
         /// <returns></returns>
-        public async Task<CashoutValidityResult> CashoutCheckAsync(string blockchainType, string address)
+        public async Task<CashoutValidityResult> CashoutCheckAsync(string address, string assetId, Guid? clientId, decimal? amount)
         {
-            ValidateBlockchainTypeAndAddress(blockchainType, address);
+            if (string.IsNullOrEmpty(address))
+            {
+                throw new ArgumentException(nameof(address));
+            }
+
+            if (string.IsNullOrEmpty(assetId))
+            {
+                throw new ArgumentException(nameof(assetId));
+            }
 
             var response = await _apiRunner.RunWithRetriesAsync(() => _api.CashoutCheckAsync
             (
-                blockchainType, address
+                address,
+                assetId,
+                clientId,
+                amount
             ));
 
             return response;

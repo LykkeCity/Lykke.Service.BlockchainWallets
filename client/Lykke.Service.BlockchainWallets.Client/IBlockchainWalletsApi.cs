@@ -137,8 +137,8 @@ namespace Lykke.Service.BlockchainWallets.Client
         /// <param name="blockchainType"></param>
         /// <param name="address"></param>
         /// <returns></returns>
-        [Get("/api/blockchains/{blockchainType}/cashout-destinations/{address}/allowability")]
-        Task<CashoutValidityResult> CashoutCheckAsync(string blockchainType, string address);
+        [Get("/api/cashout-destinations/{address}/assets/{assetId}/allowability")]
+        Task<CashoutValidityResult> CashoutCheckAsync(string address, string assetId, [FromQuery]Guid? clientId, [FromQuery]decimal? amount);
 
         #endregion
     }

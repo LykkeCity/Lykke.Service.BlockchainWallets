@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Lykke.Service.BlockchainWallets.Contract.Models;
@@ -9,7 +10,8 @@ using ValidationErrorType = Lykke.Service.BlockchainWallets.Contract.Models.Vali
 
 namespace Lykke.Service.BlockchainWallets.Controllers
 {
-    [Route("/api/blockchains")]
+    //GET /api/cashout-destinations/{address}/assets/{assetId}/allowability?client={clientId}&amount={amount}
+    [Route("/api/cashout-destinations")]
     public class CashoutCheckController : Controller
     {
         private readonly IValidationService _validationService;
@@ -19,14 +21,18 @@ namespace Lykke.Service.BlockchainWallets.Controllers
             _validationService = validationService;
         }
 
-        [HttpGet("{blockchainType}/cashout-destinations/{address}/allowability")]
+        [HttpGet("{address}/assets/{assetId}/allowability")]
         public async Task<IActionResult> CheckCashoutDestinationAllowabilityAsync(
-            [Required][FromRoute] string blockchainType,
-            [Required][FromRoute] string address)
+            [Required][FromRoute] string address,
+            [Required][FromRoute] string assetId, 
+            [FromQuery] Guid clientId,
+            [FromQuery] decimal amount)
         {
             var cashoutModel = new CashoutModel()
             {
-                BlockchainType = blockchainType,
+                AssetId = assetId,
+                Amount = amount,
+                ClientId = clientId,
                 DestinationAddress = address
             };
 

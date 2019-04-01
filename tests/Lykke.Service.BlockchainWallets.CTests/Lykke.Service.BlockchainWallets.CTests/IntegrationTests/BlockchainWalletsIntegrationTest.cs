@@ -18,9 +18,11 @@ namespace Lykke.Service.BlockchainWallets.CTests.IntegrationTests
     public class BlockchainWalletsIntegrationTest :
         IClassFixture<CustomWebApplicationFactory<Startup>>
     {
+        private const string _etcAssetId = "915c4074-ec20-40ed-b8b7-5e3cc2f303b1";
+        private const string _stellarAssetId = "b5a0389c-fe57-425f-ab17-af41638f6b89";
         private const string _stellarBlockchainType = "Stellar";
         private const string _etcBlockchainType = "EthereumClassic";
-        private readonly Guid _clientIdForValidityChecks = Guid.Parse("5b39a8a8-af3f-451d-8284-3c06980e2435");
+        private readonly Guid _clientIdForValidityChecks = Guid.Parse("cbecad9b-9fcb-4f3c-9c09-accbee4059db");
         private readonly CustomWebApplicationFactory<Startup> _factory;
         private readonly string _blockchainType = "Stellar";
         private readonly Guid _clientId = Guid.Parse("e18bf761-9d3b-4593-8c04-0677faf37bcb");
@@ -199,24 +201,28 @@ namespace Lykke.Service.BlockchainWallets.CTests.IntegrationTests
         #region ValidityCheck
 
         [Theory]
-        [InlineData("Ethereum", "0x7A8a7870bd398240CE3523Ab7E76153ba34B7116", true)]
-        [InlineData("Ethereum", "0x406561f72e25ab41200fa3d52badc5a21", false)]
-        [InlineData(_stellarBlockchainType, "GDF4MNKB57VPSF2ZAM36YEXH6TFEXQGQT4IJVR3IOMZQIFC2B44Z4HBL", false)]
-        [InlineData(_stellarBlockchainType,
-            "GDF4MNKB57VPSF2ZAM36YEXH6TFEXQGQT4IJVR3IOMZQIFC2B44Z4HBL$gmp91dzbofqrmxdw4hqt4idwyw", true)]
+        //[InlineData("ETH", "0x81b7E08F65Bdf5648606c89998A9CC8164397647", true)]
+        [InlineData("ETH", "0x406561f72e25ab41200fa3d52badc5a21", false)]
+        //Cashout on hotwallet is forbidden
+        [InlineData("b5a0389c-fe57-425f-ab17-af41638f6b89", "GDF4MNKB57VPSF2ZAM36YEXH6TFEXQGQT4IJVR3IOMZQIFC2B44Z4HBL", false)]
+        //Cashout on nonexistent deposit is forbidden
+        [InlineData("b5a0389c-fe57-425f-ab17-af41638f6b89", "GDF4MNKB57VPSF2ZAM36YEXH6TFEXQGQT4IJVR3IOMZQIFC2B44Z4HBL$gmp91dzbofqrmxdw4hqt4idwyw", false)]
+        [InlineData("b5a0389c-fe57-425f-ab17-af41638f6b89", "GDF4MNKB57VPSF2ZAM36YEXH6TFEXQGQT4IJVR3IOMZQIFC2B44Z4HBL$dpkyqq1ya1kw7cscxkk1545asw", false)]
+        [InlineData("b5a0389c-fe57-425f-ab17-af41638f6b89", "GDF4MNKB57VPSF2ZAM36YEXH6TFEXQGQT4IJVR3IOMZQIFC2B44Z4HBL$s7944tp9w7zr9pccmq7epgdume", true)]
         //[InlineData("d1a7ffea-2ca1-48b6-a41f-a7058ddb0dfa", "lykkedev$0sdfsdf$", false)]
         //[InlineData("d1a7ffea-2ca1-48b6-a41f-a7058ddb0dfa", "lykkedev$$$WHY$$$", false)]
-        //[InlineData("2c2c94f9-8fff-4307-89c6-8f5f5f586724", "lykkedev2018:123::::", false)]
-        [InlineData("Ripple", "rwN1jdjVQdpMPa8TYqqCHHKhbXcmtTae83+123", true)]
-        public async Task ValidateCashoutAsync_ExecuteOnDataSet(string blockchainType, string destinationAddress,
-            bool isValidExpected)
+        //[InlineData("20ce0468-917e-4097-abba-edf7c8600cfb", "lykkedev2018:123::::", false)]
+        public async Task ValidateCashoutAsync_ExecuteOnDataSet(
+            string assetId, string destinationAddress, bool isValidExpected)
         {
             var blockchainCashoutPreconditionsCheckClient = GenerateBlockchainWalletsClient();
 
             var result = await
-                blockchainCashoutPreconditionsCheckClient.CashoutCheckAsync(
-                    blockchainType, 
-                    destinationAddress);
+                blockchainCashoutPreconditionsCheckClient.CashoutCheckAsync( 
+                    destinationAddress,
+                    assetId,
+                    _clientIdForValidityChecks,
+                    1);
 
             Assert.Equal(isValidExpected, result.IsAllowed);
         }

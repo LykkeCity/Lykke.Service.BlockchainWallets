@@ -10,6 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.BlockchainWallets.Core;
+using Lykke.Service.BlockchainWallets.Core.Exceptions;
 
 namespace Lykke.Service.BlockchainWallets.Services.Validation
 {
@@ -21,18 +24,21 @@ namespace Lykke.Service.BlockchainWallets.Services.Validation
         private readonly IBlackListService _blackListService;
         private readonly IBlockchainExtensionsService _blockchainExtensionsService;
         private readonly IAddressParser _addressParser;
+        private readonly IWalletService _walletService;
 
         public ValidationService(IBlockchainIntegrationService blockchainIntegrationService,
             IAssetsServiceWithCache assetsService,
             IBlackListService blackListService,
             IBlockchainExtensionsService blockchainExtensionsService,
-            IAddressParser addressParser)
+            IAddressParser addressParser,
+            IWalletService walletService)
         {
             _blockchainIntegrationService = blockchainIntegrationService;
             _assetsService = assetsService;
             _blackListService = blackListService;
             _blockchainExtensionsService = blockchainExtensionsService;
             _addressParser = addressParser;
+            _walletService = walletService;
         }
 
         /// <summary>
@@ -50,16 +56,46 @@ namespace Lykke.Service.BlockchainWallets.Services.Validation
             if (cashoutModel == null)
                 return FieldNotValidResult("cashoutModel can't be null");
 
-            if (string.IsNullOrEmpty(cashoutModel.BlockchainType))
-                return FieldNotValidResult("cashoutModel.BlockchainType can't be null or empty");
+            if (string.IsNullOrEmpty(cashoutModel.AssetId))
+                return FieldNotValidResult("cashoutModel.AssetId can't be null or empty");
 
-            bool isAddressValid = true;
-            IBlockchainApiClient blockchainClient = _blockchainIntegrationService.GetApiClient(cashoutModel.BlockchainType);
+            Asset asset;
+
+            try
+            {
+                asset = await _assetsService.TryGetAssetAsync(cashoutModel.AssetId);
+            }
+            catch (Exception)
+            {
+                throw new OperationException($"Asset with Id-{cashoutModel.AssetId} does not exists", OperationErrorCode.None);
+            }
+
+            if (asset == null)
+                throw new OperationException($"Asset with Id-{cashoutModel.AssetId} does not exists", OperationErrorCode.None);
+
+            if (asset.IsDisabled)
+            {
+                errors.Add(ValidationError.Create(ValidationErrorType.None, $"Asset {asset.Id} is disabled"));
+            }
+
+            var isAddressValid = true;
+            IBlockchainApiClient blockchainClient = null;
+
+            if (asset.Id != LykkeConstants.SolarAssetId)
+            {
+                if (string.IsNullOrEmpty(asset.BlockchainIntegrationLayerId))
+                    throw new OperationException(
+                        $"Given asset Id-{cashoutModel.AssetId} is not a part of Blockchain Integration Layer", OperationErrorCode.None);
+
+                blockchainClient = _blockchainIntegrationService.GetApiClient(asset.BlockchainIntegrationLayerId);
+            }
 
             if (string.IsNullOrEmpty(cashoutModel.DestinationAddress)
                 || !cashoutModel.DestinationAddress.IsValidPartitionOrRowKey()
-                || blockchainClient != null &&
+                || asset.Id != LykkeConstants.SolarAssetId && blockchainClient != null &&
                 !await blockchainClient.IsAddressValidAsync(cashoutModel.DestinationAddress)
+                || asset.Id == LykkeConstants.SolarAssetId &&
+                !SolarCoinValidation.ValidateAddress(cashoutModel.DestinationAddress)
             )
             {
                 isAddressValid = false;
@@ -68,79 +104,113 @@ namespace Lykke.Service.BlockchainWallets.Services.Validation
 
             if (isAddressValid)
             {
-                var isBlocked = await _blackListService.IsBlockedWithoutAddressValidationAsync
-                (
-                    cashoutModel.BlockchainType,
-                    cashoutModel.DestinationAddress
-                );
-
-                if (isBlocked)
+                if (asset.Id != LykkeConstants.SolarAssetId)
                 {
-                    errors.Add(ValidationError.Create(ValidationErrorType.BlackListedAddress, "Address is in the black list"));
-                }
+                    var isBlocked = await _blackListService.IsBlockedWithoutAddressValidationAsync
+                    (
+                        asset.BlockchainIntegrationLayerId,
+                        cashoutModel.DestinationAddress
+                    );
 
-                var blockchainSettings = _blockchainIntegrationService.GetSettings(cashoutModel.BlockchainType);
-
-                if (cashoutModel.DestinationAddress == blockchainSettings.HotWalletAddress)
-                {
-                    errors.Add(ValidationError.Create(ValidationErrorType.HotwalletTargetProhibited,
-                        "Hot wallet as destitnation address prohibited"));
-                }
-
-                var isPublicExtensionRequired =
-                    _blockchainExtensionsService.IsPublicAddressExtensionRequired(cashoutModel.BlockchainType);
-                if (isPublicExtensionRequired.HasValue &&
-                    isPublicExtensionRequired.Value)
-                {
-                    var hotWalletParseResult = _addressParser.ExtractAddressParts(
-                        cashoutModel.BlockchainType,
-                        blockchainSettings.HotWalletAddress);
-
-                    var destAddressParseResult = _addressParser.ExtractAddressParts(
-                        cashoutModel.BlockchainType,
-                        cashoutModel.DestinationAddress);
-
-                    //if (hotWalletParseResult.BaseAddress == destAddressParseResult.BaseAddress)
-                    //{
-                    //    var existedClientIdAsDestination = await _blockchainWalletsClient.TryGetClientIdAsync(
-                    //        asset.BlockchainIntegrationLayerId,
-                    //        cashoutModel.DestinationAddress);
-
-                    //    if (existedClientIdAsDestination == null)
-                    //    {
-                    //        errors.Add(ValidationError.Create(ValidationErrorType.DepositAddressNotFound,
-                    //            $"Deposit address {cashoutModel.DestinationAddress} not found"));
-                    //    }
-                    //}
-
-                    var forbiddenCharacterErrors = await ValidateForForbiddenCharsAsync(
-                        destAddressParseResult.BaseAddress,
-                        destAddressParseResult.AddressExtension,
-                        cashoutModel.BlockchainType);
-
-                    if (forbiddenCharacterErrors != null)
+                    if (isBlocked)
                     {
-                        errors.AddRange(forbiddenCharacterErrors);
+                        errors.Add(ValidationError.Create(ValidationErrorType.BlackListedAddress, "Address is in the black list"));
+                    }
+                }
+
+                if (cashoutModel.Amount.HasValue && Math.Abs(cashoutModel.Amount.Value) < (decimal)asset.CashoutMinimalAmount)
+                {
+                    var minimalAmount = asset.CashoutMinimalAmount.GetFixedAsString(asset.Accuracy).TrimEnd('0');
+
+                    errors.Add(ValidationError.Create(ValidationErrorType.LessThanMinCashout,
+                        $"Please enter an amount greater than {minimalAmount}"));
+                }
+
+                if (asset.Id != LykkeConstants.SolarAssetId)
+                {
+                    var blockchainSettings = _blockchainIntegrationService.GetSettings(asset.BlockchainIntegrationLayerId);
+
+                    if (cashoutModel.DestinationAddress == blockchainSettings.HotWalletAddress)
+                    {
+                        errors.Add(ValidationError.Create(ValidationErrorType.HotwalletTargetProhibited,
+                            "Hot wallet as destitnation address prohibited"));
                     }
 
-                    if (!string.IsNullOrEmpty(destAddressParseResult.BaseAddress))
+                    var isPublicExtensionRequired =
+                        _blockchainExtensionsService.IsPublicAddressExtensionRequired(asset.BlockchainIntegrationLayerId);
+                    if (isPublicExtensionRequired.HasValue &&
+                        isPublicExtensionRequired.Value)
                     {
-                        if (!cashoutModel.DestinationAddress.Contains(destAddressParseResult.BaseAddress))
+                        var hotWalletParseResult = _addressParser.ExtractAddressParts(
+                            asset.BlockchainIntegrationLayerId,
+                            blockchainSettings.HotWalletAddress);
+
+                        var destAddressParseResult = _addressParser.ExtractAddressParts(
+                            asset.BlockchainIntegrationLayerId,
+                            cashoutModel.DestinationAddress);
+
+                        if (hotWalletParseResult.BaseAddress == destAddressParseResult.BaseAddress)
                         {
-                            errors.Add(ValidationError.Create(ValidationErrorType.FieldIsNotValid,
-                                "Base Address should be part of destination address"));
+                            var existedClientIdAsDestination = await _walletService.TryGetClientIdAsync(
+                                asset.BlockchainIntegrationLayerId,
+                                cashoutModel.DestinationAddress);
+
+                            if (existedClientIdAsDestination == null)
+                            {
+                                errors.Add(ValidationError.Create(ValidationErrorType.DepositAddressNotFound,
+                                    $"Deposit address {cashoutModel.DestinationAddress} not found"));
+                            }
                         }
 
-                        // full address is already checked by integration,
-                        // we don't need to validate it again, 
-                        // just ensure that base address is not black-listed
-                        var isBlockedBase = await _blackListService.IsBlockedWithoutAddressValidationAsync(
-                            cashoutModel.BlockchainType,
-                            destAddressParseResult.BaseAddress);
+                        var forbiddenCharacterErrors = await ValidateForForbiddenCharsAsync(
+                            destAddressParseResult.BaseAddress,
+                            destAddressParseResult.AddressExtension,
+                            asset.BlockchainIntegrationLayerId);
 
-                        if (isBlockedBase)
-                            errors.Add(ValidationError.Create(ValidationErrorType.BlackListedAddress,
-                                "Base Address is in the black list"));
+                        if (forbiddenCharacterErrors != null)
+                        {
+                            errors.AddRange(forbiddenCharacterErrors);
+                        }
+
+                        if (!string.IsNullOrEmpty(destAddressParseResult.BaseAddress))
+                        {
+                            if (!cashoutModel.DestinationAddress.Contains(destAddressParseResult.BaseAddress))
+                            {
+                                errors.Add(ValidationError.Create(ValidationErrorType.FieldIsNotValid,
+                                    "Base Address should be part of destination address"));
+                            }
+
+                            // full address is already checked by integration,
+                            // we don't need to validate it again, 
+                            // just ensure that base address is not black-listed
+                            var isBlockedBase = await _blackListService.IsBlockedWithoutAddressValidationAsync(
+                                asset.BlockchainIntegrationLayerId,
+                                destAddressParseResult.BaseAddress);
+
+                            if (isBlockedBase)
+                                errors.Add(ValidationError.Create(ValidationErrorType.BlackListedAddress,
+                                    "Base Address is in the black list"));
+                        }
+                    }
+                }
+
+                if (cashoutModel.ClientId.HasValue)
+                {
+                    var destinationClientId = await _walletService.TryGetClientIdAsync
+                    (
+                        asset.BlockchainIntegrationLayerId,
+                        cashoutModel.DestinationAddress
+                    );
+
+                    if (destinationClientId.HasValue && destinationClientId == cashoutModel.ClientId.Value)
+                    {
+                        var error = ValidationError.Create
+                        (
+                            ValidationErrorType.CashoutToSelfAddress,
+                            "Withdrawals to the deposit wallet owned by the customer himself prohibited"
+                        );
+
+                        errors.Add(error);
                     }
                 }
             }
