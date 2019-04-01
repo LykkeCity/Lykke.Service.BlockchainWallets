@@ -23,7 +23,7 @@ namespace Lykke.Service.BlockchainWallets.AzureRepositories
         {
             var storage = AzureTableStorage<BlackListEntity>.Create(
                 connectionString,
-                "BlackList",
+                "CashoutBlackList",
                 logFactory);
 
             return new BlackListRepository(storage);
