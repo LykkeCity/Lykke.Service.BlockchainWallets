@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using Common.Log;
+﻿using Common.Log;
 using Lykke.Common.Log;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using Polly;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Lykke.Service.BlockchainWallets.MongoRepositories.Mongo.Query
 {

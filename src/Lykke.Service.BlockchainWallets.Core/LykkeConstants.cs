@@ -2,6 +2,7 @@
 {
     public static class LykkeConstants
     {
+        public const string SolarAssetId = "SLR";
         public const string SolarBlockchainType = "Solar";
 
         public class PublicAddressExtension
