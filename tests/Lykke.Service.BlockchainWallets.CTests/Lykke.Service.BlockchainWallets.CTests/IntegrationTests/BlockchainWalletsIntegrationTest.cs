@@ -199,15 +199,15 @@ namespace Lykke.Service.BlockchainWallets.CTests.IntegrationTests
         #region ValidityCheck
 
         [Theory]
-        //[InlineData(_etcBlockchainType, "0x81b7E08F65Bdf5648606c89998A9CC8164397647", true)]
-        //[InlineData(_etcBlockchainType, "0x406561f72e25ab41200fa3d52badc5a21", false)]
-        [InlineData(_stellarBlockchainType, "GDF4MNKB57VPSF2ZAM36YEXH6TFEXQGQT4IJVR3IOMZQIFC2B44Z4HBL", true)]
+        [InlineData("Ethereum", "0x7A8a7870bd398240CE3523Ab7E76153ba34B7116", true)]
+        [InlineData("Ethereum", "0x406561f72e25ab41200fa3d52badc5a21", false)]
+        [InlineData(_stellarBlockchainType, "GDF4MNKB57VPSF2ZAM36YEXH6TFEXQGQT4IJVR3IOMZQIFC2B44Z4HBL", false)]
         [InlineData(_stellarBlockchainType,
-            "GDF4MNKB57VPSF2ZAM36YEXH6TFEXQGQT4IJVR3IOMZQIFC2B44Z4HBL$gmp91dzbofqrmxdw4hqt4idwyw", false)]
+            "GDF4MNKB57VPSF2ZAM36YEXH6TFEXQGQT4IJVR3IOMZQIFC2B44Z4HBL$gmp91dzbofqrmxdw4hqt4idwyw", true)]
         //[InlineData("d1a7ffea-2ca1-48b6-a41f-a7058ddb0dfa", "lykkedev$0sdfsdf$", false)]
         //[InlineData("d1a7ffea-2ca1-48b6-a41f-a7058ddb0dfa", "lykkedev$$$WHY$$$", false)]
         //[InlineData("2c2c94f9-8fff-4307-89c6-8f5f5f586724", "lykkedev2018:123::::", false)]
-        ////[InlineData("463b1b32-b801-4ea9-a321-7e81bb73d947", "rwN1jdjVQdpMPa8TYqqCHHKhbXcmtTae83+123", true)]
+        [InlineData("Ripple", "rwN1jdjVQdpMPa8TYqqCHHKhbXcmtTae83+123", true)]
         public async Task ValidateCashoutAsync_ExecuteOnDataSet(string blockchainType, string destinationAddress,
             bool isValidExpected)
         {
