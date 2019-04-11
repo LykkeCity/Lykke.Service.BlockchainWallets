@@ -180,6 +180,21 @@ namespace Lykke.Service.BlockchainWallets.CTests.IntegrationTests
             });
         }
 
+        [Fact(Skip = "Use it only to debug middleware.")]
+        public async Task IntegrationTest_CheckRequestResponseLogging_BadRequest()
+        {
+            var blockchainWalletClient = GenerateBlockchainWalletsClient();
+
+            var wallet = await blockchainWalletClient
+                .CreateWalletAsync(
+                    "NONEXISTINGBLOCKCHAINTYPE", 
+                    _clientId, 
+                    CreatorType.LykkeWallet);
+
+            //Assert.Equal(wallet.Address, createdWallet.Address);
+            //Assert.True(existingWallet == null);
+        }
+
         private BlockchainWalletsClient GenerateBlockchainWalletsClient()
         {
             var log = new Mock<ILog>();
