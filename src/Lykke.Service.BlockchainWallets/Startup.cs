@@ -18,6 +18,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
 using System;
+using Lykke.Service.BlockchainWallets.Middleware;
 
 namespace Lykke.Service.BlockchainWallets
 {
@@ -57,6 +58,7 @@ namespace Lykke.Service.BlockchainWallets
                     app.UseDeveloperExceptionPage();
                 }
 
+                app.UseMiddleware<LogNotOkMiddleWare>();
                 app.UseLykkeMiddleware(ex => Common.Api.Contract.Responses.ErrorResponse.Create(ex.Message));
 
                 app.UseMvc();
